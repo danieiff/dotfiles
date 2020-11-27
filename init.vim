@@ -45,6 +45,8 @@ vnoremap ;  :
 vnoremap :  ;
 nnoremap gs  :<C-u>%s///g<Left><Left><Left>
 vnoremap gs  :s///g<Left><Left><Left>
+nnoremap 0 :<C-u>call append(expand('.'), '')<Cr>j
+nnoremap 9 :<C-u>k<C-u>call append(line('.')-1, '')<Cr>
 
 cnoremap <expr> /
 \ getcmdtype() == '/' ? '\/' : '/'
@@ -70,7 +72,7 @@ nnoremap tl  :<C-u>tags<CR>  "履歴一覧
 augroup MyAutoCmd
   autocmd!
   autocmd VimEnter * set t_ut=  "wsl display setting 
-  autocmd BufWritePost ~/dotfiles/nvim/*.vim, source $MYVIMRC | set foldmethod=marker
+  autocmd BufWritePost ~/.config/nvim/init.vim, source $MYVIMRC | set foldmethod=marker
   autocmd vimenter * ++nested colorscheme gruvbox
  "autocmd vimenter * NERDTree
  "autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q | endif
