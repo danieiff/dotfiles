@@ -122,4 +122,7 @@ if ! shopt -oq posix; then
   fi
 fi
 
+# complitions for packages
+eval "$(gh completion -s bash)"
+
 export PATH="$HOME/.yarn/bin:$HOME/.config/yarn/global/node_modules/.bin:$PATH"

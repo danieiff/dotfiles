@@ -1,0 +1,70 @@
+# git
+alias g='git'
+## add
+alias a='git add'
+alias au='git add -u'
+alias ap='git add -u -p'
+## commit
+alias cm='git commit'
+alias cmm='git commit -m'
+alias cma='git commit --amend'
+### add & commit
+alias ac='git add -u && git commit'
+## checkout
+alias co='git checkout'
+alias cob='git checkout -b'
+## branch
+alias br='git branch'
+alias brv='git branch -vv'
+alias brd='git branch -d'
+alias brD='git branch -D'
+## status
+alias s='git status -s'
+## log
+alias l='git log -7 --name-status --oneline'
+## diff
+alias df='git diff'
+## cherry-pick
+alias chp='git cherry-pick'
+## reset
+alias rst='git reset'
+## merge
+alias m='git merge'
+## remote
+alias rmt='git remote'
+<<<<<<< Updated upstream
+alias rmtv='git remote -v'
+## fetch
+alias f='git fetch'
+## pull
+alias pl='git pull'
+## push
+alias psh='git push'
+# vtecx
+# "clean": "rimraf dist",
+# "clean:server": "npx vtecxutil clean:server",
+alias V="npm run login" #: "npx vtecxutil login",
+alias Xu="npm run upload" #: "npx vtecxutil upload",
+alias Xud="npm run upload:data" #: "npx vtecxutil upload:data",
+alias Xut="npm run upload:template" #: "npx vtecxutil upload:template",
+alias Xuh="npm run upload:htmlfolders" #: "npx vtecxutil upload:htmlfolders",
+alias Xuf="npm run upload:folderacls" #: "npx vtecxutil upload:folderacls",
+alias Xup="npm run upload:properties" #: "npx vtecxutil upload:properties",
+alias Xub="npm run upload:bigquery.json" #: "npx vtecxutil upload:bigquery.json",
+alias Xuf="npm run upload:firebase.json" #: "npx vtecxutil upload:firebase.json",
+alias Xd="npm run download" #: "npx vtecxutil download",
+alias Xdd="npm run download:data" #: "npx vtecxutil download:data",
+alias Xdt="npm run download:template" #: "npx vtecxutil download:template",
+alias Xdts="npm run download:typings" #: "npx vtecxutil download:typings",
+alias Xdf="npm run download:folderacls" #: "npx vtecxutil download:folderacls",
+alias Xdp="npm run download:properties" #: "npx vtecxutil download:properties",
+alias Xdb="npm run download:bigquery.json" #: "npx vtecxutil download:bigquery.json",
+alias Xdf="npm run download:firebase.json" #: "npx vtecxutil download:firebase.json",
+# "watch": "npx webpack --mode=production --env externals=true --watch",
+alias C="npm run watch:server" #: "npx webpack --mode=production --env externals=false --watch",
+# "watch:index": "npx webpack --env entry=/components/index.tsx --mode=production --env externals=true --watch",
+# "deploy:index": "npx webpack --env entry=/components/index.tsx --mode=production --env externals=true",
+# "serve": "npx webpack serve --mode=development --env externals=true",
+alias E="npm run serve:index" #: "npx webpack serve --open-page index.html --mode=development --env entry=/components/index.tsx --env externals=true",
+alias T="npm run serve:login" #: "npx webpack serve --open-page login.html --mode=development --env entry=/components/login.tsx --env externals=true",
+# "test": "jest"
