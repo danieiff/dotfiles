@@ -1,0 +1,16 @@
+[user]
+	name = danieiff
+[credential]
+	helper = cache
+[merge]
+	tool = vimdiff
+[core]
+	editor = vim
+[credential]
+	helper = cache
+[diff]
+  algorithm = histogram
+  colorMoved = dimmed-zebra
+  
+[pull]
+	ff = only
