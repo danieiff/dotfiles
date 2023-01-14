@@ -11,6 +11,7 @@ bind 'TAB:menu-complete'
 eval "`npm completion`"
 
 ## Prompt
+# source /usr/lib/git-core/git-sh-prompt
 GIT_PS1_SHOWDIRTYSTATE=true # changes unstaged(*) staged(+)
 GIT_PS1_SHOWSTASHSTATE=true # stashed($)
 GIT_PS1_SHOWUNTRACKEDFILES=true # untracked(%)

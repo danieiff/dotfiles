@@ -1,3 +1,6 @@
+set pumheight=10
+set display=lastline
+
 set number
 set showmatch matchtime=1
 set ignorecase        
@@ -11,16 +14,19 @@ set linebreak
 set tabstop=2 expandtab
 set virtualedit=block 
 set hidden    
-set directory=~/.vim/tmp "put .swp files here
 set clipboard=unnamedplus 
+set shell=bash\ -l " --login: bash reads ~/.profile at startup 
 
-nnoremap <Space>.v  :<C-u>tabnew $MYVIMRC<CR>
-nnoremap <Space>s.  :<C-u>source $MYVIMRC<CR>
-nnoremap <Space>m  :<C-u>marks<CR>
-nnoremap <Space>r  :<C-u>registers<CR>
-nnoremap <Space>l  :<C-u>ls<CR>
+let mapleader = "\<Space>"
+nnoremap <Leader>,  :<C-u>tabnew $MYVIMRC<CR>
+nnoremap <Leader>.,  :<C-u>source $MYVIMRC<CR>
+nnoremap <Leader>m  :<C-u>marks<CR>
+nnoremap <Leader>r  :<C-u>registers<CR>
+nnoremap <Leader>l  :<C-u>ls<CR>
 nnoremap <C-h>  :<C-u>help<Space>
-nnoremap <Space>n  :<C-u>NERDTreeToggle<CR>
+nnoremap Y  y$
+nnoremap +  <C-a>
+nnoremap -  <C-x>
 nnoremap gc  `[v`]
 nnoremap j gj
 nnoremap k gk
@@ -53,8 +59,19 @@ nnoremap tj  :<C-u>tag<CR>   "go forward
 nnoremap tk  :<C-u>pop<CR>   "go backward
 nnoremap tl  :<C-u>tags<CR>  "history list
 
-# GitHub Copilot
-## :Copilot setup
+" GitHub Copilot
+" :Copilot setup
+
+if executable('tailwindcss-intellisense')
+  autocmd User lsp_setup call lsp#register_server({
+        \ 'name': 'tailwindcss-intellisense',
+        \ 'filetypes': ['html', 'css', 'javascript', 'javascriptreact', 'typescript', 'typescriptreact'],
+        \ 'cmd': {server_info->['tailwindcss-intellisense', '--stdio']},
+        \ 'allowlist': ['css', 'html', 'htmldjango', 'typescriptreact'],
+        \ 'root_uri': {server_info->lsp#utils#path_to_uri(lsp#utils#find_nearest_parent_file_directory(lsp#utils#get_buffer_path(), 'tailwind.config.js'))},
+        \ })
+endif
+
 
 set statusline=%<%f%<%{FileTime()}%<%h%m%r%=%-20.(line=%03l,col=%02c%V,totlin=%L%)\%h%m%r%=%-30(,BfNm=%n%Y%)\%P\*%=%{CurTime()}
 set rulerformat=%15(%c%V\ %p%%%)
@@ -75,14 +92,19 @@ function! CurTime()
   return ftime
 endfunction
 
-
+augroup TransparentBG
+  au!
+  au Colorscheme * highlight Normal ctermbg=NONE
+  au Colorscheme * highlight NonText ctermbg=NONE
+  au Colorscheme * highlight LineNr ctermbg=NONE
+  au Colorscheme * highlight Folded ctermbg=NONE
+  au Colorscheme * highlight EndOfBuffer ctermbg=NONE 
+augroup END
 colorscheme codedark
 
-augroup TransparentBG
-    autocmd!
-  autocmd Colorscheme * highlight Normal ctermbg=none
-  autocmd Colorscheme * highlight NonText ctermbg=none
-  autocmd Colorscheme * highlight LineNr ctermbg=none
-  autocmd Colorscheme * highlight Folded ctermbg=none
-  autocmd Colorscheme * highlight EndOfBuffer ctermbg=none 
+"swap file
+set dir=~/.vim/swp "put .swp files here
+augroup swapchoice-readonly
+  au!
+  au SwapExists * let v:swapchoice = 'o'
 augroup END

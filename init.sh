@@ -19,8 +19,20 @@
 #npm install -g n
 
 # Vim
+cd ~/.vim/pack/my/start
 # sudo add-apt-repository ppa:jonathonf/vim # For version 9
 # sudo apt install vim
-# curl https://raw.githubusercontent.com/tomasiser/vim-code-dark/master/colors/codedark.vim --create-dirs -o ~/.vim/colors/codedark.vim
+
 # git clone https://github.com/prabirshrestha/vim-lsp ~/.vim/pack/my/start/vim-lsp
+# git clone https://github.com/mattn/vim-lsp-settings ~/.vim/pack/my/start/vim-lsp-settings
+# git clone https://github.com/prabirshrestha/asyncomplete.vim ~/.vim/pack/my/start/asyncomplete.vim
+
+git clone https://github.com/prettier/vim-prettier
+
+# git clone https://github.com/prabirshrestha/asyncomplete-lsp.vim ~/.vim/pack/my/start/asyncomplete-lsp.vim
 # git clone https://github.com/github/copilot.vim ~/.vim/pack/my/start/copilot.vim
+# curl https://raw.githubusercontent.com/tomasiser/vim-code-dark/master/colors/codedark.vim --create-dirs -o ~/.vim/colors/codedark.vim
+
+
+# WSL
+# echo '[interop]\nappendWindowsPath = false' >> /etc/wsl.conf # Reloading WSL takes >8 sec after terminate 
