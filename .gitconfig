@@ -1,13 +1,12 @@
 [user]
 	name = danieiff
+	email = sugielff@gmail.com
 [credential]
 	helper = cache
 [merge]
 	tool = vimdiff
 [core]
 	editor = vim
-[credential]
-	helper = cache
 [diff]
   algorithm = histogram
   colorMoved = dimmed-zebra

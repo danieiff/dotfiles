@@ -1,3 +1,5 @@
+"uncomment vim9script
+
 set pumheight=10
 set display=lastline
 
@@ -59,20 +61,27 @@ nnoremap tj  :<C-u>tag<CR>   "go forward
 nnoremap tk  :<C-u>pop<CR>   "go backward
 nnoremap tl  :<C-u>tags<CR>  "history list
 
-" GitHub Copilot
+" GitHub Copilot >vim9 or neovim
 " :Copilot setup
+" let b:copilot_enabled = { '*': v:false }
 
-if executable('tailwindcss-intellisense')
-  autocmd User lsp_setup call lsp#register_server({
-        \ 'name': 'tailwindcss-intellisense',
-        \ 'filetypes': ['html', 'css', 'javascript', 'javascriptreact', 'typescript', 'typescriptreact'],
-        \ 'cmd': {server_info->['tailwindcss-intellisense', '--stdio']},
-        \ 'allowlist': ['css', 'html', 'htmldjango', 'typescriptreact'],
-        \ 'root_uri': {server_info->lsp#utils#path_to_uri(lsp#utils#find_nearest_parent_file_directory(lsp#utils#get_buffer_path(), 'tailwind.config.js'))},
-        \ })
-endif
+"filetype plugin indent on
+" LSP
+ if executable('tailwindcss-intellisense')
+   au User lsp_setup call lsp#register_server({
+         \ 'name': 'tailwindcss-intellisense',
+         \ 'cmd': {server_info->['tailwindcss-intellisense', '--stdio']},
+         \ 'allowlist': ['css', 'html', 'htmldjango', 'typescriptreact'],
+         \ 'root_uri': {server_info->lsp#utils#path_to_uri(lsp#utils#find_nearest_parent_file_directory(lsp#utils#get_buffer_path(), 'tailwind.config.cjs'))},
+         \ })
+ endif
 
+" let g:lsp_folding_enable = 0 TODO: check issue
+" set foldmethod=expr
+"   \ foldexpr=lsp#ui#vim#folding#foldexpr()
+"   \ foldtext=lsp#ui#vim#folding#foldtext()
 
+" Status Line
 set statusline=%<%f%<%{FileTime()}%<%h%m%r%=%-20.(line=%03l,col=%02c%V,totlin=%L%)\%h%m%r%=%-30(,BfNm=%n%Y%)\%P\*%=%{CurTime()}
 set rulerformat=%15(%c%V\ %p%%%)
 "set rulerformat=%<%f%<%{FileTime()}%<%h%m%r%=%-20.(line=%03l,col=%02c%V,totlin=%L%)\%h%m%r%=%-30(,BfNm=%n%Y%)\%P\*%=%{CurTime()}

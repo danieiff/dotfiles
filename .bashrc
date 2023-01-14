@@ -9,6 +9,7 @@ bind 'set completion-ignore-case on'
 bind 'set completion-display-width 0'
 bind 'TAB:menu-complete'
 eval "`npm completion`"
+[ -f ~/.fzf.bash ] && . ~/.fzf.bash
 
 ## Prompt
 # source /usr/lib/git-core/git-sh-prompt
@@ -96,3 +97,4 @@ alias psh='git push'
 # wsl --distributon <new dist> [--user (an existing user)]
 
 # echo foo | clip.exe
+

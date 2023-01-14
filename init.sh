@@ -18,18 +18,22 @@
 #curl -fsSL https://raw.githubusercontent.com/tj/n/master/bin/n | bash -s lts
 #npm install -g n
 
+# Bash
+# git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
+# ~/.fzf/install
+
 # Vim
-cd ~/.vim/pack/my/start
 # sudo add-apt-repository ppa:jonathonf/vim # For version 9
 # sudo apt install vim
 
-# git clone https://github.com/prabirshrestha/vim-lsp ~/.vim/pack/my/start/vim-lsp
-# git clone https://github.com/mattn/vim-lsp-settings ~/.vim/pack/my/start/vim-lsp-settings
-# git clone https://github.com/prabirshrestha/asyncomplete.vim ~/.vim/pack/my/start/asyncomplete.vim
+# cd ~/.vim/pack/my/start
+# git clone https://github.com/prabirshrestha/vim-lsp 
+# git clone https://github.com/mattn/vim-lsp-settings
+# git clone https://github.com/prabirshrestha/asyncomplete.vim 
 
-git clone https://github.com/prettier/vim-prettier
+# git clone https://github.com/prettier/vim-prettier
 
-# git clone https://github.com/prabirshrestha/asyncomplete-lsp.vim ~/.vim/pack/my/start/asyncomplete-lsp.vim
+# git clone https://github.com/prabirshrestha/asyncomplete-lsp.vim 
 # git clone https://github.com/github/copilot.vim ~/.vim/pack/my/start/copilot.vim
 # curl https://raw.githubusercontent.com/tomasiser/vim-code-dark/master/colors/codedark.vim --create-dirs -o ~/.vim/colors/codedark.vim
 
