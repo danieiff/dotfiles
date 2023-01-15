@@ -4,12 +4,18 @@
 [credential]
 	helper = cache
 [merge]
-	tool = vimdiff
+	tool = nvimdiff
 [core]
 	editor = vim
 [diff]
   algorithm = histogram
   colorMoved = dimmed-zebra
-  
 [pull]
 	ff = only
+
+[diff]
+  tool = nvimdiff
+[difftool "nvimdiff"]
+  cmd = "nvim -R -d -c \"wincmd l\" -d \"$LOCAL\" \"$REMOTE\""
+[mergetool "nvimdiff"]
+  cmd = "nvim -d -c \"4wincmd w | wincmd J\" \"$LOCAL\" \"$BASE\" \"$REMOTE\"  \"$MERGED\""

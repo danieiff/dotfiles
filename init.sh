@@ -37,6 +37,17 @@
 # git clone https://github.com/github/copilot.vim ~/.vim/pack/my/start/copilot.vim
 # curl https://raw.githubusercontent.com/tomasiser/vim-code-dark/master/colors/codedark.vim --create-dirs -o ~/.vim/colors/codedark.vim
 
+# NeoVim
+curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim.appimage
+chmod u+x nvim.appimage
+sudo mv squashfs-root /
+# sudo ln -s /squashfs-root/AppRun /usr/bin/nvim
+# ./nvim.appimage --appimage-extract
+# ./squashfs-root/AppRun --version
+# sudo mv squashfs-root /
+# sudo ln -s /squashfs-root/AppRun /usr/bin/nvim
 
 # WSL
-# echo '[interop]\nappendWindowsPath = false' >> /etc/wsl.conf # Reloading WSL takes >8 sec after terminate 
+# sudo apt install wslu
+# printf '[interop]\nappendWindowsPath = false\n' >> /etc/wsl.conf # Reloading WSL takes >8 sec after terminates 
+# printf 'export PATH=$PATH:$(wslpath "$(wslvar USERPROFILE)")/AppData/Local/Microsoft\ VS\ Code/bin:\n' >> .bashrc

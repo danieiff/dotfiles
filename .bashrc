@@ -22,6 +22,7 @@ PS1='\[\e[0;100m\]\u@\h \A \w $(__git_ps1)\[\e[0m\]\$ '
 
 ## Alias
 ### sh
+alias v='nvim'
 alias trash='gio trash'
 alias trash-empty='rm -rf ~/.local/share/Trash'
 alias ls='ls --color'
@@ -98,3 +99,4 @@ alias psh='git push'
 
 # echo foo | clip.exe
 
+export PATH=$PATH:$(wslpath "$(wslvar USERPROFILE)")/AppData/Local/Microsoft\ VS\ Code/bin # "code" command for VS Code

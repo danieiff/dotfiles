@@ -66,20 +66,6 @@ nnoremap tl  :<C-u>tags<CR>  "history list
 " let b:copilot_enabled = { '*': v:false }
 
 "filetype plugin indent on
-" LSP
- if executable('tailwindcss-intellisense')
-   au User lsp_setup call lsp#register_server({
-         \ 'name': 'tailwindcss-intellisense',
-         \ 'cmd': {server_info->['tailwindcss-intellisense', '--stdio']},
-         \ 'allowlist': ['css', 'html', 'htmldjango', 'typescriptreact'],
-         \ 'root_uri': {server_info->lsp#utils#path_to_uri(lsp#utils#find_nearest_parent_file_directory(lsp#utils#get_buffer_path(), 'tailwind.config.cjs'))},
-         \ })
- endif
-
-" let g:lsp_folding_enable = 0 TODO: check issue
-" set foldmethod=expr
-"   \ foldexpr=lsp#ui#vim#folding#foldexpr()
-"   \ foldtext=lsp#ui#vim#folding#foldtext()
 
 " Status Line
 set statusline=%<%f%<%{FileTime()}%<%h%m%r%=%-20.(line=%03l,col=%02c%V,totlin=%L%)\%h%m%r%=%-30(,BfNm=%n%Y%)\%P\*%=%{CurTime()}
@@ -101,15 +87,15 @@ function! CurTime()
   return ftime
 endfunction
 
-augroup TransparentBG
-  au!
-  au Colorscheme * highlight Normal ctermbg=NONE
-  au Colorscheme * highlight NonText ctermbg=NONE
-  au Colorscheme * highlight LineNr ctermbg=NONE
-  au Colorscheme * highlight Folded ctermbg=NONE
-  au Colorscheme * highlight EndOfBuffer ctermbg=NONE 
-augroup END
-colorscheme codedark
+" augroup TransparentBG
+"   au!
+"   au Colorscheme * highlight Normal ctermbg=NONE
+"   au Colorscheme * highlight NonText ctermbg=NONE
+"   au Colorscheme * highlight LineNr ctermbg=NONE
+"   au Colorscheme * highlight Folded ctermbg=NONE
+"   au Colorscheme * highlight EndOfBuffer ctermbg=NONE 
+" augroup END
+" colorscheme codedark
 
 "swap file
 set dir=~/.vim/swp "put .swp files here
