@@ -22,7 +22,6 @@
 #
 # npm install -g n
 
-
 # NeoVim
 mkdir -p ~/.config/nvim/pack/my/start && cd "$_"
 # git clone https://github.com/github/copilot.vim # ':Copilot setup'
@@ -34,6 +33,9 @@ mkdir -p ~/.config/nvim/pack/my/start && cd "$_"
 # sumneko/lua-language-server/releases/assets/86357324
 # tar -xvf <lua-language-server.tar.gz>
 # echo 'export PATH=$PATH:~/.config/lsp/lua/bin' >> ~/.bashrc
+# npm i -g bash-language-server
+# npm i -g typescript typescript-language-server
+# npm i -g @tailwindcss/language-server
 #
 # curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim.appimage
 # chmod u+x nvim.appimage
@@ -63,3 +65,7 @@ mkdir -p ~/.config/nvim/pack/my/start && cd "$_"
 # sudo apt install wslu
 # printf '[interop]\nappendWindowsPath = false\n' | sudo tee /etc/wsl.conf # Reloading WSL takes >8 sec after terminates 
 # printf 'export PATH=$PATH:$(wslpath "$(wslvar USERPROFILE)")/AppData/Local/Microsoft\ VS\ Code/bin:\n' >> .bashrc # VSCode 'code' command  
+
+# Firebase
+# npm i -g firebase-tools
+# sudo apt install default-jdk

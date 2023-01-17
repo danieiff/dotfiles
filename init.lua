@@ -8,7 +8,7 @@ local options = {
   showmatch = true, matchtime = 1,
   ignorecase = true, smartcase = true, 
   tabstop = 2, shiftwidth = 2, expandtab = true, smartindent= true,
-  termguicolors=true,  pumblend = 10, winblend = 10, ambiwidth = 'double', 
+  pumblend = 10, winblend = 10, ambiwidth = 'double', termguicolors = true, -- :hi Normal guibg=NONE -- Transparent BG in WSL Win Terminal
   number = true, 
   pumheight = 10,
 }
@@ -93,11 +93,43 @@ local keymaps = {
   -- :tabmove        " タブページを右端に移動
   -- :$tabmove       " 同上
   -- :tabmove $      " 同上
+  -- { 'n', '<space>e', vim.diagnostic.open_float, keymaps_opts }, 
+  -- { 'n', '[d', vim.diagnostic.goto_prev, keymaps_opts }, 
+  -- { 'n', ']d', vim.diagnostic.goto_next, keymaps_opts }, 
+  -- { 'n', '<space>q', vim.diagnostic.setloclist, keymaps_opts }, 
  }
 for _, map in pairs(keymaps) do vim.api.nvim_set_keymap(unpack(map)) end
 
 -- :LspInfo
+-- vim.lsp.set_log_level("debug")
+-- :LspLog
+-- Use an on_attach function to only map the following keys
+-- after the language server attaches to the current buffer
+local on_attach = function(client, bufnr) -- TODO: try without using attach
+  -- Enable completion triggered by <c-x><c-o>
+  vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
+
+  -- See `:help vim.lsp.*` for documentation on any of the below functions
+  local bufopts = { noremap=true, silent=true, buffer=bufnr }
+  vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, bufopts)
+  vim.keymap.set('n', 'gd', vim.lsp.buf.definition, bufopts)
+  vim.keymap.set('n', 'K', vim.lsp.buf.hover, bufopts)
+  vim.keymap.set('n', 'gi', vim.lsp.buf.implementation, bufopts)
+  vim.keymap.set('n', '<C-k>', vim.lsp.buf.signature_help, bufopts)
+  vim.keymap.set('n', '<space>wa', vim.lsp.buf.add_workspace_folder, bufopts)
+  vim.keymap.set('n', '<space>wr', vim.lsp.buf.remove_workspace_folder, bufopts)
+  vim.keymap.set('n', '<space>wl', function()
+    print(vim.inspect(vim.lsp.buf.list_workspace_folders()))
+  end, bufopts)
+  vim.keymap.set('n', '<space>D', vim.lsp.buf.type_definition, bufopts)
+  vim.keymap.set('n', '<space>rn', vim.lsp.buf.rename, bufopts)
+  vim.keymap.set('n', '<space>ca', vim.lsp.buf.code_action, bufopts)
+  vim.keymap.set('n', 'gr', vim.lsp.buf.references, bufopts)
+  vim.keymap.set('n', '<space>f', function() vim.lsp.buf.format { async = true } end, bufopts)
+end
+
 require'lspconfig'.sumneko_lua.setup {
+  on_attach = on_attach, 
   settings = {
     Lua = {
       runtime = {
@@ -120,6 +152,16 @@ require'lspconfig'.sumneko_lua.setup {
   },
 }
 
+require'lspconfig'.bashls.setup{
+  on_attach = on_attach, 
+}
+require'lspconfig'.tsserver.setup{
+    on_attach = on_attach,
+}
+require'lspconfig'.tailwindcss.setup {
+  on_attach = on_attach,
+  filetypes = { "html", "css", "scss", "javascript", "javascriptreact", "typescript", "typescriptreact", "svelte", "vue" },
+}
 -- " Status Line
 -- set statusline=%<%f%<%{FileTime()}%<%h%m%r%=%-20.(line=%03l,col=%02c%V,totlin=%L%)\%h%m%r%=%-30(,BfNm=%n%Y%)\%P\*%=%{CurTime()}
 -- set rulerformat=%15(%c%V\ %p%%%)
@@ -139,7 +181,15 @@ require'lspconfig'.sumneko_lua.setup {
 --   let ftime=ftime." ".strftime("%x %b,%d %y %H:%M:%S")
 --   return ftime
 -- endfunction
--- 
+
+require'vscode'.setup { 
+  color_overrides = {
+    vscBack = 'NONE', 
+  -- vscPopupBac = 'NONE', 
+  -- vscFoldBackground = 'NONE', 
+  -- disable_nvimtree_bg = false, 
+  }, 
+} -- vim.cmd("colorscheme slate")
 -- " augroup TransparentBG
 -- "   au!
 -- "   au Colorscheme * highlight Normal ctermbg=NONE
@@ -148,4 +198,18 @@ require'lspconfig'.sumneko_lua.setup {
 -- "   au Colorscheme * highlight Folded ctermbg=NONE
 -- "   au Colorscheme * highlight EndOfBuffer ctermbg=NONE 
 -- " augroup END
-require'vscode'.setup { transparent = true } -- vim.cmd("colorscheme slate")
+
+-- vim.cmd [[ 
+--  set laststatus=2 "ステータス表示
+--  set wildmenu "ファイル名補完
+--  set lines=70 columns=150 "デフォルトの画面サイズ
+--  set ruler "ルーラーを表示
+--  " Netrw SETTINGS "ファイラー「Netrw」の設定
+--  let g:netrw_banner = 0 "上部のバナー表示の設定
+--  let g:netrw_liststyle = 3 "ツリー表示スタイル設定
+--  let g:netrw_browse_split = 4 "ブラウズ分割設定
+--  let g:netrw_winsize = 30 "表示幅設定
+--  let g:netrw_sizestyle = "H" "データサイズの表示設定
+--  let g:netrw_timefmt = "%Y/%m/%d(%a) %H:%M:%S" "ファイル日付表示設定
+--  let g:netrw_preview = 1  "プレビュー画面分割設定
+-- ]]

@@ -11,6 +11,7 @@ bind 'TAB:menu-complete'
 eval "`npm completion`"
 [ -f ~/.fzf.bash ] && . ~/.fzf.bash
 
+export COLORTERM=truecolor
 ## Prompt
 # source /usr/lib/git-core/git-sh-prompt
 GIT_PS1_SHOWDIRTYSTATE=true # changes unstaged(*) staged(+)
