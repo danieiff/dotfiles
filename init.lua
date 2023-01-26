@@ -219,4 +219,17 @@ require'vscode'.setup {
 --  let g:netrw_timefmt = "%Y/%m/%d(%a) %H:%M:%S" "ファイル日付表示設定
 --  let g:netrw_preview = 1  "プレビュー画面分割設定
 -- ]]
-
+vim.cmd [[
+    let g:clipboard = {
+                \   'name': 'WslClipboard',
+                \   'copy': {
+                \      '+': 'clip.exe',
+                \      '*': 'clip.exe',
+                \    },
+                \   'paste': {
+                \      '+': 'powershell.exe -c [Console]::Out.Write($(Get-Clipboard -Raw).tostring().replace("`r", ""))',
+                \      '*': 'powershell.exe -c [Console]::Out.Write($(Get-Clipboard -Raw).tostring().replace("`r", ""))',
+                \   },
+                \   'cache_enabled': 0,
+                \ }
+                ]]

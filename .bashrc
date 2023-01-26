@@ -101,4 +101,6 @@ alias psh='git push'
 # echo foo | clip.exe
 
 export PATH=$PATH:$(wslpath "$(wslvar USERPROFILE)")/AppData/Local/Microsoft\ VS\ Code/bin # VSCode "code" command
+export PATH=$PATH:/mnt/c/Windows/System32:/mnt/c/Windows/System32/WindowsPowershell/v1.0 
+
 export PATH=$PATH:~/.config/lua-lsp/bin
