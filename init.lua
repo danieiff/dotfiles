@@ -4,7 +4,7 @@ local options = {
   clipboard = 'unnamedplus',
   undofile = true,
   shell = 'bash -l', -- login: bash reads ~/.profile at startup 
-  foldmethod = 'expr', foldexpr = "nvim_treesitter#foldexpr()", 
+ -- foldmethod = 'expr', foldexpr = "nvim_treesitter#foldexpr()", 
   showmatch = true, matchtime = 1,
   ignorecase = true, smartcase = true, 
   tabstop = 2, shiftwidth = 2, expandtab = true, smartindent= true,
@@ -102,6 +102,54 @@ local keymaps = {
   -- { 'n', '<space>q', vim.diagnostic.setloclist, keymaps_opts }, 
  }
 for _, map in pairs(keymaps) do vim.api.nvim_set_keymap(unpack(map)) end
+
+require'leap'.add_default_mappings()
+
+-- require'Comment'.setup {
+--  ---Add a space b/w comment and the line
+--   padding = true,
+--   ---Whether the cursor should stay at its position
+--   sticky = true,
+--   ---Lines to be ignored while (un)comment
+--   ignore = nil,
+--   ---LHS of toggle mappings in NORMAL mode
+--   toggler = {
+--       line = 'gcc',
+--       block = 'gbc',
+--   },
+--   ---LHS of operator-pending mappings in NORMAL and VISUAL mode
+--   opleader = {
+--       line = 'gc',
+--       block = 'gb',
+--   },
+--   ---LHS of extra mappings
+--   extra = {
+--       ---Add comment on the line above
+--       above = 'gcO',
+--       ---Add comment on the line below
+--       below = 'gco',
+--       ---Add comment at the end of line
+--       eol = 'gcA',
+--   },
+--   ---Enable keybindings
+--   ---NOTE: If given `false` then the plugin won't create any mappings
+--   mappings = {
+--       ---Operator-pending mapping; `gcc` `gbc` `gc[count]{motion}` `gb[count]{motion}`
+--       basic = true,
+--       ---Extra mapping; `gco`, `gcO`, `gcA`
+--       extra = true,
+--   },
+--   pre_hook = require'ts_context_commentstring.integrations.comment_nvim'.create_pre_hook(), 
+--   post_hook = nil
+-- }
+
+-- require'nvim-treesitter.configs'.setup {
+--   context_commentstring = {
+--     enable = true,
+--     enable_autocmd = false,
+--   }
+-- }
+
 vim.keymap.set('n',  '<Leader>e', vim.diagnostic.open_float, keymaps_opts )
 -- :LspInfo
 -- vim.lsp.set_log_level("debug")
@@ -130,6 +178,7 @@ local on_attach = function(client, bufnr) -- TODO: try without using attach
   vim.keymap.set('n', 'gr', vim.lsp.buf.references, bufopts)
   vim.keymap.set('n', '<space>f', function() vim.lsp.buf.format { async = true } end, bufopts)
 end
+
 
 require'lspconfig'.sumneko_lua.setup {
   on_attach = on_attach,
@@ -233,3 +282,52 @@ vim.cmd [[
                 \   'cache_enabled': 0,
                 \ }
                 ]]
+-- vim.api.nvim_set_hl(0, "variable",               { '#EFEFEF' })
+-- vim.api.nvim_set_hl(0, "@variable",              { '#EFEFEF' })
+
+vim.cmd [[packadd packer.nvim]]
+require('packer').startup(function(use)
+  use {
+    'numToStr/Comment.nvim',
+    tag = 'v0.6.1',
+    config = function()
+        require('Comment').setup({
+ ---Add a space b/w comment and the line
+  padding = true,
+  ---Whether the cursor should stay at its position
+  sticky = true,
+  ---Lines to be ignored while (un)comment
+  ignore = nil,
+  ---LHS of toggle mappings in NORMAL mode
+  toggler = {
+      line = 'gcc',
+      block = 'gbc',
+  },
+  ---LHS of operator-pending mappings in NORMAL and VISUAL mode
+  opleader = {
+      line = 'gc',
+      block = 'gb',
+  },
+  ---LHS of extra mappings
+  extra = {
+      ---Add comment on the line above
+      above = 'gcO',
+      ---Add comment on the line below
+      below = 'gco',
+      ---Add comment at the end of line
+      eol = 'gcA',
+  },
+  ---Enable keybindings
+  ---NOTE: If given `false` then the plugin won't create any mappings
+  mappings = {
+      ---Operator-pending mapping; `gcc` `gbc` `gc[count]{motion}` `gb[count]{motion}`
+      basic = true,
+      ---Extra mapping; `gco`, `gcO`, `gcA`
+      extra = true,
+  },
+  pre_hook = require'ts_context_commentstring.integrations.comment_nvim'.create_pre_hook(), 
+  post_hook = nil
+        })
+    end
+  }
+end)

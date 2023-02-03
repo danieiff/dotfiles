@@ -104,3 +104,5 @@ export PATH=$PATH:$(wslpath "$(wslvar USERPROFILE)")/AppData/Local/Microsoft\ VS
 export PATH=$PATH:/mnt/c/Windows/System32:/mnt/c/Windows/System32/WindowsPowershell/v1.0 
 
 export PATH=$PATH:~/.config/lua-lsp/bin
+
+export PATH=$PATH:/usr/local/zig-linux-x86_64-0.11.0-dev.1507+6f13a725a

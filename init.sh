@@ -26,6 +26,9 @@
 mkdir -p ~/.config/nvim/pack/my/start && cd "$_"
 # git clone https://github.com/github/copilot.vim # ':Copilot setup'
 # git clone https://github.com/Mofiqul/vscode.nvim
+# git clone --deps=1 https://github.com/ggandor/leap.nvim
+# git clone --deps=1 https://github.com/numToStr/Comment.nvim
+# git clone --deps=1 https://github.com/JoosepAlviste/nvim-ts-context-commentstring
 #
 # git clone https://github.com/neovim/nvim-lspconfig
 # curl -vLJO -H 'Accept: application/octet-stream' https://api.github.com/repos/
@@ -37,12 +40,8 @@ mkdir -p ~/.config/nvim/pack/my/start && cd "$_"
 # npm i -g typescript typescript-language-server
 # npm i -g @tailwindcss/language-server
 #
-# curl -LO https://github.com/neovim/neovim/releases/latest/download/nvim.appimage
-# chmod u+x nvim.appimage
-# sudo mv squashfs-root / # Run below commands if "$ ./nvim.appimage" fails
-# sudo ln -s /squashfs-root/AppRun /usr/bin/nvim
-# ./nvim.appimage --appimage-extract
-# ./squashfs-root/AppRun --version
+# wget https://github.com/neovim/neovim/releases/download/v0.7.2/nvim-linux64.tar.gz
+# tar xzvf nvim-linux64.tar.gz
 # ln -s ~/dotfiles/init.lua ~/.config/nvim/init.lua
 
 # Vim
