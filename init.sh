@@ -23,6 +23,10 @@
 # npm install -g n
 
 # NeoVim
+# wget https://github.com/neovim/neovim/releases/download/stable/nvim-linux64.tar.gz
+# tar xzvf nvim-linux64.tar.gz
+# ln -s ~/dotfiles/init.lua ~/.config/nvim/init.lua
+#
 mkdir -p ~/.config/nvim/pack/my/start && cd "$_"
 # git clone https://github.com/github/copilot.vim # ':Copilot setup'
 # git clone https://github.com/Mofiqul/vscode.nvim
@@ -39,10 +43,6 @@ mkdir -p ~/.config/nvim/pack/my/start && cd "$_"
 # npm i -g bash-language-server
 # npm i -g typescript typescript-language-server
 # npm i -g @tailwindcss/language-server
-#
-# wget https://github.com/neovim/neovim/releases/download/v0.7.2/nvim-linux64.tar.gz
-# tar xzvf nvim-linux64.tar.gz
-# ln -s ~/dotfiles/init.lua ~/.config/nvim/init.lua
 
 # Vim
 # sudo add-apt-repository ppa:jonathonf/vim # For version 9
