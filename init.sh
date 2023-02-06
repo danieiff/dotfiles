@@ -30,9 +30,12 @@
 mkdir -p ~/.config/nvim/pack/my/start && cd "$_"
 # git clone https://github.com/github/copilot.vim # ':Copilot setup'
 # git clone https://github.com/Mofiqul/vscode.nvim
-# git clone --deps=1 https://github.com/ggandor/leap.nvim
-# git clone --deps=1 https://github.com/numToStr/Comment.nvim
-# git clone --deps=1 https://github.com/JoosepAlviste/nvim-ts-context-commentstring
+# git clone --depth 1 https://github.com/ggandor/leap.nvim
+# git clone --depth 1 https://github.com/lukas-reineke/indent-blankline.nvim
+#
+# git clone https://github.com/nvim-treesitter/nvim-treesitter
+# git clone --depth 1 https://github.com/numToStr/Comment.nvim
+# git clone --depth 1 https://github.com/JoosepAlviste/nvim-ts-context-commentstring
 #
 # git clone https://github.com/neovim/nvim-lspconfig
 # curl -vLJO -H 'Accept: application/octet-stream' https://api.github.com/repos/

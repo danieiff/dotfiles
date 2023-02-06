@@ -19,7 +19,7 @@ GIT_PS1_SHOWSTASHSTATE=true # stashed($)
 GIT_PS1_SHOWUNTRACKEDFILES=true # untracked(%)
 GIT_PS1_SHOWUPSTREAM=auto # local behind(<) ahead(>) diverged(<>) same(=)
 # PS1='\[\e[0;100m\]\u@\h \A \w $(__git_ps1 "[%s]")\[\e[0m\]\$ '
-PS1='\[\e[0;100m\]\u@\h \A \w $(__git_ps1)\[\e[0m\]\$ '
+PS1='\[\e[0;100m\]\u@\h \A \w $(__git_ps1)\[\e[0m\] '
 
 ## Alias
 ### sh
