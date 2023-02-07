@@ -36,6 +36,7 @@ mkdir -p ~/.config/nvim/pack/my/start && cd "$_"
 # git clone https://github.com/nvim-treesitter/nvim-treesitter
 # git clone --depth 1 https://github.com/numToStr/Comment.nvim
 # git clone --depth 1 https://github.com/JoosepAlviste/nvim-ts-context-commentstring
+# git clone --depth 1 https://github.com/kylechui/nvim-surround
 #
 # git clone https://github.com/neovim/nvim-lspconfig
 # curl -vLJO -H 'Accept: application/octet-stream' https://api.github.com/repos/

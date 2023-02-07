@@ -7,8 +7,8 @@ local options = {
   showmatch = true, matchtime = 1,
   ignorecase = true, smartcase = true,
   tabstop = 2, shiftwidth = 2, expandtab = true, smartindent = true, list = true, listchars = { tab = '__', trail = '_' },
-  pumheight = 10, pumblend = 10, winblend = 10, showtabline = 2, number = true, signcolumn = "yes",
-  -- synmaxcol = 0 -- Remove limit col number for syntax highlighting
+  pumheight = 10, pumblend = 10, winblend = 10, showtabline = 2, number = true, signcolumn = "no", --"number"
+  -- synmaxcol = 0 -- Remove limit col number for syntax highlighting line
   clipboard = 'unnamedplus',
   foldmethod = 'expr', foldexpr = "nvim_treesitter#foldexpr()", foldenable = false,
 }
@@ -16,15 +16,10 @@ for k, v in pairs(options) do vim.opt[k] = v end
 
 vim.cmd("highlight LspDiagnosticsLineNrWarning guifg=#E5C07B guibg=#4E4942 gui=bold")
 vim.cmd("sign define LspDiagnosticsSignWarning texthl=LspDiagnosticsSignWarning numhl=LspDiagnosticsLineNrWarning")
--- local options_append = {
--- }
--- for k, v in pairs(options) do vim.opt[k]:append(v) end
--- for k, v in pairs({ clipboard = { unnamedplus = true } }) do vim.opt[k]:append(v) end
 
 vim.api.nvim_create_autocmd({ "BufReadPost" }, { pattern = { "*" }, callback = function() vim.api.nvim_exec('silent! normal! g`"zv', false) end, })
 
 local keymaps_opts = { noremap = true, } -- silent = true }
-local term_opts = { silent = true }
 vim.g.mapleader = " "
 local keymaps = {
   -- Move between windows
@@ -83,7 +78,6 @@ local keymaps = {
   { "n", ")", ":bN<CR>", keymaps_opts },
   { "n", "0", "^", keymaps_opts }, 
   { "n", "^", "0", keymaps_opts }, 
-  { "i", "</", "</<C-x><C-o>", keymaps_opts }
   -- nnoremap <C-t>  <Nop>
   -- nnoremap <C-t>n  :<C-u>tabnew<CR>
   -- nnoremap <C-t>c  :<C-u>tabclose<CR>
@@ -199,6 +193,13 @@ require'lspconfig'.tsserver.setup{
 require'lspconfig'.tailwindcss.setup {
   on_attach = on_attach,
   filetypes = { "html", "css", "scss", "javascript", "javascriptreact", "typescript", "typescriptreact", "svelte", "vue" },
+  handlers = {
+    ["tailwindcss/getConfiguration"] = function (_, _, params, _, bufnr, _)
+      -- tailwindcss lang server waits for this repsonse before providing hover
+      vim.lsp.buf_notify(bufnr, "tailwindcss/getConfigurationResponse", { _id = params._id })
+    end
+  }
+
 }
 
 vim.diagnostic.open_float()
@@ -246,19 +247,19 @@ vim.diagnostic.setqflist({ open = false })
 --end
 --vim.o.statusline = "%!luaeval('status_line()')"
 
-require'vscode'.setup { transparent = true, disable_nvimtree_bg = true, color_overrides = { vscLineNumber = '#878787' } } --vim.cmd("colorscheme habamax")
---vim.cmd[[
---  augroup TransparentBG
---    au!
---    au Colorscheme * highlight Normal ctermbg=NONE
---    au Colorscheme * highlight NonText ctermbg=NONE
---    au Colorscheme * highlight LineNr ctermbg=NONE
---    au Colorscheme * highlight Folded ctermbg=NONE
---    au Colorscheme * highlight EndOfBuffer ctermbg=NONE 
---  augroup END
--- ]]
---vim.api.nvim_set_hl( 0, 'Cursor', { fg = '#ffffff', bg = '#ffffff' })
---vim.api.nvim_set_hl( 0, 'ColorColumn', { fg = 'NONE', bg = '#000000' })
+require'vscode'.setup{}  --vim.cmd("colorscheme habamax")
+local highlights = {
+  { 0, 'Normal', { bg = 'NONE' } },
+  { 0, 'NonText', { bg = 'NONE' } },
+  { 0, 'LineNr', { fg = '#767676', bg = 'NONE' } },
+  { 0, 'Folded', { bg = 'NONE' } },
+  { 0, 'EndOfBuffer', { bg = 'NONE' } },
+  { 0, 'TabLineFill', { bg = 'NONE' } },
+  { 0, 'TabLine', { bg = 'NONE' } },
+  { 0, 'TabLineSel', { bg = '#545454' } },
+}
+for _, hl in pairs(highlights) do vim.api.nvim_set_hl(unpack(hl)) end
+
 require'indent_blankline'.setup {
   char = '|',
   show_current_context = true,

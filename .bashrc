@@ -4,10 +4,13 @@ shopt -s checkwinsize # update LINES and COLUMNS with the window size after each
 shopt -s autocd
 shopt -s direxpand # stop escape "$" during tab completion
 
-## Completion 
-bind 'set completion-ignore-case on'
-bind 'set completion-display-width 0'
-bind 'TAB:menu-complete'
+## Completion
+if [ -t 1 ] 
+then
+  bind 'set completion-ignore-case on'
+  bind 'set completion-display-width 0'
+  bind 'TAB:menu-complete'
+fi
 eval "`npm completion`"
 [ -f ~/.fzf.bash ] && . ~/.fzf.bash
 
