@@ -150,12 +150,18 @@ require'nvim-treesitter.configs'.setup {
     },
   }
 }
-
 require'Comment'.setup {
   pre_hook = require'ts_context_commentstring.integrations.comment_nvim'.create_pre_hook(),
   toggler = { line = 'gcc', block = 'gbc' }, --LHS of toggle mappings in NORMAL mode
   opleader = { line = 'gc', block = 'gb' }, --LHS of operator-pending mappings in NORMAL and VISUAL mode
   extra = { above = 'gc0', below = 'gco', eol = 'gcA' },
+}
+require'indent_blankline'.setup {
+  char = '|',
+  context_char = "▎",
+  show_current_context = true,
+  show_current_context_start = true,
+  use_treesitter = true
 }
 
 vim.keymap.set('n',  '<Leader>e', vim.diagnostic.open_float, keymaps_opts )
@@ -185,7 +191,6 @@ local on_attach = function(client, bufnr)
   vim.keymap.set('n', 'gr', vim.lsp.buf.references, bufopts)
   vim.keymap.set('n', '<space>f', function() vim.lsp.buf.format { async = true } end, bufopts)
 end
-
 
 require'lspconfig'.sumneko_lua.setup {
   on_attach = on_attach,
@@ -273,15 +278,16 @@ vim.diagnostic.setqflist({ open = false })
 --    }
 --end
 --vim.o.statusline = "%!luaeval('status_line()')"
---vim.cmd("colorscheme habamax")
-require('nightfox').setup {
-  fox = 'nordfox',
-  alt_nc = true,
-  visual = true,
-  search = true,
-  styles = { keywords = 'bold', functions = 'italic,bold', }
+
+require'nightfox'.setup {
+  options = {
+    transparent = true,
+    inverse = { search = true },
+  }
 }
---require'vscode'.setup{ }
+vim.cmd'colorscheme nordfox'
+--require('tokyonight').setup { style = 'storm', styles = { keywords = { italic = false } }, transparent = true, hide_inactive_statusline = true }
+--vim.cmd'colorscheme tokyonight'
 
 --local highlights = {
 --  { 0, 'Normal', { bg = 'NONE' } },
@@ -297,14 +303,7 @@ require('nightfox').setup {
 
 require'colorizer'.setup { user_default_options = { --[[ mode = "virtualtext", ]] css_fn = false, tailwind = true } }
 
-require'indent_blankline'.setup {
-  char = '|',
-  context_char = "▎",
-  show_current_context = true,
-  show_current_context_start = true,
-  use_treesitter = true,
-  --use_treesitter_scope = true
-}
+
 
 vim.cmd [[ inoremap <expr> ] searchpair('\[', '', '\]', 'nbW', 'synIDattr(synID(line("."), col("."), 1), "name") =~? "String"') ? ']' : "\<C-n>"]]
 
