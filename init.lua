@@ -1,13 +1,11 @@
 local options = {
-  timeoutlen = 1000,
+  updatetime = 3000, timeoutlen = 1000,
   virtualedit = 'block',
-  autowriteall = true,
-  undofile = true, -- persistent undo history saved in {undodir}
+  autowriteall = true, undofile = true, -- persistent undo history saved in {undodir}
   shell = 'bash -l', -- login: bash reads ~/.profile at startup 
-  showmatch = true, matchtime = 1,
-  ignorecase = true, smartcase = true,
+  showmatch = true, matchtime = 1, ignorecase = true, smartcase = true,
   tabstop = 2, shiftwidth = 2, expandtab = true, smartindent = true, list = true, listchars = { tab = '__', trail = '_' },
-  pumheight = 10, pumblend = 10, winblend = 10, showtabline = 2, number = true, signcolumn = "no", --"number"
+  pumheight = 10, pumblend = 10, winblend = 10, showtabline = 2, number = true, signcolumn = "number", termguicolors = true,
   -- synmaxcol = 0 -- Remove limit col number for syntax highlighting line
   clipboard = 'unnamedplus',
   foldmethod = 'expr', foldexpr = "nvim_treesitter#foldexpr()", foldenable = false,
@@ -101,6 +99,12 @@ local keymaps = {
   -- { 'n', '[d', vim.diagnostic.goto_prev, keymaps_opts }, 
   -- { 'n', ']d', vim.diagnostic.goto_next, keymaps_opts }, 
   -- { 'n', '<space>q', vim.diagnostic.setloclist, keymaps_opts }, 
+  --["<A-t>"] = {
+  --    function() require("bufferline").go_to_buffer(vim.fn.input "Buf number: ", true) end,
+  --    desc = "Go to buffer by absolute number",
+  --    noremap = true,
+  --    silent = true,
+  --  },
 }
 
 for _, map in pairs(keymaps) do vim.keymap.set(unpack(map)) end
@@ -123,8 +127,30 @@ require'nvim-treesitter.configs'.setup {
       scope_incremental = "grs",
       node_decremental = "grm",
     }
+  },
+  refactor = {
+    highlight_definitions = {
+      enable = true,
+      clear_on_cursor_move = true,
+    },
+    highlight_current_scope = { enable = true },
+    smart_rename = {
+      enable = true,
+      keymaps = { smart_rename = "grr", },
+    },
+    navigation = {
+      enable = true,
+      keymaps = {
+        goto_definition_lsp_fallback = "gnd",
+        list_definitions = "gnD",
+        list_definitions_toc = "gO",
+        goto_next_usage = "<a-*>",
+        goto_previous_usage = "<a-#>",
+      },
+    },
   }
 }
+
 require'Comment'.setup {
   pre_hook = require'ts_context_commentstring.integrations.comment_nvim'.create_pre_hook(),
   toggler = { line = 'gcc', block = 'gbc' }, --LHS of toggle mappings in NORMAL mode
@@ -138,10 +164,11 @@ vim.lsp.set_log_level("debug")
 -- :LspLog
 -- Use an on_attach function to only map the following keys
 -- after the language server attaches to the current buffer
-local on_attach = function(client, bufnr) -- TODO: try without using attach
+local on_attach = function(client, bufnr)
   -- Enable completion triggered by <c-x><c-o>
   vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
   vim.api.nvim_command('autocmd CursorHold * lua vim.diagnostic.open_float()')
+  vim.api.nvim_command('autocmd CursorHoldI * lua vim.diagnostic.open_float()')
   -- See `:help vim.lsp.*` for documentation on any of the below functions
   local bufopts = { noremap=true, silent=true, buffer=bufnr }
   vim.keymap.set('n', 'gD', vim.lsp.buf.declaration, bufopts)
@@ -170,7 +197,7 @@ require'lspconfig'.sumneko_lua.setup {
       },
       diagnostics = {
         -- Get the language server to recognize the `vim` global
-        globals = {'vim'},
+        globals = {'vim', 'require', 'print'},
       },
       workspace = {
         -- Make the server aware of Neovim runtime files
@@ -192,7 +219,7 @@ require'lspconfig'.tsserver.setup{
 }
 require'lspconfig'.tailwindcss.setup {
   on_attach = on_attach,
-  filetypes = { "html", "css", "scss", "javascript", "javascriptreact", "typescript", "typescriptreact", "svelte", "vue" },
+  filetypes = { "html", "css", "javascript", "javascriptreact", "typescript", "typescriptreact" },
   handlers = {
     ["tailwindcss/getConfiguration"] = function (_, _, params, _, bufnr, _)
       -- tailwindcss lang server waits for this repsonse before providing hover
@@ -246,24 +273,37 @@ vim.diagnostic.setqflist({ open = false })
 --    }
 --end
 --vim.o.statusline = "%!luaeval('status_line()')"
-
-require'vscode'.setup{}  --vim.cmd("colorscheme habamax")
-local highlights = {
-  { 0, 'Normal', { bg = 'NONE' } },
-  { 0, 'NonText', { bg = 'NONE' } },
-  { 0, 'LineNr', { fg = '#767676', bg = 'NONE' } },
-  { 0, 'Folded', { bg = 'NONE' } },
-  { 0, 'EndOfBuffer', { bg = 'NONE' } },
-  { 0, 'TabLineFill', { bg = 'NONE' } },
-  { 0, 'TabLine', { bg = 'NONE' } },
-  { 0, 'TabLineSel', { bg = '#545454' } },
+--vim.cmd("colorscheme habamax")
+require('nightfox').setup {
+  fox = 'nordfox',
+  alt_nc = true,
+  visual = true,
+  search = true,
+  styles = { keywords = 'bold', functions = 'italic,bold', }
 }
-for _, hl in pairs(highlights) do vim.api.nvim_set_hl(unpack(hl)) end
+--require'vscode'.setup{ }
+
+--local highlights = {
+--  { 0, 'Normal', { bg = 'NONE' } },
+--  { 0, 'NonText', { bg = 'NONE' } },
+--  { 0, 'LineNr', { fg = '#767676', bg = 'NONE' } },
+--  { 0, 'Folded', { bg = 'NONE' } },
+--  { 0, 'EndOfBuffer', { bg = 'NONE' } },
+--  { 0, 'TabLineFill', { bg = 'NONE' } },
+--  { 0, 'TabLine', { bg = 'NONE' } },
+--  { 0, 'TabLineSel', { bg = '#545454' } },
+--}
+--for _, hl in pairs(highlights) do vim.api.nvim_set_hl(unpack(hl)) end
+
+require'colorizer'.setup { user_default_options = { --[[ mode = "virtualtext", ]] css_fn = false, tailwind = true } }
 
 require'indent_blankline'.setup {
   char = '|',
+  context_char = "▎",
   show_current_context = true,
   show_current_context_start = true,
+  use_treesitter = true,
+  --use_treesitter_scope = true
 }
 
 vim.cmd [[ inoremap <expr> ] searchpair('\[', '', '\]', 'nbW', 'synIDattr(synID(line("."), col("."), 1), "name") =~? "String"') ? ']' : "\<C-n>"]]

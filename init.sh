@@ -29,11 +29,13 @@
 #
 mkdir -p ~/.config/nvim/pack/my/start && cd "$_"
 # git clone https://github.com/github/copilot.vim # ':Copilot setup'
-# git clone https://github.com/Mofiqul/vscode.nvim
+# git clone --depth 1 https://github.com/EdenEast/nightfox.nvim
+# git clone --depth 1 https://github.com/norcalli/nvim-colorizer.lua
 # git clone --depth 1 https://github.com/ggandor/leap.nvim
 # git clone --depth 1 https://github.com/lukas-reineke/indent-blankline.nvim
 #
-# git clone https://github.com/nvim-treesitter/nvim-treesitter
+# git clone --depth 1 https://github.com/nvim-treesitter/nvim-treesitter
+# git clone --depth 1 https://github.com/nvim-treesitter/nvim-treesitter-refactor
 # git clone --depth 1 https://github.com/numToStr/Comment.nvim
 # git clone --depth 1 https://github.com/JoosepAlviste/nvim-ts-context-commentstring
 # git clone --depth 1 https://github.com/kylechui/nvim-surround
@@ -64,10 +66,12 @@ mkdir -p ~/.config/nvim/pack/my/start && cd "$_"
 # curl https://raw.githubusercontent.com/tomasiser/vim-code-dark/master/colors/codedark.vim --create-dirs -o ~/.vim/colors/codedark.vim
 # ln -s ~/`dirname $0`/.vimrc ~/.vimrc
 
+# sudo apt install g--h
+
 # WSL
-# sudo apt install wslu
-# printf '[interop]\nappendWindowsPath = false\n' | sudo tee /etc/wsl.conf # Reloading WSL takes >8 sec after terminates 
-# printf 'export PATH=$PATH:$(wslpath "$(wslvar USERPROFILE)")/AppData/Local/Microsoft\ VS\ Code/bin:\n' >> .bashrc # VSCode 'code' command  
+# sudo apt install w--slu
+# printf '[interop]\--nappendWindowsPath = false\n' | sudo tee /etc/wsl.conf # Reloading WSL takes >8 sec after terminates 
+# printf 'export PAT--H=$PATH:$(wslpath "$(wslvar USERPROFILE)")/AppData/Local/Microsoft\ VS\ Code/bin:\n' >> .bashrc # VSCode 'code' command  
 
 # Firebase
 # npm i -g firebase-tools
