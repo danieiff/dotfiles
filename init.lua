@@ -50,7 +50,7 @@ local keymaps = {
   -- nnoremap +  <C-a>
   -- nnoremap -  <C-x>
   { "n", "j", "gj", keymaps_opts },
-  { "n", "gk", "gk", keymaps_opts },
+  { "n", "k", "gk", keymaps_opts },
   -- nnoremap ;  :
   -- nnoremap :  ;
   -- vnoremap ;  :
@@ -150,12 +150,6 @@ require'nvim-treesitter.configs'.setup {
     },
   }
 }
-require'Comment'.setup {
-  pre_hook = require'ts_context_commentstring.integrations.comment_nvim'.create_pre_hook(),
-  toggler = { line = 'gcc', block = 'gbc' }, --LHS of toggle mappings in NORMAL mode
-  opleader = { line = 'gc', block = 'gb' }, --LHS of operator-pending mappings in NORMAL and VISUAL mode
-  extra = { above = 'gc0', below = 'gco', eol = 'gcA' },
-}
 require'indent_blankline'.setup {
   char = '|',
   context_char = "▎",
@@ -163,6 +157,13 @@ require'indent_blankline'.setup {
   show_current_context_start = true,
   use_treesitter = true
 }
+require'Comment'.setup {
+  pre_hook = require'ts_context_commentstring.integrations.comment_nvim'.create_pre_hook(),
+  toggler = { line = 'gcc', block = 'gbc' }, --LHS of toggle mappings in NORMAL mode
+  opleader = { line = 'gc', block = 'gb' }, --LHS of operator-pending mappings in NORMAL and VISUAL mode
+  extra = { above = 'gc0', below = 'gco', eol = 'gcA' },
+}
+require'nvim-surround'.setup()
 
 vim.keymap.set('n',  '<Leader>e', vim.diagnostic.open_float, keymaps_opts )
 -- :LspInfo
@@ -279,15 +280,15 @@ vim.diagnostic.setqflist({ open = false })
 --end
 --vim.o.statusline = "%!luaeval('status_line()')"
 
+
 require'nightfox'.setup {
   options = {
     transparent = true,
     inverse = { search = true },
   }
 }
+--require'nightfox'.setup {}
 vim.cmd'colorscheme nordfox'
---require('tokyonight').setup { style = 'storm', styles = { keywords = { italic = false } }, transparent = true, hide_inactive_statusline = true }
---vim.cmd'colorscheme tokyonight'
 
 --local highlights = {
 --  { 0, 'Normal', { bg = 'NONE' } },
