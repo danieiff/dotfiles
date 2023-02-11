@@ -29,16 +29,21 @@
 #
 mkdir -p ~/.config/nvim/pack/my/start && cd "$_"
 # git clone https://github.com/github/copilot.vim # ':Copilot setup'
-# git clone --depth 1 https://github.com/EdenEast/nightfox.nvim
-# git clone --depth 1 https://github.com/norcalli/nvim-colorizer.lua
 # git clone --depth 1 https://github.com/ggandor/leap.nvim
-# git clone --depth 1 https://github.com/lukas-reineke/indent-blankline.nvim
+# git clone --depth 1 https://github.com/EdenEast/nightfox.nvim
+# git clone --depth 1 https://github.com/NvChad/nvim-colorizer.lua
+#
+# git clone --depht 1 https://github.com/nvim-lua/plenary.nvim
+# git clone --depth 1 https://github.com/nvim-telescope/telescope.nvim
 #
 # git clone --depth 1 https://github.com/nvim-treesitter/nvim-treesitter
 # git clone --depth 1 https://github.com/nvim-treesitter/nvim-treesitter-refactor
 # git clone --depth 1 https://github.com/numToStr/Comment.nvim
 # git clone --depth 1 https://github.com/JoosepAlviste/nvim-ts-context-commentstring
+# git clone --depth 1 https://github.com/simrat39/symbols-outline.nvim
+# git clone --depth 1 https://github.com/lukas-reineke/indent-blankline.nvim
 # git clone --depth 1 https://github.com/kylechui/nvim-surround
+#
 #
 # git clone https://github.com/neovim/nvim-lspconfig
 # curl -vLJO -H 'Accept: application/octet-stream' https://api.github.com/repos/
@@ -49,6 +54,8 @@ mkdir -p ~/.config/nvim/pack/my/start && cd "$_"
 # npm i -g bash-language-server
 # npm i -g typescript typescript-language-server
 # npm i -g @tailwindcss/language-server
+#
+# git clone --depth 1 https://github.com/lewis6991/gitsigns.nvim
 
 # Vim
 # sudo add-apt-repository ppa:jonathonf/vim # For version 9
