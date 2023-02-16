@@ -6,14 +6,14 @@ local options = {
   autowriteall = true, undofile = true, -- persistent undo history saved in {undodir}
   shell = 'bash -l', -- login: bash reads ~/.profile at startup 
   showmatch = true, matchtime = 1, ignorecase = true, smartcase = true,
-   tabstop = 2, shiftwidth = 2, expandtab = true, smartindent = true, list = true, listchars = { tab = '__', trail = '_' },
+  tabstop = 2, shiftwidth = 2, expandtab = true, smartindent = true, list = true, listchars = { tab = '==', trail = '=' },
   pumheight = 10, pumblend = 10, winblend = 10, showtabline = 2, number = true, signcolumn = "yes", termguicolors = true, cmdheight = 0,
   -- synmaxcol = 0 -- Remove limit col number for syntax highlighting line
   foldmethod = 'expr', foldexpr = "nvim_treesitter#foldexpr()", foldenable = false,
 }
 for k, v in pairs(options) do vim.opt[k] = v end
 
-vim.cmd("highlight LspDiagnosticsLineNrWarning guifg=#E5C07B guibg=#4E4942 gui=bold")
+H( 0, 'LspDiagnosticsLineNrWarning', { fg = '#E5C07B', bg = '#4E4942', --[[gui = 'bold']] } )
 vim.cmd("sign define LspDiagnosticsSignWarning texthl=LspDiagnosticsSignWarning numhl=LspDiagnosticsLineNrWarning")
 
 vim.api.nvim_create_autocmd({ "BufReadPost" }, { pattern = { "*" }, callback = function() vim.api.nvim_exec('silent! normal! g`"zv', false) end, })
@@ -126,56 +126,59 @@ end, {remap=true})
 
 
 require'nvim-treesitter.configs'.setup {
-	ensure_installed = { "bash", "lua", "python", "javascript", "typescript", "html", "css", "json", "yaml", "toml", "go", "rust", "jsonc", "graphql", "dockerfile", "vim", "tsx" },
-	highlight = { enable = true },
-	indent = { enable = true }, -- type '=' operator to fix indentation
-	context_commentstring = {
-		enable = true,
-		enable_autocmd = false
-	},
-	incremental_selection = {
-		enable = true,
-		keymaps = {
-			init_selection = "gnn", -- set to `false` to disable one of the mappings
-			node_incremental = "grn",
-			scope_incremental = "grs",
-			node_decremental = "grm",
-		}
-	},
-	refactor = {
-		highlight_definitions = {
-			enable = true,
-			clear_on_cursor_move = true,
-		},
-		highlight_current_scope = { enable = true },
-		smart_rename = {
-			enable = true,
-			keymaps = { smart_rename = "grr", },
-		},
-		navigation = {
-			enable = true,
-			keymaps = {
-				goto_definition_lsp_fallback = "gnd",
-				list_definitions = "gnD",
-				list_definitions_toc = "gO",
-				goto_next_usage = "<a-*>",
-				goto_previous_usage = "<a-#>",
-			},
-		},
-	}
+  ensure_installed = { "bash", "lua", "python", "javascript", "typescript", "html", "css", "json", "yaml", "toml", "go", "rust", "jsonc", "graphql", "dockerfile", "vim", "tsx" },
+  highlight = { enable = true },
+  indent = { enable = true }, -- type '=' operator to fix indentation
+  context_commentstring = {
+    enable = true,
+    enable_autocmd = false
+  },
+  autotag = { enable = true },
+  incremental_selection = {
+    enable = true,
+    keymaps = {
+      init_selection = "gnn", -- set to `false` to disable one of the mappings
+      node_incremental = "grn",
+      scope_incremental = "grs",
+      node_decremental = "grm",
+    }
+  },
+  refactor = {
+    highlight_definitions = {
+      enable = true,
+      clear_on_cursor_move = true,
+    },
+    highlight_current_scope = { enable = true },
+    smart_rename = {
+      enable = true,
+      keymaps = { smart_rename = "grr", },
+    },
+    navigation = {
+      enable = true,
+      keymaps = {
+        goto_definition_lsp_fallback = "gnd",
+        list_definitions = "gnD",
+        list_definitions_toc = "gO",
+        goto_next_usage = "<a-*>",
+        goto_previous_usage = "<a-#>",
+      },
+    },
+  }
 }
+
+
 require'indent_blankline'.setup {
-	char = '|',
-	context_char = "▎",
-	show_current_context = true,
-	show_current_context_start = true,
-	use_treesitter = true
+  --char = '|',
+  --context_char = "▎",
+  show_current_context = true,
+  show_current_context_start = true,
+  use_treesitter = true
 }
 require'Comment'.setup {
-	pre_hook = require'ts_context_commentstring.integrations.comment_nvim'.create_pre_hook(),
-	toggler = { line = 'gcc', block = 'gbc' }, --LHS of toggle mappings in NORMAL mode
-	opleader = { line = 'gc', block = 'gb' }, --LHS of operator-pending mappings in NORMAL and VISUAL mode
-	extra = { above = 'gc0', below = 'gco', eol = 'gcA' },
+  pre_hook = require'ts_context_commentstring.integrations.comment_nvim'.create_pre_hook(),
+  toggler = { line = 'gcc', block = 'gbc' }, --LHS of toggle mappings in NORMAL mode
+  opleader = { line = 'gc', block = 'gb' }, --LHS of operator-pending mappings in NORMAL and VISUAL mode
+  extra = { above = 'gc0', below = 'gco', eol = 'gcA' },
 }
 require'nvim-surround'.setup()
 
@@ -190,66 +193,66 @@ vim.lsp.set_log_level("debug")
 -- Use an on_attach function to only map the following keys
 -- after the language server attaches to the current buffer
 local on_attach = function(client, bufnr)
-	-- Enable completion triggered by <c-x><c-o>
-	vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
-	vim.api.nvim_command('autocmd CursorHold * lua vim.diagnostic.open_float()')
-	vim.api.nvim_command('autocmd CursorHoldI * lua vim.diagnostic.open_float()')
-	-- See `:help vim.lsp.*` for documentation on any of the below functions
-	local bufopts = { noremap=true, silent=true, buffer=bufnr }
-	K( 'n', 'gD', vim.lsp.buf.declaration, bufopts)
-	K( 'n', 'gd', vim.lsp.buf.definition, bufopts)
-	K( 'n', '<Leader>k', vim.lsp.buf.hover, bufopts)
-	K( 'n', 'gi', vim.lsp.buf.implementation, bufopts)
-	K( 'n', '<C-k>', vim.lsp.buf.signature_help, bufopts)
-	K( 'n', '<space>wa', vim.lsp.buf.add_workspace_folder, bufopts)
-	K( 'n', '<space>wr', vim.lsp.buf.remove_workspace_folder, bufopts)
-	K( 'n', '<space>wl', function() print(vim.inspect(vim.lsp.buf.list_workspace_folders())) end, bufopts)
-	K( 'n', '<space>D', vim.lsp.buf.type_definition, bufopts)
-	K( 'n', '<space>rn', vim.lsp.buf.rename, bufopts)
-	K( 'n', '<space>ca', vim.lsp.buf.code_action, bufopts)
-	K( 'n', 'gr', vim.lsp.buf.references, bufopts)
-	K( 'n', '<space>f', function() vim.lsp.buf.format { async = true } end, bufopts)
+  -- Enable completion triggered by <c-x><c-o>
+  vim.api.nvim_buf_set_option(bufnr, 'omnifunc', 'v:lua.vim.lsp.omnifunc')
+  vim.api.nvim_command('autocmd CursorHold * lua vim.diagnostic.open_float()')
+  vim.api.nvim_command('autocmd CursorHoldI * lua vim.diagnostic.open_float()')
+  -- See `:help vim.lsp.*` for documentation on any of the below functions
+  local bufopts = { noremap=true, silent=true, buffer=bufnr }
+  K( 'n', 'gD', vim.lsp.buf.declaration, bufopts)
+  K( 'n', 'gd', vim.lsp.buf.definition, bufopts)
+  K( 'n', '<Leader>k', vim.lsp.buf.hover, bufopts)
+  K( 'n', 'gi', vim.lsp.buf.implementation, bufopts)
+  K( 'n', '<C-k>', vim.lsp.buf.signature_help, bufopts)
+  K( 'n', '<space>wa', vim.lsp.buf.add_workspace_folder, bufopts)
+  K( 'n', '<space>wr', vim.lsp.buf.remove_workspace_folder, bufopts)
+  K( 'n', '<space>wl', function() print(vim.inspect(vim.lsp.buf.list_workspace_folders())) end, bufopts)
+  K( 'n', '<space>D', vim.lsp.buf.type_definition, bufopts)
+  K( 'n', '<space>rn', vim.lsp.buf.rename, bufopts)
+  K( 'n', '<space>ca', vim.lsp.buf.code_action, bufopts)
+  K( 'n', 'gr', vim.lsp.buf.references, bufopts)
+  K( 'n', '<space>f', function() vim.lsp.buf.format { async = true } end, bufopts)
 end
 
 require'lspconfig'.sumneko_lua.setup {
-	on_attach = on_attach,
-	settings = {
-		Lua = {
-			runtime = {
-				-- Tell the language server which version of Lua you're using (most likely LuaJIT in the case of Neovim)
-				version = 'LuaJIT',
-			},
-			diagnostics = {
-				-- Get the language server to recognize the `vim` global
-				globals = {'vim', 'require', 'print'},
-			},
-			workspace = {
-				-- Make the server aware of Neovim runtime files
-				library = vim.api.nvim_get_runtime_file("", true),
-			},
-			-- Do not send telemetry data containing a randomized but unique identifier
-			telemetry = {
-				enable = false,
-			},
-		},
-	},
+  on_attach = on_attach,
+  settings = {
+    Lua = {
+      runtime = {
+        -- Tell the language server which version of Lua you're using (most likely LuaJIT in the case of Neovim)
+        version = 'LuaJIT',
+      },
+      diagnostics = {
+        -- Get the language server to recognize the `vim` global
+        globals = {'vim', 'require', 'print'},
+      },
+      workspace = {
+        -- Make the server aware of Neovim runtime files
+        library = vim.api.nvim_get_runtime_file("", true),
+      },
+      -- Do not send telemetry data containing a randomized but unique identifier
+      telemetry = {
+        enable = false,
+      },
+    },
+  },
 }
 
 require'lspconfig'.bashls.setup{
-	on_attach = on_attach,
+  on_attach = on_attach,
 }
 require'lspconfig'.tsserver.setup{
-	on_attach = on_attach,
+  on_attach = on_attach,
 }
 require'lspconfig'.tailwindcss.setup {
-	on_attach = on_attach,
-	filetypes = { "html", "css", "javascript", "javascriptreact", "typescript", "typescriptreact" },
-	handlers = {
-		["tailwindcss/getConfiguration"] = function (_, _, params, _, bufnr, _)
-			-- tailwindcss lang server waits for this repsonse before providing hover
-			vim.lsp.buf_notify(bufnr, "tailwindcss/getConfigurationResponse", { _id = params._id })
-		end
-	}
+  on_attach = on_attach,
+  filetypes = { "html", "css", "javascript", "javascriptreact", "typescript", "typescriptreact" },
+  handlers = {
+    ["tailwindcss/getConfiguration"] = function (_, _, params, _, bufnr, _)
+      -- tailwindcss lang server waits for this repsonse before providing hover
+      vim.lsp.buf_notify(bufnr, "tailwindcss/getConfigurationResponse", { _id = params._id })
+    end
+  }
 
 }
 
@@ -302,8 +305,7 @@ require'gitsigns'.setup()
 --end
 --vim.o.statusline = "%!luaeval('status_line()')"
 
-
-require'nightfox'.setup { options = { transparent = true, inverse = { search = true } } }
+require'nightfox'.setup { options = { inverse = { search = true } } }
 vim.cmd'colorscheme nordfox'
 H( 0, 'Normal', { bg = 'NONE' } )
 H( 0, 'NonText', { bg = 'NONE' } )
