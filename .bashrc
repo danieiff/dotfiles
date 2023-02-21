@@ -4,6 +4,8 @@ shopt -s checkwinsize # update LINES and COLUMNS with the window size after each
 shopt -s autocd
 shopt -s direxpand # stop escape "$" during tab completion
 
+set -o vi
+
 ## Completion
 if [ -t 1 ] 
 then

@@ -3,19 +3,20 @@
 	email = sugielff@gmail.com
 [credential]
 	helper = cache
-[merge]
-	tool = nvimdiff
 [core]
 	editor = vim
-[diff]
-  algorithm = histogram
-  colorMoved = dimmed-zebra
 [pull]
 	ff = only
-
 [diff]
-  tool = nvimdiff
+	tool = nvimdiff
+	algorithm = histogram
+	colorMoved = dimmed-zebra
 [difftool "nvimdiff"]
-  cmd = "nvim -R -d -c \"wincmd l\" -d \"$LOCAL\" \"$REMOTE\""
+	cmd = "nvim -R -d -c \"wincmd l\" -d \"$LOCAL\" \"$REMOTE\""
+[merge]
+	tool = nvimdiff
+[mergetool]
+	keepBackup = false
+	prompt = false
 [mergetool "nvimdiff"]
-  cmd = "nvim -d -c \"4wincmd w | wincmd J\" \"$LOCAL\" \"$BASE\" \"$REMOTE\"  \"$MERGED\""
+	cmd = "nvim -d -c \"4wincmd w | wincmd J\" \"$LOCAL\" \"$BASE\" \"$REMOTE\"  \"$MERGED\""

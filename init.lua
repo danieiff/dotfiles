@@ -1,4 +1,4 @@
-local K, H = vim.keymap.set, vim.api.nvim_set_hl; --local AU = vim.api.nvim_create_autocmd
+local K, H, AU = vim.keymap.set, vim.api.nvim_set_hl, vim.api.nvim_create_autocmd
 
 local options = {
   updatetime = 3000, timeoutlen = 1000,
@@ -6,9 +6,8 @@ local options = {
   autowriteall = true, undofile = true, -- persistent undo history saved in {undodir}
   shell = 'bash -l', -- login: bash reads ~/.profile at startup 
   showmatch = true, matchtime = 1, ignorecase = true, smartcase = true,
-  tabstop = 2, shiftwidth = 2, expandtab = true, smartindent = true, list = true, listchars = { tab = '==', trail = '=' },
-  pumheight = 10, pumblend = 10, winblend = 10, showtabline = 2, number = true, signcolumn = "yes", termguicolors = true, cmdheight = 0,
-  -- synmaxcol = 0 -- Remove limit col number for syntax highlighting line
+  tabstop = 2, shiftwidth = 2, expandtab = true, smartindent = true, list = true, listchars = { tab = '__', trail = '_' },
+  pumheight = 10, pumblend = 10, winblend = 10, showtabline = 2, number = true, signcolumn = "yes", termguicolors = true, cmdheight = 0, --[[statuscolumn = '%#NonText#%{&nu?v:lnum:""}%=%{&rnu&&(v:lnum%2)?" ".v:relnum:""}%#LineNr#%{&rnu&&!(v:lnum%2)?" ".v:relnum:""}',]]
   foldmethod = 'expr', foldexpr = "nvim_treesitter#foldexpr()", foldenable = false,
 }
 for k, v in pairs(options) do vim.opt[k] = v end
@@ -40,7 +39,7 @@ K( "n", "<C-S-Down>", ":resize +5<CR>", keymaps_opts )
 K( "n", "<C-S-Left>", ":vertical resize -5<CR>", keymaps_opts )
 K( "n", "<Leader>h", ":<C-u>help<Space>", keymaps_opts )
 K( "n", "<Leader>,", ":<C-u>tabnew $MYVIMRC<CR>", keymaps_opts )
-K( "n", "<Leader>.,", ":<C-u>luafile $MYVIMRC<CR>", keymaps_opts )
+K( "n", "<Leader>.,", ":<C-u>luafile $MYVIMRC<CR>", keymaps_opts ) -- ':helptags ALL'
 K( "n", "<Leader>m", ":<C-u>marks<CR>", keymaps_opts )
 K( "n", "<Leader>r", ":<C-u>registers<CR>", keymaps_opts )
 K( "n", "<Leader>l", ":<C-u>ls<CR>", keymaps_opts )
@@ -56,6 +55,12 @@ K( "n", "k", "gk", keymaps_opts )
 -- vnoremap ;  :
 -- vnoremap :  ;
 K( "n", "<Leader>s", ":<C-u>%s///g<Left><Left><Left>", keymaps_opts )
+K( "n", "<Leader>t", ':<C-u>term  && exit' .. string.rep('<left>', 8), keymaps_opts )
+K( 't', '<C-o>', '<C-\\><C-n><C-o>', keymaps_opts )
+--AU( 'TermOpen', { pattern = '*', callback = function() vim.cmd('setlocal nonumber norelativenumber signcolumn=no showtabline=1 | startinsert') end } )
+AU( 'TermClose', { pattern = '*', callback = function() vim.cmd('bdelete') end } )
+--K( "n", "<Leader>t", ':<C-u>term  && exit' .. '<Left><Left><Left><Left><Left><Left><Left><Left>", table.insert(keymaps_opts, { silent = true }) )
+-- yy:@"
 K( "v", "<Leader>s", ":s///g<Left><Left><Left>", keymaps_opts )
 K( "v", "z/", "<ESC>/\\%V",  keymaps_opts )
 K( "v", "z?", "<ESC>?\\%V",  keymaps_opts )
@@ -105,25 +110,57 @@ K( "n", "^", "0", keymaps_opts )
 --    noremap = true,
 --    silent = true,
 --  },
+-- mapping idea
+--  <C-n> + t tabnext , b bufnext, q quick-fix next
+--  <C-p> + t tabprev , b bufprev, q quick-fix prev
+--CTRL-W w	次のウィンドウにフォーカスを当てる
+--CTRL-W N	ターミナルノーマルモードに移行
+--CTRL-W .	端末にCTRL-Wを送る
+--CTRL-W :	コマンドラインモードに移行
+--CTRL-W " {reg}	レジスタの中身を貼り付ける
+--:vert term git log && exit
+--:term git blame %  -- lazygit, REPL etx... && exit
+
+
 require'telescope'.setup()
 
-require'leap'.add_default_mappings()
-local hop = require'hop'
-hop.setup()
-local directions = require('hop.hint').HintDirection
-vim.keymap.set('', 'f', function()
-  hop.hint_char1({ direction = directions.AFTER_CURSOR, current_line_only = true })
-end, {remap=true})
-vim.keymap.set('', 'F', function()
-  hop.hint_char1({ direction = directions.BEFORE_CURSOR, current_line_only = true })
-end, {remap=true})
-vim.keymap.set('', 't', function()
-  hop.hint_char1({ direction = directions.AFTER_CURSOR, current_line_only = true, hint_offset = -1 })
-end, {remap=true})
-vim.keymap.set('', 'T', function()
-  hop.hint_char1({ direction = directions.BEFORE_CURSOR, current_line_only = true, hint_offset = 1 })
-end, {remap=true})
+vim.cmd [[
+" netrw
+let g:netrw_sizestyle="H"
+let g:netrw_preview=1 " preview は左右分割表示
+let g:netrw_liststyle=3 " tree表示
+let g:netrw_keepdir = 0 " tree開いた位置を current dir として扱う。その階層でファイル作成とかができるようになる
+let g:netrw_banner = 0 " 上のバナー消す
+"window サイズ
+let g:netrw_winsize = 25
+let g:netrw_browse_split = 4
 
+"Netrw を toggle する関数を設定
+"元処理と異なり Vex を呼び出すことで左 window に表示
+let g:NetrwIsOpen=0
+function! ToggleNetrw()
+    if g:NetrwIsOpen
+        let i = bufnr("$")
+        while (i >= 1)
+            if (getbufvar(i, "&filetype") == "netrw")
+                silent exe "bwipeout " . i
+            endif
+            let i-=1
+        endwhile
+        let g:NetrwIsOpen=0
+    else
+        let g:NetrwIsOpen=1
+        silent Vex
+    endif
+endfunction
+
+noremap <silent><C-e> :call ToggleNetrw()<CR>
+]]
+-- :e | completion
+-- @:
+
+
+require'leap'.add_default_mappings()
 
 require'nvim-treesitter.configs'.setup {
   ensure_installed = { "bash", "lua", "python", "javascript", "typescript", "html", "css", "json", "yaml", "toml", "go", "rust", "jsonc", "graphql", "dockerfile", "vim", "tsx" },
@@ -143,37 +180,97 @@ require'nvim-treesitter.configs'.setup {
       node_decremental = "grm",
     }
   },
-  refactor = {
-    highlight_definitions = {
+  textobjects = {
+    select = {
       enable = true,
-      clear_on_cursor_move = true,
-    },
-    highlight_current_scope = { enable = true },
-    smart_rename = {
-      enable = true,
-      keymaps = { smart_rename = "grr", },
-    },
-    navigation = {
-      enable = true,
+      -- Automatically jump forward to textobj, similar to targets.vim
+      lookahead = true,
+
       keymaps = {
-        goto_definition_lsp_fallback = "gnd",
-        list_definitions = "gnD",
-        list_definitions_toc = "gO",
-        goto_next_usage = "<a-*>",
-        goto_previous_usage = "<a-#>",
+        -- You can use the capture groups defined in textobjects.scm
+        ["af"] = "@function.outer",
+        ["if"] = "@function.inner",
+        ["ac"] = "@class.outer",
+        -- You can optionally set descriptions to the mappings (used in the desc parameter of
+        -- nvim_buf_set_keymap) which plugins like which-key display
+        ["ic"] = { query = "@class.inner", desc = "Select inner part of a class region" },
+        -- You can also use captures from other query groups like `locals.scm`
+        ["as"] = { query = "@scope", query_group = "locals", desc = "Select language scope" },
+      },
+      -- You can choose the select mode (default is charwise 'v')
+      --
+      -- Can also be a function which gets passed a table with the keys
+      -- * query_string: eg '@function.inner'
+      -- * method: eg 'v' or 'o'
+      -- and should return the mode ('v', 'V', or '<c-v>') or a table
+      -- mapping query_strings to modes.
+      selection_modes = {
+        ['@parameter.outer'] = 'v', -- charwise
+        ['@function.outer'] = 'V', -- linewise
+        ['@class.outer'] = '<c-v>', -- blockwise
+      },
+      -- If you set this to `true` (default is `false`) then any textobject is
+      -- extended to include preceding or succeeding whitespace. Succeeding
+      -- whitespace has priority in order to act similarly to eg the built-in
+      -- `ap`.
+      --
+      -- Can also be a function which gets passed a table with the keys
+      -- * query_string: eg '@function.inner'
+      -- * selection_mode: eg 'v'
+      -- and should return true of false
+      include_surrounding_whitespace = true,
+    },
+    swap = {
+      enable = true,
+      swap_next = {
+        ["<leader>a"] = "@parameter.inner",
+      },
+      swap_previous = {
+        ["<leader>A"] = "@parameter.inner",
       },
     },
-  }
+    move = {
+      enable = true,
+      set_jumps = true, -- whether to set jumps in the jumplist
+      goto_next_start = {
+        ["]m"] = "@function.outer",
+        ["]]"] = { query = "@class.outer", desc = "Next class start" },
+        --
+        -- You can use regex matching and/or pass a list in a "query" key to group multiple queires.
+        ["]o"] = "@loop.*",
+        -- ["]o"] = { query = { "@loop.inner", "@loop.outer" } }
+        --
+        -- You can pass a query group to use query from `queries/<lang>/<query_group>.scm file in your runtime path.
+        -- Below example nvim-treesitter's `locals.scm` and `folds.scm`. They also provide highlights.scm and indent.scm.
+        ["]s"] = { query = "@scope", query_group = "locals", desc = "Next scope" },
+        ["]z"] = { query = "@fold", query_group = "folds", desc = "Next fold" },
+      },
+      goto_next_end = {
+        ["]M"] = "@function.outer",
+        ["]["] = "@class.outer",
+      },
+      goto_previous_start = {
+        ["[m"] = "@function.outer",
+        ["[["] = "@class.outer",
+      },
+      goto_previous_end = {
+        ["[M"] = "@function.outer",
+        ["[]"] = "@class.outer",
+      },
+      -- Below will go to either the start or the end, whichever is closer.
+      -- Use if you want more granular movements
+      -- Make it even more gradual by adding multiple queries and regex.
+      goto_next = {
+        ["]d"] = "@conditional.outer",
+      },
+      goto_previous = {
+        ["[d"] = "@conditional.outer",
+      }
+    },
+  },
 }
 
-
-require'indent_blankline'.setup {
-  --char = '|',
-  --context_char = "▎",
-  show_current_context = true,
-  show_current_context_start = true,
-  use_treesitter = true
-}
+require'indent_blankline'.setup { show_current_context = true, show_current_context_start = true, use_treesitter = true }
 require'Comment'.setup {
   pre_hook = require'ts_context_commentstring.integrations.comment_nvim'.create_pre_hook(),
   toggler = { line = 'gcc', block = 'gbc' }, --LHS of toggle mappings in NORMAL mode
@@ -181,6 +278,7 @@ require'Comment'.setup {
   extra = { above = 'gc0', below = 'gco', eol = 'gcA' },
 }
 require'nvim-surround'.setup()
+require'nvim-autopairs'.setup()
 
 --K('n', '[[', '<cmd>AerialPrev<CR>', { buffer = bufnr })
 --K('n', ']]', '<cmd>AerialNext<CR>', { buffer = bufnr })
@@ -218,12 +316,8 @@ require'lspconfig'.sumneko_lua.setup {
   on_attach = on_attach,
   settings = {
     Lua = {
-      runtime = {
-        -- Tell the language server which version of Lua you're using (most likely LuaJIT in the case of Neovim)
-        version = 'LuaJIT',
-      },
+      runtime = { version = 'LuaJIT', }, --> in Neovim
       diagnostics = {
-        -- Get the language server to recognize the `vim` global
         globals = {'vim', 'require', 'print'},
       },
       workspace = {
@@ -231,32 +325,39 @@ require'lspconfig'.sumneko_lua.setup {
         library = vim.api.nvim_get_runtime_file("", true),
       },
       -- Do not send telemetry data containing a randomized but unique identifier
-      telemetry = {
-        enable = false,
-      },
+      telemetry = { enable = false },
     },
   },
 }
 
-require'lspconfig'.bashls.setup{
-  on_attach = on_attach,
-}
-require'lspconfig'.tsserver.setup{
-  on_attach = on_attach,
-}
+require'lspconfig'.bashls.setup{ on_attach = on_attach }
+require'lspconfig'.tsserver.setup{ on_attach = on_attach }
+AU({ "BufNewFile", "BufRead" }, {
+	pattern = { "**/node_modules/**", "node_modules", "/node_modules/*" },
+	callback = function()
+		vim.diagnostic.disable(0)
+	end,
+	group = disable_node_modules_eslint_group,
+})
 require'lspconfig'.tailwindcss.setup {
   on_attach = on_attach,
   filetypes = { "html", "css", "javascript", "javascriptreact", "typescript", "typescriptreact" },
   handlers = {
     ["tailwindcss/getConfiguration"] = function (_, _, params, _, bufnr, _)
-      -- tailwindcss lang server waits for this repsonse before providing hover
+      -- tailwindcss lang server wai swap = {
       vim.lsp.buf_notify(bufnr, "tailwindcss/getConfigurationResponse", { _id = params._id })
     end
   }
 
 }
-
-vim.diagnostic.open_float()
+local null_ls = require("null-ls")
+null_ls.setup({
+  sources = {
+    null_ls.builtins.formatting.stylua,
+    null_ls.builtins.diagnostics.eslint,
+    null_ls.builtins.completion.spell,
+  },
+})
 vim.diagnostic.setqflist({ open = false })
 
 require'symbols-outline'.setup()
@@ -307,6 +408,8 @@ require'gitsigns'.setup()
 
 require'nightfox'.setup { options = { inverse = { search = true } } }
 vim.cmd'colorscheme nordfox'
+H( 0, '@variable', { fg = 'NONE' } )
+
 H( 0, 'Normal', { bg = 'NONE' } )
 H( 0, 'NonText', { bg = 'NONE' } )
 H( 0, 'LineNr', { fg = '#767676', bg = 'NONE' } )
@@ -364,20 +467,6 @@ vim.cmd [[ inoremap <expr> ] searchpair('\[', '', '\]', 'nbW', 'synIDattr(synID(
 --  autocmd vimrc User changed-text call s:changed_text()
 --]]
 
--- vim.cmd [[
---  set laststatus=2 "ステータス表示
---  set wildmenu "ファイル名補完
---  set lines=70 columns=150 "デフォルトの画面サイズ
---  set ruler "ルーラーを表示
---  " Netrw SETTINGS "ファイラー「Netrw」の設定
---  let g:netrw_banner = 0 "上部のバナー表示の設定
---  let g:netrw_liststyle = 3 "ツリー表示スタイル設定
---  let g:netrw_browse_split = 4 "ブラウズ分割設定
---  let g:netrw_winsize = 30 "表示幅設定
---  let g:netrw_sizestyle = "H" "データサイズの表示設定
---  let g:netrw_timefmt = "%Y/%m/%d(%a) %H:%M:%S" "ファイル日付表示設定
---  let g:netrw_preview = 1  "プレビュー画面分割設定
--- ]]
 
 --vim.opt.clipboard = {
 --  name = 'WslClipboard',
@@ -404,7 +493,9 @@ vim.cmd [[
     \ }
     ]]
 
--- vim.api.nvim_set_hl(0, "variable",               { '#EFEFEF' })
--- vim.api.nvim_set_hl(0, "@variable",              { '#EFEFEF' })
---
-
+--set number
+--augroup numbertoggle
+-- autocmd!
+-- autocmd BufEnter,FocusGained,InsertLeave,WinEnter * if &nu && mode() != "i" | set rnu   | endif
+-- autocmd BufLeave,FocusLost,InsertEnter,WinLeave   * if &nu                  | set nornu | endif
+--augroup END

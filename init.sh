@@ -5,9 +5,8 @@
 # DOT_FILES=(.bashrc .gitconfig)
 # for file in ${DOT_FILES[@]}; do ln -s ~/`dirname $0`/$file ~;  done
 #
-# git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf
-# ~/.fzf/install
-# . .bashrc
+# git clone --depth 1 https://github.com/junegunn/fzf.git ~/.fzf && ~/.fzf/install
+# . ~/.bashrc
 
 # Node.js
 # https://github.com/tj/n#installation
@@ -37,13 +36,15 @@ mkdir -p ~/.config/nvim/pack/my/start && cd "$_"
 # git clone --depth 1 https://github.com/nvim-telescope/telescope.nvim
 #
 # git clone --depth 1 https://github.com/nvim-treesitter/nvim-treesitter
-# git clone --depth 1 https://github.com/nvim-treesitter/nvim-treesitter-refactor
+# git clone --depth 1 https://github.com/nvim-treesitter/nvim-treesitter-textobjects
 # git clone --depth 1 https://github.com/numToStr/Comment.nvim
 # git clone --depth 1 https://github.com/JoosepAlviste/nvim-ts-context-commentstring
 # git clone --depth 1 https://github.com/simrat39/symbols-outline.nvim
 # git clone --depth 1 https://github.com/lukas-reineke/indent-blankline.nvim
 # git clone --depth 1 https://github.com/kylechui/nvim-surround
+# git clone --depth 1 https://github.com/danieiff/nvim-ts-autotag
 #
+# git clone --depth 1 https://github.com/windwp/nvim-autopairs
 #
 # git clone https://github.com/neovim/nvim-lspconfig
 # curl -vLJO -H 'Accept: application/octet-stream' https://api.github.com/repos/
@@ -54,6 +55,7 @@ mkdir -p ~/.config/nvim/pack/my/start && cd "$_"
 # npm i -g bash-language-server
 # npm i -g typescript typescript-language-server
 # npm i -g @tailwindcss/language-server
+# git clone --depth 1 https://github.com/jose-elias-alvarez/null-ls.nvim
 #
 # git clone --depth 1 https://github.com/lewis6991/gitsigns.nvim
 
