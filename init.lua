@@ -7,13 +7,10 @@ local options = {
   shell = 'bash -l', -- login: bash reads ~/.profile at startup 
   showmatch = true, matchtime = 1, ignorecase = true, smartcase = true,
   tabstop = 2, shiftwidth = 2, expandtab = true, smartindent = true, list = true, listchars = { tab = '__', trail = '_' },
-  pumheight = 10, pumblend = 10, winblend = 10, showtabline = 2, number = true, signcolumn = "yes", termguicolors = true, cmdheight = 0, --[[statuscolumn = '%#NonText#%{&nu?v:lnum:""}%=%{&rnu&&(v:lnum%2)?" ".v:relnum:""}%#LineNr#%{&rnu&&!(v:lnum%2)?" ".v:relnum:""}',]]
+  pumheight = 10, pumblend = 10, winblend = 10, showtabline = 2, number = true, relativenumber = true, signcolumn = "yes", termguicolors = true, cmdheight = 0, --[[statuscolumn = '%#NonText#%{&nu?v:lnum:""}%=%{&rnu&&(v:lnum%2)?" ".v:relnum:""}%#LineNr#%{&rnu&&!(v:lnum%2)?" ".v:relnum:""}',]]
   foldmethod = 'expr', foldexpr = "nvim_treesitter#foldexpr()", foldenable = false,
 }
 for k, v in pairs(options) do vim.opt[k] = v end
-
-H( 0, 'LspDiagnosticsLineNrWarning', { fg = '#E5C07B', bg = '#4E4942', --[[gui = 'bold']] } )
-vim.cmd("sign define LspDiagnosticsSignWarning texthl=LspDiagnosticsSignWarning numhl=LspDiagnosticsLineNrWarning")
 
 vim.api.nvim_create_autocmd({ "BufReadPost" }, { pattern = { "*" }, callback = function() vim.api.nvim_exec('silent! normal! g`"zv', false) end, })
 
@@ -48,17 +45,16 @@ K( "n", "<Leader>b", ":<C-u>buff)r", keymaps_opts )
 K( "n", "Y", "y$", keymaps_opts )
 -- nnoremap +  <C-a>
 -- nnoremap -  <C-x>
-K( "n", "j", "gj", keymaps_opts )
-K( "n", "k", "gk", keymaps_opts )
 -- nnoremap ;  :
 -- nnoremap :  ;
 -- vnoremap ;  :
 -- vnoremap :  ;
 K( "n", "<Leader>s", ":<C-u>%s///g<Left><Left><Left>", keymaps_opts )
 K( "n", "<Leader>t", ':<C-u>term  && exit' .. string.rep('<left>', 8), keymaps_opts )
+K( "n", "<Leader>tt", ':<C-u>term<CR>', keymaps_opts )
 K( 't', '<C-o>', '<C-\\><C-n><C-o>', keymaps_opts )
---AU( 'TermOpen', { pattern = '*', callback = function() vim.cmd('setlocal nonumber norelativenumber signcolumn=no showtabline=1 | startinsert') end } )
-AU( 'TermClose', { pattern = '*', callback = function() vim.cmd('bdelete') end } )
+AU( 'TermOpen', { pattern = '*', callback = function() vim.cmd('setlocal nonumber norelativenumber signcolumn=no showtabline=1 | startinsert') end } )
+AU( 'TermClose', { pattern = '*', callback = function() vim.cmd('bdelete!') end } )
 --K( "n", "<Leader>t", ':<C-u>term  && exit' .. '<Left><Left><Left><Left><Left><Left><Left><Left>", table.insert(keymaps_opts, { silent = true }) )
 -- yy:@"
 K( "v", "<Leader>s", ":s///g<Left><Left><Left>", keymaps_opts )
@@ -73,7 +69,6 @@ K( "n", "<Leader>z", ":<C-u>wa<CR>", keymaps_opts )
 K( "n", "<Leader>ZZ", ":<C-u>wqa<CR>", keymaps_opts )
 K( "c", "<expr>/", "getcmdtype() == '/' ? '\\/' : '/'", {} )
 K( "i", "jk", "<Esc>", keymaps_opts )
-K( "i", ",", ", ", keymaps_opts )
 K( "n", "L", "J", keymaps_opts )
 K( "n", "J", "gt", keymaps_opts )
 K( "n", "K", "gT", keymaps_opts )
@@ -81,7 +76,16 @@ K( "n", "(", ":bn<CR>", keymaps_opts )
 K( "n", ")", ":bN<CR>", keymaps_opts )
 K( "n", "0", "^", keymaps_opts )
 K( "n", "^", "0", keymaps_opts )
+--K( 'n', 'pv', 'p`[v`]', keymaps_opts )
+--K( 'n', 'Pv', 'P`[v`]', keymaps_opts )
+
 -- nnoremap <C-t>  <Nop>
+-- nnoremap <c-t>  <nop>
+-- nnoremap <c-t>n  :<c-u>tabnew<cr>
+-- nnoremap <c-t>c  :<c-u>tabclose<cr>
+-- nnoremap <c-t>o  :<c-u>tabonly<cr>
+-- nnoremap <c-t>j  :<c-u>execute 'tabnext' 1 + (tabpagenr() + v:count1 - 1) % tabpagenr('$')<cr>
+-- nnoremap <c-t>k  gt'')))''
 -- nnoremap <C-t>n  :<C-u>tabnew<CR>
 -- nnoremap <C-t>c  :<C-u>tabclose<CR>
 -- nnoremap <C-t>o  :<C-u>tabonly<CR>
@@ -121,7 +125,21 @@ K( "n", "^", "0", keymaps_opts )
 --:vert term git log && exit
 --:term git blame %  -- lazygit, REPL etx... && exit
 
-
+-- :vim {pattern} % (:h wildcards path...relative :pwd)
+-- nnoremap [q :cprevious<CR>
+--nnoremap ]q :cnext<CR>
+--nnoremap [Q :<C-u>cfirst<CR>
+--nnoremap ]Q :<C-u>clast<CR>
+--:ar path/to/search/dir/**
+--:vim foo ##
+--:vim bar ##
+--:cn :cN
+--" インデックスされている全てのファイルを対象にする :vim {pattern} `git ls-files`
+--" appディレクトリ内でインデックスされているファイルを対象にする :vim {pattern} `git ls-files app`
+--" appディレクトリ内でインデックスされている.htmlファイルを対象にする :vim {pattern} `git ls-files app/**/*.html`
+-- :bufdo vimgrepa {pattern} % -- (reset) :cex ""
+-- :vim {pattern} {file} | cw -- autocmd QuickFixCmdPost *grep* cwindow
+-- helps: quickfix.txt :vimgrep :cwindow :args cmdline-special pattern-overview wildcards 
 require'telescope'.setup()
 
 vim.cmd [[
@@ -285,7 +303,19 @@ require'nvim-autopairs'.setup()
 --K('n', '<leader>a', '<cmd>AerialToggle<CR>')
 
 K ('n',  '<Leader>e', vim.diagnostic.open_float, keymaps_opts )
+
+H( 0, 'LspDiagnosticsLineNrWarning', { fg = '#E5C07B', bg = '#4E4942', --[[gui = 'bold']] } )
+vim.cmd("sign define LspDiagnosticsSignWarning texthl=LspDiagnosticsSignWarning numhl=LspDiagnosticsLineNrWarning")
+
 -- :LspInfo
+  vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(vim.lsp.diagnostic.on_publish_diagnostics, {
+ 	update_in_insert = false,
+	--virtual_text = {
+	--	format = function(diagnostic)
+	--		return string.format("%s (%s: %s)", diagnostic.message, diagnostic.source, diagnostic.code)
+	--	end,
+	--},
+ })
 vim.lsp.set_log_level("debug")
 -- :LspLog
 -- Use an on_attach function to only map the following keys
@@ -332,15 +362,12 @@ require'lspconfig'.sumneko_lua.setup {
 
 require'lspconfig'.bashls.setup{ on_attach = on_attach }
 require'lspconfig'.tsserver.setup{ on_attach = on_attach }
-AU({ "BufNewFile", "BufRead" }, {
-	pattern = { "**/node_modules/**", "node_modules", "/node_modules/*" },
-	callback = function()
-		vim.diagnostic.disable(0)
-	end,
-	group = disable_node_modules_eslint_group,
-})
 require'lspconfig'.tailwindcss.setup {
-  on_attach = on_attach,
+  on_attach = function (client,bufnr)  require("tailwindcss-colors").buf_attach(bufnr); on_attach(client,bufnr) end,
+  --:TailwindColorsAttach
+  --:TailwindColorsDetach
+  --:TailwindColorsRefresh
+  --:TailwindColorsToggle
   filetypes = { "html", "css", "javascript", "javascriptreact", "typescript", "typescriptreact" },
   handlers = {
     ["tailwindcss/getConfiguration"] = function (_, _, params, _, bufnr, _)
@@ -350,20 +377,79 @@ require'lspconfig'.tailwindcss.setup {
   }
 
 }
+
+local rt = require("rust-tools")
+rt.setup({
+  server = {
+    on_attach = function(_, bufnr)
+      on_attach(_, bufnr)
+      -- Hover actions
+      vim.keymap.set("n", "<C-space>", rt.hover_actions.hover_actions, { buffer = bufnr })
+      -- Code action groups
+      vim.keymap.set("n", "<Leader>a", rt.code_action_group.code_action_group, { buffer = bufnr })
+    end,
+  },
+})
+
 local null_ls = require("null-ls")
 null_ls.setup({
+  diagnostics_format = "#{m} (#{s}: #{c})",
   sources = {
     null_ls.builtins.formatting.stylua,
     null_ls.builtins.diagnostics.eslint,
     null_ls.builtins.completion.spell,
+    null_ls.builtins.code_actions.gitsigns,
   },
 })
 vim.diagnostic.setqflist({ open = false })
 
 require'symbols-outline'.setup()
 
-require'gitsigns'.setup()
+require'gitsigns'.setup{
+  signcolumn = false,
+  numhl = true,
+  word_diff = true,
+  on_attach = function(bufnr)
+    local gs = package.loaded.gitsigns
 
+    local function map(mode, l, r, opts)
+      opts = opts or {}
+      opts.buffer = bufnr
+      vim.keymap.set(mode, l, r, opts)
+    end
+
+    -- Navigation
+    map('n', ']c', function()
+      if vim.wo.diff then return ']c' end
+      vim.schedule(function() gs.next_hunk() end)
+      return '<Ignore>'
+    end, {expr=true})
+
+    map('n', '[c', function()
+      if vim.wo.diff then return '[c' end
+      vim.schedule(function() gs.prev_hunk() end)
+      return '<Ignore>'
+    end, {expr=true})
+
+    -- Actions
+    map({'n', 'v'}, '<leader>hs', ':Gitsigns stage_hunk<CR>')
+    map({'n', 'v'}, '<leader>hr', ':Gitsigns reset_hunk<CR>')
+    map('n', '<leader>hS', gs.stage_buffer)
+    map('n', '<leader>hu', gs.undo_stage_hunk)
+    map('n', '<leader>hR', gs.reset_buffer)
+    map('n', '<leader>hp', gs.preview_hunk)
+    map('n', '<leader>hb', function() gs.blame_line{full=true} end)
+    map('n', '<leader>tb', gs.toggle_current_line_blame)
+    map('n', '<leader>hd', gs.diffthis)
+    map('n', '<leader>hD', function() gs.diffthis('~') end)
+    map('n', '<leader>td', gs.toggle_deleted)
+
+    -- Text object
+    map({'o', 'x'}, 'ih', ':<C-U>Gitsigns select_hunk<CR>')
+  end
+}
+
+vim.cmd"set statusline+=%{get(b:,'gitsigns_status','')}"
 -- " Status Line
 -- set statusline=%<%f%<%{FileTime()}%<%h%m%r%=%-20.(line=%03l,col=%02c%V,totlin=%L%)\%h%m%r%=%-30(,BfNm=%n%Y%)\%P\*%=%{CurTime()}
 -- set rulerformat=%15(%c%V\ %p%%%)
@@ -406,18 +492,18 @@ require'gitsigns'.setup()
 --end
 --vim.o.statusline = "%!luaeval('status_line()')"
 
-require'nightfox'.setup { options = { inverse = { search = true } } }
+require'nightfox'.setup { options = { transparent = true, inverse = { search = true } } }
 vim.cmd'colorscheme nordfox'
 H( 0, '@variable', { fg = 'NONE' } )
 
-H( 0, 'Normal', { bg = 'NONE' } )
-H( 0, 'NonText', { bg = 'NONE' } )
-H( 0, 'LineNr', { fg = '#767676', bg = 'NONE' } )
-H( 0, 'Folded', { bg = 'NONE' } )
-H( 0, 'EndOfBuffer', { bg = 'NONE' } )
-H( 0, 'TabLineFill', { bg = 'NONE' } )
-H( 0, 'TabLine', { bg = 'NONE' } )
-H( 0, 'TabLineSel', { bg = '#545454' } )
+--H( 0, 'Normal', { bg = 'NONE' } )
+--H( 0, 'NonText', { bg = 'NONE' } )
+--H( 0, 'LineNr', { fg = '#767676', bg = 'NONE' } )
+--H( 0, 'Folded', { bg = 'NONE' } )
+--H( 0, 'EndOfBuffer', { bg = 'NONE' } )
+--H( 0, 'TabLineFill', { bg = 'NONE' } )
+--H( 0, 'TabLine', { bg = 'NONE' } )
+--H( 0, 'TabLineSel', { bg = '#545454' } )
 
 require'colorizer'.setup { user_default_options = { css_fn = false, tailwind = true } }
 
@@ -499,3 +585,5 @@ vim.cmd [[
 -- autocmd BufEnter,FocusGained,InsertLeave,WinEnter * if &nu && mode() != "i" | set rnu   | endif
 -- autocmd BufLeave,FocusLost,InsertEnter,WinLeave   * if &nu                  | set nornu | endif
 --augroup END
+
+

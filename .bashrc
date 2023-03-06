@@ -104,6 +104,18 @@ alias psh='git push'
 # wsl --distributon <new dist> [--user (an existing user)]
 
 # echo foo | clip.exe
+#
+#lg()
+#{
+#    export LAZYGIT_NEW_DIR_FILE=~/.lazygit/newdir
+#
+#    lazygit "$@"
+#
+#    if [ -f $LAZYGIT_NEW_DIR_FILE ]; then
+#            cd "$(cat $LAZYGIT_NEW_DIR_FILE)"
+#            rm -f $LAZYGIT_NEW_DIR_FILE > /dev/null
+#    fi
+#} # <shift + q> to override
 
 export PATH=$PATH:$(wslpath "$(wslvar USERPROFILE)")/AppData/Local/Microsoft\ VS\ Code/bin # VSCode "code" command
 export PATH=$PATH:/mnt/c/Windows/System32:/mnt/c/Windows/System32/WindowsPowershell/v1.0 
@@ -111,3 +123,7 @@ export PATH=$PATH:/mnt/c/Windows/System32:/mnt/c/Windows/System32/WindowsPowersh
 export PATH=$PATH:~/.config/lua-lsp/bin
 
 export PATH=$PATH:/usr/local/zig-linux-x86_64-0.11.0-dev.1507+6f13a725a
+
+export PATH=$PATH:/usr/local/go/bin:~/go/bin
+
+export PATH=$PATH:~/.cargo/bin

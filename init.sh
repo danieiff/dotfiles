@@ -57,8 +57,10 @@ mkdir -p ~/.config/nvim/pack/my/start && cd "$_"
 # npm i -g @tailwindcss/language-server
 # git clone --depth 1 https://github.com/jose-elias-alvarez/null-ls.nvim
 #
+# git clone --depth 1 https://github.com/mfussenegger/nvim-dap #TODO
+#
 # git clone --depth 1 https://github.com/lewis6991/gitsigns.nvim
-
+#
 # Vim
 # sudo add-apt-repository ppa:jonathonf/vim # For version 9
 # sudo apt install vim
@@ -81,7 +83,13 @@ mkdir -p ~/.config/nvim/pack/my/start && cd "$_"
 # sudo apt install w--slu
 # printf '[interop]\--nappendWindowsPath = false\n' | sudo tee /etc/wsl.conf # Reloading WSL takes >8 sec after terminates 
 # printf 'export PAT--H=$PATH:$(wslpath "$(wslvar USERPROFILE)")/AppData/Local/Microsoft\ VS\ Code/bin:\n' >> .bashrc # VSCode 'code' command  
+# cp dotfiles/windows-terminal.json /mnt/c/User/UserName/AppData/Local/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState/settings.json
 
 # Firebase
 # npm i -g firebase-tools
 # sudo apt install default-jdk
+#
+# Rust
+# git clone --depth 1 https://github.com/simrat39/rust-tools.nvim
+# git clone https://github.com/rust-lang/rust-analyzer.git && cd rust-analyzer
+# cargo xtask install --server
