@@ -141,38 +141,35 @@ K( "n", "^", "0", keymaps_opts )
 -- :vim {pattern} {file} | cw -- autocmd QuickFixCmdPost *grep* cwindow
 -- helps: quickfix.txt :vimgrep :cwindow :args cmdline-special pattern-overview wildcards 
 require'telescope'.setup()
-
 vim.cmd [[
-" netrw
 let g:netrw_sizestyle="H"
+let g:netrw_banner = 0
+
+let g:netrw_timefmt="%Y/%m/%d(%a) %H:%M:%S"
 let g:netrw_preview=1 " preview は左右分割表示
+let g:netrw_alto = 0
 let g:netrw_liststyle=3 " tree表示
 let g:netrw_keepdir = 0 " tree開いた位置を current dir として扱う。その階層でファイル作成とかができるようになる
-let g:netrw_banner = 0 " 上のバナー消す
-"window サイズ
-let g:netrw_winsize = 25
-let g:netrw_browse_split = 4
+let g:netrw_sort_by = "size" 
+"qf (file information)"
+"i (change list style)"
+"s (sort by name, time, size, extension)"
+"u/U (move back/forward in the directory tree)"
+"d/% (new dir/file)"
+"D (delete dir/file)"
+"gb (go back to previous bookmarked dir)"
+"mb (bookmark current dir)"
+"mf/mF ((un)mark file)"
+"mr (mark files by regexp)"
+"qF/qL (mark using quickfix/location list)"
+"mt (mark as target)"
+"mm (mv (mf) to (mt))"
+"mc (cp (mf) to (mt))"
+"mg (vimgrep among (mf))"
+"md (vimdiff =<3 files)"
+"mx/mX (exec shell cmd to marked files one by one/at one time)"
 
-"Netrw を toggle する関数を設定
-"元処理と異なり Vex を呼び出すことで左 window に表示
-let g:NetrwIsOpen=0
-function! ToggleNetrw()
-    if g:NetrwIsOpen
-        let i = bufnr("$")
-        while (i >= 1)
-            if (getbufvar(i, "&filetype") == "netrw")
-                silent exe "bwipeout " . i
-            endif
-            let i-=1
-        endwhile
-        let g:NetrwIsOpen=0
-    else
-        let g:NetrwIsOpen=1
-        silent Vex
-    endif
-endfunction
-
-noremap <silent><C-e> :call ToggleNetrw()<CR>
+noremap <silent><C-e> :Lexplore<CR><CR>
 ]]
 -- :e | completion
 -- @:
@@ -585,5 +582,75 @@ vim.cmd [[
 -- autocmd BufEnter,FocusGained,InsertLeave,WinEnter * if &nu && mode() != "i" | set rnu   | endif
 -- autocmd BufLeave,FocusLost,InsertEnter,WinLeave   * if &nu                  | set nornu | endif
 --augroup END
+
+require'nvim-cursorword'
+
+local cmp = require'cmp'
+
+  cmp.setup({
+    snippet = {
+      -- REQUIRED - you must specify a snippet engine
+      expand = function(args)
+        vim.fn["vsnip#anonymous"](args.body) -- For `vsnip` users.
+        -- require('luasnip').lsp_expand(args.body) -- For `luasnip` users.
+        -- require('snippy').expand_snippet(args.body) -- For `snippy` users.
+        -- vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
+      end,
+    },
+    window = {
+      -- completion = cmp.config.window.bordered(),
+      -- documentation = cmp.config.window.bordered(),
+    },
+    mapping = cmp.mapping.preset.insert({
+      ['<C-b>'] = cmp.mapping.scroll_docs(-4),
+      ['<C-f>'] = cmp.mapping.scroll_docs(4),
+      ['<C-Space>'] = cmp.mapping.complete(),
+      ['<C-e>'] = cmp.mapping.abort(),
+      ['<CR>'] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
+    }),
+    sources = cmp.config.sources({
+      { name = 'nvim_lsp' },
+      { name = 'vsnip' }, -- For vsnip users.
+      -- { name = 'luasnip' }, -- For luasnip users.
+      -- { name = 'ultisnips' }, -- For ultisnips users.
+      -- { name = 'snippy' }, -- For snippy users.
+    }, {
+      { name = 'buffer' },
+    })
+  })
+
+  -- Set configuration for specific filetype.
+  cmp.setup.filetype('gitcommit', {
+    sources = cmp.config.sources({
+      { name = 'cmp_git' }, -- You can specify the `cmp_git` source if you were installed it.
+    }, {
+      { name = 'buffer' },
+    })
+  })
+
+  -- Use buffer source for `/` and `?` (if you enabled `native_menu`, this won't work anymore).
+  cmp.setup.cmdline({ '/', '?' }, {
+    mapping = cmp.mapping.preset.cmdline(),
+    sources = {
+      { name = 'buffer' }
+    }
+  })
+
+  -- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
+  cmp.setup.cmdline(':', {
+    mapping = cmp.mapping.preset.cmdline(),
+    sources = cmp.config.sources({
+      { name = 'path' }
+    }, {
+      { name = 'cmdline' }
+    })
+  })
+
+  -- Set up lspconfig.
+  local capabilities = require('cmp_nvim_lsp').default_capabilities()
+  -- Replace <YOUR_LSP_SERVER> with each lsp server you've enabled.
+  require('lspconfig')['<YOUR_LSP_SERVER>'].setup {
+    capabilities = capabilities
+  }
 
 
