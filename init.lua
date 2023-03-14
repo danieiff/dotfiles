@@ -157,6 +157,7 @@ let g:netrw_sort_by = "size"
 "u/U (move back/forward in the directory tree)"
 "d/% (new dir/file)"
 "D (delete dir/file)"
+"qb (bookmark list)"
 "gb (go back to previous bookmarked dir)"
 "mb (bookmark current dir)"
 "mf/mF ((un)mark file)"
@@ -169,11 +170,10 @@ let g:netrw_sort_by = "size"
 "md (vimdiff =<3 files)"
 "mx/mX (exec shell cmd to marked files one by one/at one time)"
 
-noremap <silent><C-e> :Lexplore<CR><CR>
+noremap <silent><C-e> :silent Lexplore<CR>
 ]]
 -- :e | completion
 -- @:
-
 
 require'leap'.add_default_mappings()
 
@@ -653,4 +653,27 @@ local cmp = require'cmp'
     capabilities = capabilities
   }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+--asdkfj
 
