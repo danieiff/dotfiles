@@ -1,5 +1,33 @@
 local K, H, AU = vim.keymap.set, vim.api.nvim_set_hl, vim.api.nvim_create_autocmd
 
+function mytest () 
+--print(vim.uri_from_fname(vim.fn.expand('%:p:h') .. '/' .. vim.fn.input('New name: ')))
+--print(vim.uri_from_fname(vim.fn.expand('%')))
+  for _, client in pairs(vim.lsp.buf_get_clients()) do
+    print('\n')
+    print(client.name)
+    local success, will_rename = pcall(function () return client.server_capabilities.workspace.fileOperations.willRename end)
+    print(success)
+    print(will_rename)
+    if (success and will_rename ~= nil) then
+      --print(will_rename)
+      local will_rename_params = {
+        files = {
+          {
+            oldUri = vim.uri_from_fname(vim.fn.expand('%')),
+            newUri = vim.uri_from_fname(vim.fn.expand('%:p:h') .. '/' .. vim.fn.input('New name: '))
+          }
+        }
+      }
+      local resp = client.request_sync("workspace/willRenameFiles", will_rename_params, 1000)
+      print(vim.inspect(resp))
+      local edit = resp.result
+      if (edit ~= nil) then vim.lsp.util.apply_workspace_edit(edit, client.offset_encoding) end
+    end
+  end
+end
+vim.cmd('command! SUGI lua mytest()')
+
 local options = {
   updatetime = 3000, timeoutlen = 1000,
   virtualedit = 'block',
@@ -141,16 +169,17 @@ K( "n", "^", "0", keymaps_opts )
 -- :vim {pattern} {file} | cw -- autocmd QuickFixCmdPost *grep* cwindow
 -- helps: quickfix.txt :vimgrep :cwindow :args cmdline-special pattern-overview wildcards 
 require'telescope'.setup()
+
+require'nvim-tree'.setup()
 vim.cmd [[
 let g:netrw_sizestyle="H"
 let g:netrw_banner = 0
-
 let g:netrw_timefmt="%Y/%m/%d(%a) %H:%M:%S"
 let g:netrw_preview=1 " preview は左右分割表示
 let g:netrw_alto = 0
 let g:netrw_liststyle=3 " tree表示
 let g:netrw_keepdir = 0 " tree開いた位置を current dir として扱う。その階層でファイル作成とかができるようになる
-let g:netrw_sort_by = "size" 
+let g:netrw_sort_by = "size"
 "qf (file information)"
 "i (change list style)"
 "s (sort by name, time, size, extension)"
@@ -652,28 +681,4 @@ local cmp = require'cmp'
   require('lspconfig')['<YOUR_LSP_SERVER>'].setup {
     capabilities = capabilities
   }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
---asdkfj
 
