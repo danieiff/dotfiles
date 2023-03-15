@@ -34,6 +34,7 @@ mkdir -p ~/.config/nvim/pack/my/start && cd "$_"
 #
 # git clone --depht 1 https://github.com/nvim-lua/plenary.nvim
 # git clone --depth 1 https://github.com/nvim-telescope/telescope.nvim
+# git clone --depth 1 https://github.com/nvim-tree/nvim-tree.lua
 #
 # git clone --depth 1 https://github.com/nvim-treesitter/nvim-treesitter
 # git clone --depth 1 https://github.com/nvim-treesitter/nvim-treesitter-textobjects
