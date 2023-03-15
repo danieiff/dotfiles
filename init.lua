@@ -1,6 +1,6 @@
 local K, H, AU = vim.keymap.set, vim.api.nvim_set_hl, vim.api.nvim_create_autocmd
 
-function mytest () 
+function will_rename_callback (data) 
 --print(vim.uri_from_fname(vim.fn.expand('%:p:h') .. '/' .. vim.fn.input('New name: ')))
 --print(vim.uri_from_fname(vim.fn.expand('%')))
   for _, client in pairs(vim.lsp.buf_get_clients()) do
@@ -9,9 +9,20 @@ function mytest ()
     local success, will_rename = pcall(function () return client.server_capabilities.workspace.fileOperations.willRename end)
     print(success)
     print(will_rename)
+      if (success) then 
+      for k,v in pairs(client.server_capabilities.workspace.fileOperations) do
+      print(k,v)
+    end
+    end
     if (success and will_rename ~= nil) then
-      --print(will_rename)
-      local will_rename_params = {
+      print(client.server_capabilities.workspace.fileOperations)
+    local will_rename_params
+      print(vim.inspect(data))
+      if (data == nil) then 
+      print(vim.uri_from_fname(vim.fn.expand('%')))
+      print(vim.uri_from_fname(vim.fn.expand('%:p:h') .. '/' .. vim.fn.input('New name: ')))
+
+       will_rename_params = {
         files = {
           {
             oldUri = vim.uri_from_fname(vim.fn.expand('%')),
@@ -19,6 +30,18 @@ function mytest ()
           }
         }
       }
+    else
+        print(data.old_name)
+        print(data.new_name)
+      will_rename_params = {
+        files = {
+          {
+            oldUri = "file://" .. data.old_name,
+            newUri = "file://" .. data.new_name
+          }
+        }
+      }
+      end
       local resp = client.request_sync("workspace/willRenameFiles", will_rename_params, 1000)
       print(vim.inspect(resp))
       local edit = resp.result
@@ -26,7 +49,7 @@ function mytest ()
     end
   end
 end
-vim.cmd('command! SUGI lua mytest()')
+vim.cmd('command! SUGI lua will_rename_callback()')
 
 local options = {
   updatetime = 3000, timeoutlen = 1000,
@@ -170,7 +193,11 @@ K( "n", "^", "0", keymaps_opts )
 -- helps: quickfix.txt :vimgrep :cwindow :args cmdline-special pattern-overview wildcards 
 require'telescope'.setup()
 
-require'nvim-tree'.setup()
+-- :call jobstart('nvim -h', {'on_stdout':{j,d,e->append(line('.'),d)}})
+require'nvim-tree'.setup({diagnostics = {enable = true}})
+local tree_api = require'nvim-tree.api'
+tree_api.events.subscribe(tree_api.events.Event.WillRenameNode, will_rename_callback)
+
 vim.cmd [[
 let g:netrw_sizestyle="H"
 let g:netrw_banner = 0
