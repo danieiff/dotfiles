@@ -47,7 +47,9 @@ mkdir -p ~/.config/nvim/pack/my/start && cd "$_"
 #
 # git clone --depth 1 https://github.com/windwp/nvim-autopairs
 #
-# git clone https://github.com/neovim/nvim-lspconfig
+# git clone --depth 1 https://github.com/neovim/nvim-lspconfig
+# git clone --depth 1 https://github.com/hrsh7th/nvim-cmp
+# git clone --depth 1 https://github.com/hrsh7th/cmp-nvim-lsp
 # curl -vLJO -H 'Accept: application/octet-stream' https://api.github.com/repos/
 # mkdir -p ~/.config/lsp/lua && cd "$_"
 # sumneko/lua-language-server/releases/assets/86357324
