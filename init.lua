@@ -1,56 +1,5 @@
 local K, H, AU = vim.keymap.set, vim.api.nvim_set_hl, vim.api.nvim_create_autocmd
 
-function will_rename_callback (data) 
---print(vim.uri_from_fname(vim.fn.expand('%:p:h') .. '/' .. vim.fn.input('New name: ')))
---print(vim.uri_from_fname(vim.fn.expand('%')))
-  for _, client in pairs(vim.lsp.buf_get_clients()) do
-    print('\n')
-    print(client.name)
-    local success, will_rename = pcall(function () return client.server_capabilities.workspace.fileOperations.willRename end)
-    print(success)
-    print(will_rename)
-      if (success) then 
-      for k,v in pairs(client.server_capabilities.workspace.fileOperations) do
-      print(k,v)
-    end
-    end
-    if (success and will_rename ~= nil) then
-      print(client.server_capabilities.workspace.fileOperations)
-    local will_rename_params
-      print(vim.inspect(data))
-      if (data == nil) then 
-      print(vim.uri_from_fname(vim.fn.expand('%')))
-      print(vim.uri_from_fname(vim.fn.expand('%:p:h') .. '/' .. vim.fn.input('New name: ')))
-
-       will_rename_params = {
-        files = {
-          {
-            oldUri = vim.uri_from_fname(vim.fn.expand('%')),
-            newUri = vim.uri_from_fname(vim.fn.expand('%:p:h') .. '/' .. vim.fn.input('New name: '))
-          }
-        }
-      }
-    else
-        print(data.old_name)
-        print(data.new_name)
-      will_rename_params = {
-        files = {
-          {
-            oldUri = "file://" .. data.old_name,
-            newUri = "file://" .. data.new_name
-          }
-        }
-      }
-      end
-      local resp = client.request_sync("workspace/willRenameFiles", will_rename_params, 1000)
-      print(vim.inspect(resp))
-      local edit = resp.result
-      if (edit ~= nil) then vim.lsp.util.apply_workspace_edit(edit, client.offset_encoding) end
-    end
-  end
-end
-vim.cmd('command! SUGI lua will_rename_callback()')
-
 local options = {
   updatetime = 3000, timeoutlen = 1000,
   virtualedit = 'block',
@@ -193,10 +142,66 @@ K( "n", "^", "0", keymaps_opts )
 -- helps: quickfix.txt :vimgrep :cwindow :args cmdline-special pattern-overview wildcards 
 require'telescope'.setup()
 
--- :call jobstart('nvim -h', {'on_stdout':{j,d,e->append(line('.'),d)}})
-require'nvim-tree'.setup({diagnostics = {enable = true}})
+function will_rename_callback (data) 
+
+  local Path = require('plenary.path')
+
+  local function validatePath (_path)
+    local path = Path:new(_path)
+    local absolute_path = path:absolute()
+    if (path:is_dir() and absolute_path:match("/$")) then absolute_path = path .. '/' end
+    return absolute_path
+  end
+
+  local function validatePathWithFilter (_oldPath, filters)
+    local path = validatePath(_oldPath)
+    local is_dir = Path:new(path):is_dir()
+
+    for _, filter in ipairs(filters) do
+      local pattern = filter.pattern
+      local match_type = pattern.matches
+      local matched
+      if not match_type or
+        (match_type == "folder" and is_dir) or
+        (match_type == "file" and not is_dir)
+      then
+        local regex = vim.fn.glob2regpat(pattern.glob)
+       if  pattern.options and pattern.options.ignorecase then regex =  "\\c" .. regex end
+        local previous_ignorecase = vim.o.ignorecase
+        vim.o.ignorecase = false
+        matched = vim.fn.match(path, regex) ~= -1
+        vim.o.ignorecase = previous_ignorecase
+      end
+      if (matched) then return end
+    end
+  end
+
+  for _, client in pairs(vim.lsp.get_active_clients()) do
+    local success, will_rename = pcall(function () return client.server_capabilities.workspace.fileOperations.willRename end)
+    if (success and will_rename ~= nil) then
+      local will_rename_params = {
+        files = {
+          {
+            oldUri = validatePathWithFilter(data and data.old_name or vim.fn.expand('%'), will_rename.filters),
+            newUri = validatePath(data and data.new_name or vim.uri_from_fname(vim.fn.expand('%:p:h') .. '/' .. vim.fn.input('New name: ')))
+          }
+        }
+      }
+      local resp = client.request_sync("workspace/willRenameFiles", will_rename_params, 1000)
+      print(vim.inspect(resp))
+      local edit = resp.result
+      if (edit ~= nil) then vim.lsp.util.apply_workspace_edit(edit, client.offset_encoding) end
+    end
+  end
+
+end
+vim.cmd('command! Rename lua will_rename_callback()')
+require'nvim-tree'.setup({diagnostics = {enable = true}, on_attach = function (bufnr)
 local tree_api = require'nvim-tree.api'
 tree_api.events.subscribe(tree_api.events.Event.WillRenameNode, will_rename_callback)
+tree_api.config.mappings.default_on_attach(bufnr)
+  end }) 
+
 
 vim.cmd [[
 let g:netrw_sizestyle="H"
@@ -641,71 +646,73 @@ vim.cmd [[
 
 require'nvim-cursorword'
 
-local cmp = require'cmp'
-
-  cmp.setup({
-    snippet = {
-      -- REQUIRED - you must specify a snippet engine
-      expand = function(args)
-        vim.fn["vsnip#anonymous"](args.body) -- For `vsnip` users.
-        -- require('luasnip').lsp_expand(args.body) -- For `luasnip` users.
-        -- require('snippy').expand_snippet(args.body) -- For `snippy` users.
-        -- vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
-      end,
-    },
-    window = {
-      -- completion = cmp.config.window.bordered(),
-      -- documentation = cmp.config.window.bordered(),
-    },
-    mapping = cmp.mapping.preset.insert({
-      ['<C-b>'] = cmp.mapping.scroll_docs(-4),
-      ['<C-f>'] = cmp.mapping.scroll_docs(4),
-      ['<C-Space>'] = cmp.mapping.complete(),
-      ['<C-e>'] = cmp.mapping.abort(),
-      ['<CR>'] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
-    }),
-    sources = cmp.config.sources({
-      { name = 'nvim_lsp' },
-      { name = 'vsnip' }, -- For vsnip users.
-      -- { name = 'luasnip' }, -- For luasnip users.
-      -- { name = 'ultisnips' }, -- For ultisnips users.
-      -- { name = 'snippy' }, -- For snippy users.
-    }, {
-      { name = 'buffer' },
-    })
-  })
-
-  -- Set configuration for specific filetype.
-  cmp.setup.filetype('gitcommit', {
-    sources = cmp.config.sources({
-      { name = 'cmp_git' }, -- You can specify the `cmp_git` source if you were installed it.
-    }, {
-      { name = 'buffer' },
-    })
-  })
-
-  -- Use buffer source for `/` and `?` (if you enabled `native_menu`, this won't work anymore).
-  cmp.setup.cmdline({ '/', '?' }, {
-    mapping = cmp.mapping.preset.cmdline(),
-    sources = {
-      { name = 'buffer' }
-    }
-  })
-
-  -- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
-  cmp.setup.cmdline(':', {
-    mapping = cmp.mapping.preset.cmdline(),
-    sources = cmp.config.sources({
-      { name = 'path' }
-    }, {
-      { name = 'cmdline' }
-    })
-  })
+--local cmp = require'cmp'
+--
+--  cmp.setup({
+--    snippet = {
+--      -- REQUIRED - you must specify a snippet engine
+--      expand = function(args)
+--        vim.fn["vsnip#anonymous"](args.body) -- For `vsnip` users.
+--        -- require('luasnip').lsp_expand(args.body) -- For `luasnip` users.
+--        -- require('snippy').expand_snippet(args.body) -- For `snippy` users.
+--        -- vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
+--      end,
+--    },
+--    window = {
+--      -- completion = cmp.config.window.bordered(),
+--      -- documentation = cmp.config.window.bordered(),
+--    },
+--    mapping = cmp.mapping.preset.insert({
+--      ['<C-b>'] = cmp.mapping.scroll_docs(-4),
+--      ['<C-f>'] = cmp.mapping.scroll_docs(4),
+--      ['<C-Space>'] = cmp.mapping.complete(),
+--      ['<C-e>'] = cmp.mapping.abort(),
+--      ['<CR>'] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
+--    }),
+--    sources = cmp.config.sources({
+--      { name = 'nvim_lsp' },
+--      { name = 'vsnip' }, -- For vsnip users.
+--      -- { name = 'luasnip' }, -- For luasnip users.
+--      -- { name = 'ultisnips' }, -- For ultisnips users.
+--      -- { name = 'snippy' }, -- For snippy users.
+--    }, {
+--      { name = 'buffer' },
+--    })
+--  })
+--
+--  -- Set configuration for specific filetype.
+--  cmp.setup.filetype('gitcommit', {
+--    sources = cmp.config.sources({
+--      { name = 'cmp_git' }, -- You can specify the `cmp_git` source if you were installed it.
+--    }, {
+--      { name = 'buffer' },
+--    })
+--  })
+--
+--  -- Use buffer source for `/` and `?` (if you enabled `native_menu`, this won't work anymore).
+--  cmp.setup.cmdline({ '/', '?' }, {
+--    mapping = cmp.mapping.preset.cmdline(),
+--    sources = {
+--      { name = 'buffer' }
+--    }
+--  })
+--
+--  -- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
+--  cmp.setup.cmdline(':', {
+--    mapping = cmp.mapping.preset.cmdline(),
+--    sources = cmp.config.sources({
+--      { name = 'path' }
+--    }, {
+--      { name = 'cmdline' }
+--    })
+--  })
 
   -- Set up lspconfig.
-  local capabilities = require('cmp_nvim_lsp').default_capabilities()
-  -- Replace <YOUR_LSP_SERVER> with each lsp server you've enabled.
-  require('lspconfig')['<YOUR_LSP_SERVER>'].setup {
-    capabilities = capabilities
-  }
+  --local capabilities = require('cmp_nvim_lsp').default_capabilities()
+  --require('lspconfig')['<YOUR_LSP_SERVER>'].setup {
+  --  capabilities = capabilities
+  --}
+
+
+
 
