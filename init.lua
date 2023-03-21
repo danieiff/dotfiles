@@ -1,4 +1,4 @@
-local K, H, AU = vim.keymap.set, vim.api.nvim_set_hl, vim.api.nvim_create_autocmd
+local K, Hl, AU, CMD = vim.keymap.set, vim.api.nvim_set_hl, vim.api.nvim_create_autocmd, vim.api.nvim_create_user_command
 
 local options = {
   updatetime = 3000, timeoutlen = 1000,
@@ -370,18 +370,21 @@ require 'nvim-autopairs'.setup()
 
 vim.cmd("sign define LspDiagnosticsSignWarning texthl=LspDiagnosticsSignWarning numhl=LspDiagnosticsLineNrWarning")
 
--- :LspInfo
-vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(vim.lsp.diagnostic.on_publish_diagnostics, {
-  update_in_insert = false,
+-- :LspInfo TODO: nvim-lspconfig source code
+--vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(vim.lsp.diagnostic.on_publish_diagnostics, {
+--  update_in_insert = false,
   --virtual_text = {
   --	format = function(diagnostic)
   --		return string.format("%s (%s: %s)", diagnostic.message, diagnostic.source, diagnostic.code)
   --	end,
   --},
-})
+--})
 
--- vim.lsp.set_log_level("debug") --:LspLog
-H(0, 'LspDiagnosticsLineNrWarning', { fg = '#E5C07B', bg = '#4E4942', --[[gui = 'bold']] })
+-- vim.lsp.set_log_level("debug") --:LspLog  
+CMD( 'LspRestart2', 'lua vim.lsp.stop_client(vim.lsp.get_active_clients()) | edit', {bar= true})
+CMD( 'LspCapa', 'lua =vim.lsp.get_active_clients()[1].server_capabilities', {})
+
+Hl(0, 'LspDiagnosticsLineNrWarning', { fg = '#E5C07B', bg = '#4E4942', --[[gui = 'bold']] })
 
 K('n', '<space>e', vim.diagnostic.open_float)
 K('n', '<leader>D', vim.diagnostic.goto_prev)
@@ -408,12 +411,23 @@ AU('LspAttach', {
     K('n', 'gr', vim.lsp.buf.references, opts)
     K('n', '<space>f', function() vim.lsp.buf.format { async = true } end, opts)
 
-    vim.api.nvim_command('autocmd CursorHold * lua vim.diagnostic.open_float()')
-    vim.api.nvim_command('autocmd CursorHoldI * lua vim.diagnostic.open_float()')
+    --AU({'CursorHold', 'CursorHoldI'}, { callback = vim.diagnostic.open_float})
+    --vim.cmd [[autocmd! CursorHold,CursorHoldI * lua vim.diagnostic.open_float(nil, {focus=false})]]
   end,
 })
 
-require 'lspconfig'.sumneko_lua.setup {
+
+local function code_action_listener()
+  local context = { diagnostics = vim.lsp.diagnostic.get_line_diagnostics() }
+  local params = vim.lsp.util.make_range_params()
+  params.context = context
+  vim.lsp.buf_request(0, 'textDocument/codeAction', params, function(err, result, ctx, config)
+    -- do something with result - e.g. check if empty and show some indication such as a sign
+  end)
+end
+AU({'CursorHold', 'CursorHoldI'}, { callback = code_action_listener } )
+
+require 'lspconfig'.lua_ls.setup {
   settings = {
     Lua = {
       runtime = { version = 'LuaJIT', }, --> in Neovim
@@ -438,7 +452,6 @@ require 'lspconfig'.tailwindcss.setup {
   --:TailwindColorsDetach
   --:TailwindColorsRefresh
   --:TailwindColorsToggle
-  filetypes = { "html", "css", "javascript", "javascriptreact", "typescript", "typescriptreact" },
   handlers = {
     ["tailwindcss/getConfiguration"] = function(_, _, params, _, bufnr, _)
       -- tailwindcss lang server wai swap = {
@@ -514,23 +527,23 @@ null_ls.setup({
   diagnostics_format = "#{m} (#{s}: #{c})",
   sources = {
     null_ls.builtins.diagnostics.eslint,
-    null_ls.builtins.diagnostics.actionlint,
+    --null_ls.builtins.diagnostics.actionlint,
     null_ls.builtins.formatting.prettier,
-    null_ls.builtins.formatting.stylelint,
+    --null_ls.builtins.formatting.stylelint,
     --null_ls.builtins.formatting.rustywind,
 
     --null_ls.builtins.code_actions.proselint
-    null_ls.builtins.completion.spell,
+    --null_ls.builtins.completion.spell,
     --null_ls.builtins.diagnostics.cspell,
-    null_ls.builtins.diagnostics.alex,
+    --null_ls.builtins.diagnostics.alex,
     --null_ls.builtins.diagnostics.codespell,
     --null_ls.builtins.diagnostics.misspell
-    null_ls.builtins.formatting.prismaFmt,
-    null_ls.builtins.diagnostics.commitlint,
+    --null_ls.builtins.formatting.prismaFmt,
+    --null_ls.builtins.diagnostics.commitlint,
 
     --null_ls.builtins.code_actions.gomodifytags -- requires Go tree-sitter parser
-    null_ls.builtins.formatting.stylua,
-    null_ls.builtins.formatting.golines,
+    --null_ls.builtins.formatting.stylua,
+    --null_ls.builtins.formatting.golines,
     null_ls.builtins.formatting.rustfmt,
     --null_ls.builtins.code_actions.ltrs
     --null_ls.builtins.diagnostics.buf
@@ -541,9 +554,9 @@ null_ls.setup({
     --null_ls.builtins.diagnostics.cfn_lint
 
     null_ls.builtins.code_actions.gitsigns,
-    null_ls.builtins.code_actions.refactoring,
-    null_ls.builtins.completion.luasnip,
-    null_ls.builtins.completion.vsnip,
+    --null_ls.builtins.code_actions.refactoring,
+    --null_ls.builtins.completion.luasnip,
+    --null_ls.builtins.completion.vsnip,
     --null_ls.builtins.completion.tags
   },
 })
@@ -685,16 +698,16 @@ vim.cmd "set statusline+=%{get(b:,'gitsigns_status','')}"
 
 require 'nightfox'.setup { options = { transparent = true, inverse = { search = true } } }
 vim.cmd 'colorscheme nordfox'
-H(0, '@variable', { fg = 'NONE' })
+Hl(0, '@variable', { fg = 'NONE' })
 
---H( 0, 'Normal', { bg = 'NONE' } )
---H( 0, 'NonText', { bg = 'NONE' } )
---H( 0, 'LineNr', { fg = '#767676', bg = 'NONE' } )
---H( 0, 'Folded', { bg = 'NONE' } )
---H( 0, 'EndOfBuffer', { bg = 'NONE' } )
---H( 0, 'TabLineFill', { bg = 'NONE' } )
---H( 0, 'TabLine', { bg = 'NONE' } )
---H( 0, 'TabLineSel', { bg = '#545454' } )
+--Hl( 0, 'Normal', { bg = 'NONE' } )
+--Hl( 0, 'NonText', { bg = 'NONE' } )
+--Hl( 0, 'LineNr', { fg = '#767676', bg = 'NONE' } )
+--Hl( 0, 'Folded', { bg = 'NONE' } )
+--Hl( 0, 'EndOfBuffer', { bg = 'NONE' } )
+--Hl( 0, 'TabLineFill', { bg = 'NONE' } )
+--Hl( 0, 'TabLine', { bg = 'NONE' } )
+--Hl( 0, 'TabLineSel', { bg = '#545454' } )
 
 require 'colorizer'.setup { user_default_options = { css_fn = false, tailwind = true } }
 
@@ -778,7 +791,9 @@ vim.cmd [[
 --augroup END
 
 require 'nvim-cursorword'
+require 'digraph'
 
+-- local luasnip = require 'luasnip' --?
 --local cmp = require'cmp'
 --
 --  cmp.setup({
@@ -796,11 +811,32 @@ require 'nvim-cursorword'
 --      -- documentation = cmp.config.window.bordered(),
 --    },
 --    mapping = cmp.mapping.preset.insert({
---      ['<C-b>'] = cmp.mapping.scroll_docs(-4),
---      ['<C-f>'] = cmp.mapping.scroll_docs(4),
+--      ['<C-u>'] = cmp.mapping.scroll_docs(-4),
+--      ['<C-d>'] = cmp.mapping.scroll_docs(4),
+--      -- C-b (back) C-f (forward) for snippet placeholder navigation.
+--      --['<C-b>'] = cmp.mapping.scroll_docs(-4),
+--      --['<C-f>'] = cmp.mapping.scroll_docs(4),
 --      ['<C-Space>'] = cmp.mapping.complete(),
 --      ['<C-e>'] = cmp.mapping.abort(),
---      ['<CR>'] = cmp.mapping.confirm({ select = true }), -- Accept currently selected item. Set `select` to `false` to only confirm explicitly selected items.
+--      ['<CR>'] = cmp.mapping.confirm({ select = true, behavior = cmp.ConfirmBehaviour.Replace }), -- Set `select` to `false` to only confirm explicitly selected items.
+--       ['<Tab>'] = cmp.mapping(function(fallback)
+--      if cmp.visible() then
+--        cmp.select_next_item()
+--      elseif luasnip.expand_or_jumpable() then
+--        luasnip.expand_or_jump()
+--      else
+--        fallback()
+--      end
+--    end, { 'i', 's' }),
+--    ['<S-Tab>'] = cmp.mapping(function(fallback)
+--      if cmp.visible() then
+--        cmp.select_prev_item()
+--      elseif luasnip.jumpable(-1) then
+--        luasnip.jump(-1)
+--      else
+--        fallback()
+--      end
+--    end, { 'i', 's' }),
 --    }),
 --    sources = cmp.config.sources({
 --      { name = 'nvim_lsp' },

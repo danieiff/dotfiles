@@ -38,7 +38,6 @@ mkdir -p ~/.config/nvim/pack/my/start && cd "$_"
 #
 # git clone --depth 1 https://github.com/nvim-treesitter/nvim-treesitter
 # git clone --depth 1 https://github.com/nvim-treesitter/nvim-treesitter-textobjects
-# git clone --depth 1 https://github.com/numToStr/Comment.nvim
 # git clone --depth 1 https://github.com/JoosepAlviste/nvim-ts-context-commentstring
 # git clone --depth 1 https://github.com/simrat39/symbols-outline.nvim
 # git clone --depth 1 https://github.com/lukas-reineke/indent-blankline.nvim
@@ -57,6 +56,7 @@ mkdir -p ~/.config/nvim/pack/my/start && cd "$_"
 # echo 'export PATH=$PATH:~/.config/lsp/lua/bin' >> ~/.bashrc
 # npm i -g bash-language-server
 # npm i -g typescript typescript-language-server
+# npm i -g vscode-langservers-extracted
 # npm i -g @tailwindcss/language-server
 # git clone --depth 1 https://github.com/jose-elias-alvarez/null-ls.nvim
 #
