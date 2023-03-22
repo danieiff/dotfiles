@@ -146,6 +146,8 @@ K("n", "^", "0", keymaps_opts)
 -- :vim {pattern} {file} | cw -- autocmd QuickFixCmdPost *grep* cwindow
 -- helps: quickfix.txt :vimgrep :cwindow :args cmdline-special pattern-overview wildcards
 require 'telescope'.setup()
+require 'telescope'.load_extension("undo")
+require 'fzf-lua'
 
 function will_rename_callback(data)
 
