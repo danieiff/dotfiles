@@ -91,6 +91,20 @@ alias psh='git push'
 #  logn = log --name-status --oneline
   
 
+alias shrc='nvim ~/.bashrc'
+alias .shrc='source ~/.bashrc'
+
+export PATH=$PATH:~/.config/lua-lsp/bin
+
+export PATH=$PATH:/usr/local/zig-linux-x86_64-0.11.0-dev.1507+6f13a725a
+
+export PATH=$PATH:/usr/local/go/bin:~/go/bin
+
+export PATH=$PATH:~/.cargo/bin
+
+alias python=python3
+
+
 # WSL
 
 # wsl distro common setting (8 sec takes till updates appear) %UserProfile%/.wslconfig << [interop]\nappendWindowsPath = false
@@ -118,12 +132,21 @@ alias psh='git push'
 #} # <shift + q> to override
 
 export PATH=$PATH:$(wslpath "$(wslvar USERPROFILE)")/AppData/Local/Microsoft\ VS\ Code/bin # VSCode "code" command
-export PATH=$PATH:/mnt/c/Windows/System32:/mnt/c/Windows/System32/WindowsPowershell/v1.0 
 
-export PATH=$PATH:~/.config/lua-lsp/bin
+## Android
+# mkdir ~/Android && ln -s /mnt/c/Users/Hirohisa/AppData/Local/Android/Sdk ~/Android/sdk
+# ln -s ~/Android/Sdk/platform-tools/adb.exe ~/Android/Sdk/platform-tools/adb
+# ln -s ~/Android/Sdk/platform-tools/emulator/emulator.exe ~/Android/Sdk/emulator/emulator
+export ANDROID_HOME=~/Android/sdk
+export PATH=$PATH:$ANDROID_HOME/platform-tools
+alias adb=adb.exe
+alias emu-Pixel="$ANDROID_HOME/emulator/emulator @Pixel_4_API_30"
+alias emu-list="$ANDROID_HOME/emulator/emulator -list-avds"
 
-export PATH=$PATH:/usr/local/zig-linux-x86_64-0.11.0-dev.1507+6f13a725a
 
-export PATH=$PATH:/usr/local/go/bin:~/go/bin
+## Run in Powershell as Admin
+# Foreach ( $port in 19000,19001,19002 ) { netsh interface portproxy add v4tov4 listenport=$port connectport=$port connectaddress=$($(wsl hostname -I).Trim()) }
+# Foreach ( $dir in "Inbound","Outbound") { New-NetFireWallRule -DisplayName 'WSL Expo ports for LAN development' -Direction $dir -LocalPort 19000-19002 -Action Allow -Protocol TCP }
+alias rnexpo="REACT_NATIVE_PACKAGER_HOSTNAME=$(ipconfig.exe | grep -m 1 'IPv4 Address' | sed 's/.*: //') npx expo start"
 
-export PATH=$PATH:~/.cargo/bin
+# sudo ln -s /mnt/c/Program\ Files\ \(x86\)/Google/Chrome/Application/chrome.exe /usr/bin/chrome
