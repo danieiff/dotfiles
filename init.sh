@@ -45,6 +45,7 @@ neovim_plugins=(
   
   "https://github.com/nvim-treesitter/nvim-treesitter"
   "https://github.com/nvim-treesitter/nvim-treesitter-textobjects"
+  "https://github.com/nvim-treesitter/nvim-treesitter-context"
   "https://github.com/numToStr/Comment.nvim"
   "https://github.com/JoosepAlviste/nvim-ts-context-commentstring"
   "https://github.com/simrat39/symbols-outline.nvim"
@@ -61,6 +62,8 @@ neovim_plugins=(
 
   "https://github.com/lewis6991/gitsigns.nvim"
   "https://github.com/mfussenegger/nvim-dap"
+
+  "https://github.com/pwntester/octo.nvim"
 )
 
 for repo in "${neovim_plugins[@]}"; do git clone --depth 1 "$repo"; done
@@ -95,5 +98,6 @@ cargo install fd-find
 cargo install deno --locked
 
 sudo apt install gh
+sudo apt install yq
 
 echo "\nDone."
