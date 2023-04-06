@@ -3,6 +3,7 @@ shopt -s histappend # append to the history file, don't overwrite it
 shopt -s checkwinsize # update LINES and COLUMNS with the window size after each command 
 shopt -s autocd
 shopt -s direxpand # stop escape "$" during tab completion
+shopt -s expand_aliases # enable aliase, function in non-interactive shell (use in neovim)
 
 set -o vi
 
@@ -132,6 +133,7 @@ alias python=python3
 #} # <shift + q> to override
 
 export PATH=$PATH:$(wslpath "$(wslvar USERPROFILE)")/AppData/Local/Microsoft\ VS\ Code/bin # VSCode "code" command
+export PATH=$PATH:/mnt/c/Windows/System32
 
 ## Android
 # mkdir ~/Android && ln -s /mnt/c/Users/Hirohisa/AppData/Local/Android/Sdk ~/Android/sdk
@@ -139,14 +141,14 @@ export PATH=$PATH:$(wslpath "$(wslvar USERPROFILE)")/AppData/Local/Microsoft\ VS
 # ln -s ~/Android/Sdk/platform-tools/emulator/emulator.exe ~/Android/Sdk/emulator/emulator
 export ANDROID_HOME=~/Android/sdk
 export PATH=$PATH:$ANDROID_HOME/platform-tools
-alias adb=adb.exe
-alias emu-Pixel="$ANDROID_HOME/emulator/emulator @Pixel_4_API_30"
+#alias adb=adb.exe
+alias emu="$ANDROID_HOME/emulator/emulator @Pixel_4_API_30"
 alias emu-list="$ANDROID_HOME/emulator/emulator -list-avds"
 
 
 ## Run in Powershell as Admin
 # Foreach ( $port in 19000,19001,19002 ) { netsh interface portproxy add v4tov4 listenport=$port connectport=$port connectaddress=$($(wsl hostname -I).Trim()) }
 # Foreach ( $dir in "Inbound","Outbound") { New-NetFireWallRule -DisplayName 'WSL Expo ports for LAN development' -Direction $dir -LocalPort 19000-19002 -Action Allow -Protocol TCP }
-alias rnexpo="REACT_NATIVE_PACKAGER_HOSTNAME=$(ipconfig.exe | grep -m 1 'IPv4 Address' | sed 's/.*: //') npx expo start"
+alias rn-expo="REACT_NATIVE_PACKAGER_HOSTNAME=$(ipconfig.exe | grep -m 1 'IPv4 Address' | sed 's/.*: //') npx expo start"
 
 # sudo ln -s /mnt/c/Program\ Files\ \(x86\)/Google/Chrome/Application/chrome.exe /usr/bin/chrome
