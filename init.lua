@@ -41,7 +41,7 @@ K("n", "<Leader>,", ":<C-u>tabnew $MYVIMRC<CR>", keymaps_opts)
 K("n", "<Leader>.,", ":<C-u>luafile $MYVIMRC<CR>", keymaps_opts) -- ':helptags ALL'
 K("n", "<Leader>m", ":<C-u>marks<CR>", keymaps_opts)
 K("n", "<Leader>r", ":<C-u>registers<CR>", keymaps_opts)
-K("n", "<Leader>l", ":<C-u>ls<CR>", keymaps_opts)
+K("n", "<Leader>l", ":<C-u>ls<CR>:b", keymaps_opts)
 K("n", "<Leader>b", ":<C-u>buff)r", keymaps_opts)
 --
 K("n", "Y", "y$", keymaps_opts)
@@ -55,11 +55,23 @@ K("n", "<Leader>s", ":<C-u>%s///g<Left><Left><Left>", keymaps_opts)
 K("n", "<Leader>t", ':<C-u>term  && exit' .. string.rep('<left>', 8), keymaps_opts)
 K("n", "<Leader>tt", ':<C-u>term<CR>', keymaps_opts)
 K('t', '<C-o>', '<C-\\><C-n><C-o>', keymaps_opts)
-AU('TermOpen',
-  { pattern = '*',
-    callback = function() vim.cmd('setlocal nonumber norelativenumber signcolumn=no showtabline=1 | startinsert') end })
-AU('TermClose', { pattern = '*', callback = function() vim.cmd('bdelete!') end })
+-- AU('TermOpen', { pattern = '*', callback = function() vim.cmd('setlocal nonumber norelativenumber signcolumn=no showtabline=1 | startinsert') end })
+--AU('TermClose', { pattern = '*', call back = function() vim.cmd('bdelete!') end })
 --K( "n", "<Leader>t", ':<C-u>term  && exit' .. '<Left><Left><Left><Left><Left><Left><Left><Left>", table.insert(keymaps_opts, { silent = true }) )
+K("n", "<leader>expo", [[<cmd>term<CR><cmd>call feedkeys("emu-Pixel")<CR>]], keymaps_opts)
+K("n", "<leader>j", '<cmd>startinsert<CR>iemu-Pixel<cmd>call feedkeys("\\<CR>")<CR>', keymaps_opts)
+
+local function startInteractiveShellJobs(cmds_params)
+  for i, params in pairs(cmds_params) do
+    local buf = vim.api.nvim_create_buf(true, false)
+    vim.api.nvim_buf_call(buf, function() vim.fn.termopen(params.cmd) end)
+    local win = vim.api.nvim_open_win(buf, true, { relative = 'editor', width = 80, height = 20, row = (i-1) * 20, col = 0 })
+    vim.defer_fn(function() vim.api.nvim_win_close(win, false) end, 5000)
+  end
+end
+
+CMD('RNExpo', function() startInteractiveShellJobs{ { cmd = 'emu' }, { cmd = 'rn-expo' } } end, {})
+
 -- yy:@"
 K("v", "<Leader>s", ":s///g<Left><Left><Left>", keymaps_opts)
 K("v", "z/", "<ESC>/\\%V", keymaps_opts)
@@ -72,7 +84,8 @@ K("n", "<Leader>Q", ":<C-u>qa!<CR>", keymaps_opts)
 K("n", "<Leader>z", ":<C-u>wa<CR>", keymaps_opts)
 K("n", "<Leader>ZZ", ":<C-u>wqa<CR>", keymaps_opts)
 K("c", "<expr>/", "getcmdtype() == '/' ? '\\/' : '/'", {})
-K("i", "jk", "<Esc>", keymaps_opts)
+K("i", "jk", "<Esc><cmd>w<CR>", keymaps_opts)
+K("n", "<leader>w", "<cmd>w<CR>", keymaps_opts)
 K("n", "L", "J", keymaps_opts)
 K("n", "J", "gt", keymaps_opts)
 K("n", "K", "gT", keymaps_opts)
@@ -169,8 +182,8 @@ function will_rename_callback(data)
       local match_type = pattern.matches
       local matched
       if not match_type or
-          (match_type == "folder" and is_dir) or
-          (match_type == "file" and not is_dir)
+        (match_type == "folder" and is_dir) or
+        (match_type == "file" and not is_dir)
       then
         local regex = vim.fn.glob2regpat(pattern.glob)
         if pattern.options and pattern.options.ignorecase then regex = "\\c" .. regex end
@@ -205,43 +218,16 @@ function will_rename_callback(data)
 end
 
 vim.cmd('command! Rename lua will_rename_callback()')
+
 require 'nvim-tree'.setup({ diagnostics = { enable = true }, on_attach = function(bufnr)
   local tree_api = require 'nvim-tree.api'
   tree_api.events.subscribe(tree_api.events.Event.WillRenameNode, will_rename_callback)
   tree_api.config.mappings.default_on_attach(bufnr)
+K('n', '<C-t>', function() require'nvim-tree.api'.tree.toggle() end )
 end })
+AU({ "VimEnter" }, { callback = function(data) if (vim.fn.isdirectory(data.file) == 1) then require"nvim-tree.api".tree.open() end end })
+K('n', '<C-t>', function() require'nvim-tree.api'.tree.toggle() end )
 
-
-vim.cmd [[
-let g:netrw_sizestyle="H"
-let g:netrw_banner = 0
-let g:netrw_timefmt="%Y/%m/%d(%a) %H:%M:%S"
-let g:netrw_preview=1 " preview は左右分割表示
-let g:netrw_alto = 0
-let g:netrw_liststyle=3 " tree表示
-let g:netrw_keepdir = 0 " tree開いた位置を current dir として扱う。その階層でファイル作成とかができるようになる
-let g:netrw_sort_by = "size"
-"qf (file information)"
-"i (change list style)"
-"s (sort by name, time, size, extension)"
-"u/U (move back/forward in the directory tree)"
-"d/% (new dir/file)"
-"D (delete dir/file)"
-"qb (bookmark list)"
-"gb (go back to previous bookmarked dir)"
-"mb (bookmark current dir)"
-"mf/mF ((un)mark file)"
-"mr (mark files by regexp)"
-"qF/qL (mark using quickfix/location list)"
-"mt (mark as target)"
-"mm (mv (mf) to (mt))"
-"mc (cp (mf) to (mt))"
-"mg (vimgrep among (mf))"
-"md (vimdiff =<3 files)"
-"mx/mX (exec shell cmd to marked files one by one/at one time)"
-
-noremap <silent><C-e> :silent Lexplore<CR>
-]]
 -- :e | completion
 -- @:
 
@@ -375,11 +361,11 @@ vim.cmd("sign define LspDiagnosticsSignWarning texthl=LspDiagnosticsSignWarning 
 -- :LspInfo TODO: nvim-lspconfig source code
 --vim.lsp.handlers["textDocument/publishDiagnostics"] = vim.lsp.with(vim.lsp.diagnostic.on_publish_diagnostics, {
 --  update_in_insert = false,
-  --virtual_text = {
-  --	format = function(diagnostic)
-  --		return string.format("%s (%s: %s)", diagnostic.message, diagnostic.source, diagnostic.code)
-  --	end,
-  --},
+--virtual_text = {
+--	format = function(diagnostic)
+--		return string.format("%s (%s: %s)", diagnostic.message, diagnostic.source, diagnostic.code)
+--	end,
+--},
 --})
 
 -- vim.lsp.set_log_level("debug") --:LspLog  
@@ -415,19 +401,21 @@ AU('LspAttach', {
 
     --AU({'CursorHold', 'CursorHoldI'}, { callback = vim.diagnostic.open_float})
     --vim.cmd [[autocmd! CursorHold,CursorHoldI * lua vim.diagnostic.open_float(nil, {focus=false})]]
+
+    local function code_action_listener()
+      local context = { diagnostics = vim.lsp.diagnostic.get_line_diagnostics() }
+      local params = vim.lsp.util.make_range_params()
+      params.context = context
+      vim.lsp.buf_request(0, 'textDocument/codeAction', params, function(err, result, ctx, config)
+        -- do something with result - e.g. check if empty and show some indication such as a sign
+      end)
+    end
+    AU({'CursorHold', 'CursorHoldI'}, { callback = code_action_listener } )
+
   end,
 })
 
 
-local function code_action_listener()
-  local context = { diagnostics = vim.lsp.diagnostic.get_line_diagnostics() }
-  local params = vim.lsp.util.make_range_params()
-  params.context = context
-  vim.lsp.buf_request(0, 'textDocument/codeAction', params, function(err, result, ctx, config)
-    -- do something with result - e.g. check if empty and show some indication such as a sign
-  end)
-end
-AU({'CursorHold', 'CursorHoldI'}, { callback = code_action_listener } )
 
 require 'lspconfig'.lua_ls.setup {
   settings = {
