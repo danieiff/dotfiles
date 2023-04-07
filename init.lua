@@ -8,13 +8,10 @@ local options = {
   showmatch = true, matchtime = 1, ignorecase = true, smartcase = true,
   tabstop = 2, shiftwidth = 2, expandtab = true, smartindent = true, list = true, listchars = { tab = '__', trail = '_' },
   pumheight = 10, pumblend = 10, winblend = 10, showtabline = 2, number = true, relativenumber = true, signcolumn = "yes",
-  termguicolors = true, cmdheight = 0, --[[statuscolumn = '%#NonText#%{&nu?v:lnum:""}%=%{&rnu&&(v:lnum%2)?" ".v:relnum:""}%#LineNr#%{&rnu&&!(v:lnum%2)?" ".v:relnum:""}',]]
+  termguicolors = true, laststatus = 3 , cmdheight = 0, --statuscolumn = '%#NonText#%{&nu?v:lnum:""}%=%{&rnu&&(v:lnum%2)?" ".v:relnum:""}%#LineNr#%{&rnu&&!(v:lnum%2)?" ".v:relnum:""}',
   foldmethod = 'expr', foldexpr = "nvim_treesitter#foldexpr()", foldenable = false,
 }
 for k, v in pairs(options) do vim.opt[k] = v end
-
-vim.api.nvim_create_autocmd({ "BufReadPost" },
-  { pattern = { "*" }, callback = function() vim.api.nvim_exec('silent! normal! g`"zv', false) end, })
 
 local keymaps_opts = { noremap = true, } -- silent = true }
 vim.g.mapleader = " "
@@ -35,42 +32,37 @@ K("n", "<C-S-Right>", ":vertical resize +5<CR>", keymaps_opts)
 K("n", "<C-S-Up>", ":resize -5<CR>", keymaps_opts)
 K("n", "<C-S-Down>", ":resize +5<CR>", keymaps_opts)
 -- Move between splits
-K("n", "<C-S-Left>", ":vertical resize -5<CR>", keymaps_opts)
 K("n", "<Leader>h", ":<C-u>help<Space>", keymaps_opts)
 K("n", "<Leader>,", ":<C-u>tabnew $MYVIMRC<CR>", keymaps_opts)
 K("n", "<Leader>.,", ":<C-u>luafile $MYVIMRC<CR>", keymaps_opts) -- ':helptags ALL'
 K("n", "<Leader>m", ":<C-u>marks<CR>", keymaps_opts)
 K("n", "<Leader>r", ":<C-u>registers<CR>", keymaps_opts)
 K("n", "<Leader>l", ":<C-u>ls<CR>:b", keymaps_opts)
-K("n", "<Leader>b", ":<C-u>buff)r", keymaps_opts)
+K("n", "<Leader>b", ":<C-u>buffers<CR>", keymaps_opts)
 --
 K("n", "Y", "y$", keymaps_opts)
+K({'n','v'}, ';',':' , keymaps_opts)
+K({'n','v'}, ':',';' , keymaps_opts)
 -- nnoremap +  <C-a>
 -- nnoremap -  <C-x>
--- nnoremap ;  :
--- nnoremap :  ;
--- vnoremap ;  :
--- vnoremap :  ;
+
 K("n", "<Leader>s", ":<C-u>%s///g<Left><Left><Left>", keymaps_opts)
-K("n", "<Leader>t", ':<C-u>term  && exit' .. string.rep('<left>', 8), keymaps_opts)
+K("n", "<Leader>t", ':<C-u>bo sp new | term  && sleep 3 && exit' .. string.rep('<left>', 19), keymaps_opts)
 K("n", "<Leader>tt", ':<C-u>term<CR>', keymaps_opts)
 K('t', '<C-o>', '<C-\\><C-n><C-o>', keymaps_opts)
--- AU('TermOpen', { pattern = '*', callback = function() vim.cmd('setlocal nonumber norelativenumber signcolumn=no showtabline=1 | startinsert') end })
---AU('TermClose', { pattern = '*', call back = function() vim.cmd('bdelete!') end })
---K( "n", "<Leader>t", ':<C-u>term  && exit' .. '<Left><Left><Left><Left><Left><Left><Left><Left>", table.insert(keymaps_opts, { silent = true }) )
-K("n", "<leader>expo", [[<cmd>term<CR><cmd>call feedkeys("emu-Pixel")<CR>]], keymaps_opts)
-K("n", "<leader>j", '<cmd>startinsert<CR>iemu-Pixel<cmd>call feedkeys("\\<CR>")<CR>', keymaps_opts)
+AU('TermOpen', { pattern = '*', callback = function() vim.cmd('setlocal nonumber norelativenumber signcolumn=no showtabline=1 | startinsert') end })
+AU('TermClose', { pattern = '*', callback = function() vim.cmd('bw!') end })
 
 local function startInteractiveShellJobs(cmds_params)
   for i, params in pairs(cmds_params) do
     local buf = vim.api.nvim_create_buf(true, false)
     vim.api.nvim_buf_call(buf, function() vim.fn.termopen(params.cmd) end)
-    local win = vim.api.nvim_open_win(buf, true, { relative = 'editor', width = 80, height = 20, row = (i-1) * 20, col = 0 })
+    local win = vim.api.nvim_open_win(buf, true, { relative = 'editor', width = 80, height = 20, row = (i-1) * 20, col = 0, border = 'single' } )
     vim.defer_fn(function() vim.api.nvim_win_close(win, false) end, 5000)
   end
 end
 
-CMD('RNExpo', function() startInteractiveShellJobs{ { cmd = 'emu' }, { cmd = 'rn-expo' } } end, {})
+CMD('RNExpo', function() startInteractiveShellJobs{ { cmd = 'emu' }, { cmd = 'rn-expo --android' } } end, {})
 
 -- yy:@"
 K("v", "<Leader>s", ":s///g<Left><Left><Left>", keymaps_opts)
@@ -84,7 +76,7 @@ K("n", "<Leader>Q", ":<C-u>qa!<CR>", keymaps_opts)
 K("n", "<Leader>z", ":<C-u>wa<CR>", keymaps_opts)
 K("n", "<Leader>ZZ", ":<C-u>wqa<CR>", keymaps_opts)
 K("c", "<expr>/", "getcmdtype() == '/' ? '\\/' : '/'", {})
-K("i", "jk", "<Esc><cmd>w<CR>", keymaps_opts)
+K("i", "jk", function() vim.cmd'stopinsert'; if vim.bo.buftype == '' then vim.cmd'w' end end , keymaps_opts)
 K("n", "<leader>w", "<cmd>w<CR>", keymaps_opts)
 K("n", "L", "J", keymaps_opts)
 K("n", "J", "gt", keymaps_opts)
@@ -93,9 +85,7 @@ K("n", "(", ":bn<CR>", keymaps_opts)
 K("n", ")", ":bN<CR>", keymaps_opts)
 K("n", "0", "^", keymaps_opts)
 K("n", "^", "0", keymaps_opts)
-
---K( 'n', 'pv', 'p`[v`]', keymaps_opts )
---K( 'n', 'Pv', 'P`[v`]', keymaps_opts )
+K( 'n', 'vp', '`[v`]', keymaps_opts )
 
 -- nnoremap <C-t>  <Nop>
 -- nnoremap <c-t>  <nop>
@@ -223,10 +213,12 @@ require 'nvim-tree'.setup({ diagnostics = { enable = true }, on_attach = functio
   local tree_api = require 'nvim-tree.api'
   tree_api.events.subscribe(tree_api.events.Event.WillRenameNode, will_rename_callback)
   tree_api.config.mappings.default_on_attach(bufnr)
-K('n', '<C-t>', function() require'nvim-tree.api'.tree.toggle() end )
+
+  K('n', '<C-y>',  require'nvim-tree.api'.tree.toggle )
+
+AU({ "VimEnter" }, { callback = function(data) if (vim.fn.isdirectory(data.file) == 1 or data.file == '') then require"nvim-tree.api".tree.open() end ;vim.notify(vim.inspect(data)) end })
+
 end })
-AU({ "VimEnter" }, { callback = function(data) if (vim.fn.isdirectory(data.file) == 1) then require"nvim-tree.api".tree.open() end end })
-K('n', '<C-t>', function() require'nvim-tree.api'.tree.toggle() end )
 
 -- :e | completion
 -- @:
@@ -402,17 +394,19 @@ AU('LspAttach', {
     --AU({'CursorHold', 'CursorHoldI'}, { callback = vim.diagnostic.open_float})
     --vim.cmd [[autocmd! CursorHold,CursorHoldI * lua vim.diagnostic.open_float(nil, {focus=false})]]
 
-    local function code_action_listener()
-      local context = { diagnostics = vim.lsp.diagnostic.get_line_diagnostics() }
-      local params = vim.lsp.util.make_range_params()
-      params.context = context
-      vim.lsp.buf_request(0, 'textDocument/codeAction', params, function(err, result, ctx, config)
-        -- do something with result - e.g. check if empty and show some indication such as a sign
-      end)
+    local client = vim.lsp.get_client_by_id(ev.data.client_id)
+    if client.supports_method('textDocument/codeAction') then
+      local function code_action_listener()
+        local context = { diagnostics = vim.lsp.diagnostic.get_line_diagnostics() }
+        local params = vim.lsp.util.make_range_params()
+        params.context = context
+        vim.lsp.buf_request(0, 'textDocument/codeAction', params, function(err, result, ctx, config)
+          -- do something with result - e.g. check if empty and show some indication such as a sign
+        end)
+      end
+      AU({'CursorHold', 'CursorHoldI'}, { callback = code_action_listener } )
     end
-    AU({'CursorHold', 'CursorHoldI'}, { callback = code_action_listener } )
 
-  end,
     require 'lspsaga'.setup {}
     K("n", "gh", "<cmd>Lspsaga lsp_finder<CR>")
     K({"n","v"}, "<leader>ca", "<cmd>Lspsaga code_action<CR>")
@@ -444,8 +438,6 @@ AU('LspAttach', {
   end
 })
 
-
-
 require 'lspconfig'.lua_ls.setup {
   settings = {
     Lua = {
@@ -454,11 +446,9 @@ require 'lspconfig'.lua_ls.setup {
         globals = { 'vim', 'require', 'print' },
       },
       workspace = {
-        -- Make the server aware of Neovim runtime files
-        library = vim.api.nvim_get_runtime_file("", true),
+        library = vim.api.nvim_get_runtime_file("", true),-- Make the server aware of Neovim runtime files
       },
-      -- Do not send telemetry data containing a randomized but unique identifier
-      telemetry = { enable = false },
+      telemetry = { enable = false },-- Do not send telemetry data containing a randomized but unique identifier
     },
   },
 }
@@ -627,7 +617,6 @@ local gitsigns = null_ls.builtins.code_actions.gitsigns.with({
 vim.diagnostic.setqflist({ open = false })
 
 require 'symbols-outline'.setup()
-
 require 'gitsigns'.setup {
   signcolumn = false,
   numhl = true,
@@ -644,13 +633,13 @@ require 'gitsigns'.setup {
     -- Navigation
     map('n', ']c', function()
       if vim.wo.diff then return ']c' end
-      vim.schedule(function() gs.next_hunk() end)
+      vim.schedule(gs.next_hunk)
       return '<Ignore>'
     end, { expr = true })
 
     map('n', '[c', function()
       if vim.wo.diff then return '[c' end
-      vim.schedule(function() gs.prev_hunk() end)
+      vim.schedule(gs.prev_hunk)
       return '<Ignore>'
     end, { expr = true })
 
@@ -669,10 +658,11 @@ require 'gitsigns'.setup {
 
     -- Text object
     map({ 'o', 'x' }, 'ih', ':<C-U>Gitsigns select_hunk<CR>')
+
   end
 }
+vim.cmd "set statusline=%{get(b:,'gitsigns_status','')}"
 
-vim.cmd "set statusline+=%{get(b:,'gitsigns_status','')}"
 -- " Status Line
 -- set statusline=%<%f%<%{FileTime()}%<%h%m%r%=%-20.(line=%03l,col=%02c%V,totlin=%L%)\%h%m%r%=%-30(,BfNm=%n%Y%)\%P\*%=%{CurTime()}
 -- set rulerformat=%15(%c%V\ %p%%%)
@@ -715,9 +705,11 @@ vim.cmd "set statusline+=%{get(b:,'gitsigns_status','')}"
 --end
 --vim.o.statusline = "%!luaeval('status_line()')"
 
+
 require 'nightfox'.setup { options = { transparent = true, inverse = { search = true } } }
 vim.cmd 'colorscheme nordfox'
 Hl(0, '@variable', { fg = 'NONE' })
+Hl(0, 'WinSeparator', { bg = 'None' })
 
 --Hl( 0, 'Normal', { bg = 'NONE' } )
 --Hl( 0, 'NonText', { bg = 'NONE' } )
@@ -729,6 +721,8 @@ Hl(0, '@variable', { fg = 'NONE' })
 --Hl( 0, 'TabLineSel', { bg = '#545454' } )
 
 require 'colorizer'.setup { user_default_options = { css_fn = false, tailwind = true } }
+
+--require 'nvim-web-devicons'.setup { {color_icons = true }}
 
 vim.cmd [[ inoremap <expr> ] searchpair('\[', '', '\]', 'nbW', 'synIDattr(synID(line("."), col("."), 1), "name") =~? "String"') ? ']' : "\<C-n>"]]
 
@@ -900,3 +894,7 @@ require 'digraph'
 --require('lspconfig')['<YOUR_LSP_SERVER>'].setup {
 --  capabilities = capabilities
 --}
+
+
+vim.api.nvim_create_autocmd({ "BufReadPost" },
+  { pattern = { "*" }, callback = function() vim.api.nvim_exec('silent! normal! g`"zv', false) end, })
