@@ -413,6 +413,35 @@ AU('LspAttach', {
     AU({'CursorHold', 'CursorHoldI'}, { callback = code_action_listener } )
 
   end,
+    require 'lspsaga'.setup {}
+    K("n", "gh", "<cmd>Lspsaga lsp_finder<CR>")
+    K({"n","v"}, "<leader>ca", "<cmd>Lspsaga code_action<CR>")
+    K("n", "gr", "<cmd>Lspsaga rename<CR>") 
+    K("n", "gR", "<cmd>Lspsaga rename ++project<CR>")
+    K("n", "gp", "<cmd>Lspsaga peek_definition<CR>") -- supports definition_action_keys tagstack. Use <C-t> to jump back
+    K("n", "gd", "<cmd>Lspsaga goto_definition<CR>")
+    K("n", "gtp", "<cmd>Lspsaga peek_type_definition<CR>") -- supports definition_action_keys tagstack. Use <C-t> to jump back
+    K("n", "gtg", "<cmd>Lspsaga goto_type_definition<CR>")
+    K("n", "<leader>sl", "<cmd>Lspsaga show_line_diagnostics<CR>") -- supports ++unfocus
+    K("n", "<leader>sb", "<cmd>Lspsaga show_buf_diagnostics<CR>")
+    K("n", "<leader>sw", "<cmd>Lspsaga show_workspace_diagnostics<CR>")
+    K("n", "<leader>sc", "<cmd>Lspsaga show_cursor_diagnostics<CR>")
+    K("n", "[e", "<cmd>Lspsaga diagnostic_jump_prev<CR>")
+    K("n", "]e", "<cmd>Lspsaga diagnostic_jump_next<CR>")
+    K("n", "[E", function() require"lspsaga.diagnostic":goto_prev({ severity = vim.diagnostic.severity.ERROR }) end)
+    K("n", "]E", function() require"lspsaga.diagnostic":goto_next({ severity = vim.diagnostic.severity.ERROR }) end)
+    K("n","<leader>o", "<cmd>Lspsaga outline<CR>")
+    K("n", "K", "<cmd>Lspsaga hover_doc<CR>")
+    K("n", "K", "<cmd>Lspsaga hover_doc ++keep<CR>")
+    -- ++quiet hides 'no hover doc' notification. Pressing the key twice will enter the hover window
+    -- ++keep if you want to keep the hover window in the top right hand corner
+    -- Note that if you use hover with ++keep, pressing this key again will
+    -- close the hover window. If you want to jump to the hover window
+    -- you should use the wincmd command "<C-w>w"
+    K("n", "<Leader>ci", "<cmd>Lspsaga incoming_calls<CR>")
+    K("n", "<Leader>co", "<cmd>Lspsaga outgoing_calls<CR>")
+    K({"n", "t"}, "<A-d>", "<cmd>Lspsaga term_toggle<CR>")
+  end
 })
 
 

@@ -37,6 +37,8 @@ neovim_plugins=(
   "https://github.com/EdenEast/nightfox.nvim"
   "https://github.com/NvChad/nvim-colorizer.lua"
   
+  "https://github.com/nvim-tree/nvim-web-devicons"
+
   "https://github.com/nvim-lua/plenary.nvim"
   "https://github.com/nvim-telescope/telescope.nvim"
   "https://github.com/debugloop/telescope-undo.nvim"
@@ -59,6 +61,7 @@ neovim_plugins=(
   "https://github.com/hrsh7th/nvim-cmp"
   "https://github.com/hrsh7th/cmp-nvim-lsp"
   "https://github.com/jose-elias-alvarez/null-ls.nvim"
+  "https://github.com/glepnir/lspsaga.nvim"
 
   "https://github.com/lewis6991/gitsigns.nvim"
   "https://github.com/mfussenegger/nvim-dap"
