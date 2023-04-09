@@ -28,54 +28,38 @@ GIT_PS1_SHOWUPSTREAM=auto # local behind(<) ahead(>) diverged(<>) same(=)
 PS1='\[\e[0;100m\]\u@\h \A \w $(__git_ps1)\[\e[0m\] '
 
 ## Alias
-### sh
-alias v='nvim'
+alias nvim="nvim --server ${NVIM} --remote-silent $(realpath ${1:-.})"
+alias v="nvim"
+alias shrc='nvim ~/.bashrc'
+alias .shrc='source ~/.bashrc'
 alias trash='gio trash'
 alias trash-empty='rm -rf ~/.local/share/Trash'
 alias ls='ls --color'
 alias ll='ls -alF'
 alias la='ls -A'
 alias l='ls -CF'
+
 ### git
 alias g='git'
-#### add
 alias a='git add'
 alias au='git add -u'
 alias ap='git add -u -p'
-#### commit
 alias cm='git commit'
 alias cmm='git commit -m'
 alias cma='git commit --amend'
-##### add & commit
 alias ac='git add -u && git commit'
-#### checkout
 alias co='git checkout'
-alias cob='git checkout -b'
-#### branch
 alias br='git branch'
-alias brv='git branch -vv'
 alias brd='git branch -d'
-alias brD='git branch -D'
-#### status
 alias s='git status -s'
-#### log
 alias l='git log -7 --name-status --oneline'
-#### diff
 alias df='git diff'
-#### cherry-pick
 alias chp='git cherry-pick'
-#### reset
 alias rst='git reset'
-#### merge
 alias m='git merge'
-#### remote
 alias rmt='git remote'
-alias rmtv='git remote -v'
-#### fetch
 alias f='git fetch'
-#### pull
 alias pl='git pull'
-#### push
 alias psh='git push'
 
 #  skip = update-index --skip-worktree
@@ -90,10 +74,7 @@ alias psh='git push'
 #  log3 = log -3
 #  logo = log --oneline
 #  logn = log --name-status --oneline
-  
 
-alias shrc='nvim ~/.bashrc'
-alias .shrc='source ~/.bashrc'
 
 export PATH=$PATH:~/.config/lua-lsp/bin
 
@@ -152,3 +133,21 @@ alias emu-list="$ANDROID_HOME/emulator/emulator -list-avds"
 alias rn-expo="REACT_NATIVE_PACKAGER_HOSTNAME=$(ipconfig.exe | grep -m 1 'IPv4 Address' | sed 's/.*: //') npx expo start"
 
 # sudo ln -s /mnt/c/Program\ Files\ \(x86\)/Google/Chrome/Application/chrome.exe /usr/bin/chrome
+
+alias lk='_look'
+_look() {
+  if [ "$1" = "-a" ]; then
+    local find_result=$(find . -type f -o -type l)
+  else
+    local find_result=$(find . -maxdepth 1 -type f -o -type l)
+  fi
+  local target_files=($(echo "$find_result" \
+    | sed 's/\.\///g' \
+    | grep -v -e '.jpg' -e '.gif' -e '.png' -e '.jpeg' \
+    | sort -r \
+    | fzf-tmux -p80% --select-1 --prompt 'vim ' --preview 'bat --color always {}' --preview-window=right:70%
+  ))
+  [ "$target_files" = "" ] && return
+  nvim -p ${target_files[@]}
+}
+
