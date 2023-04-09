@@ -4,7 +4,7 @@ local options = {
   updatetime = 3000, timeoutlen = 1000,
   virtualedit = 'block',
   autowriteall = true, undofile = true, -- persistent undo history saved in {undodir}
-  shell = 'bash -l', -- login: bash reads ~/.profile at startup
+  shell = os.getenv'SHELL'..' -l',
   showmatch = true, matchtime = 1, ignorecase = true, smartcase = true,
   tabstop = 2, shiftwidth = 2, expandtab = true, smartindent = true, list = true, listchars = { tab = '__', trail = '_' },
   pumheight = 10, pumblend = 10, winblend = 10, showtabline = 2, number = true, relativenumber = true, signcolumn = "yes",
@@ -47,11 +47,16 @@ K({'n','v'}, ':',';' , keymaps_opts)
 -- nnoremap -  <C-x>
 
 K("n", "<Leader>s", ":<C-u>%s///g<Left><Left><Left>", keymaps_opts)
-K("n", "<Leader>t", ':<C-u>bo sp new | term  && sleep 3 && exit' .. string.rep('<left>', 19), keymaps_opts)
-K("n", "<Leader>tt", ':<C-u>term<CR>', keymaps_opts)
+K("n", "<Leader>tt", ':<C-u>bo sp | term  && sleep 3 && exit' .. string.rep('<left>', 19), keymaps_opts)
+K('n', '<Leader>t', function()
+  local cmd = vim.fn.input { prompt = 'Command: ', default = vim.fn.expand('<cword>'), completion = 'shellcmd', cancelreturn = '' }
+  if cmd == '' then return end
+  vim.cmd 'botright sp +enew'
+  vim.fn.termopen(cmd , { on_exit = function() vim.api.nvim_buf_delete(0, { force = true } ) end })
+end)
 K('t', '<C-o>', '<C-\\><C-n><C-o>', keymaps_opts)
 AU('TermOpen', { pattern = '*', callback = function() vim.cmd('setlocal nonumber norelativenumber signcolumn=no showtabline=1 | startinsert') end })
-AU('TermClose', { pattern = '*', callback = function() vim.cmd('bw!') end })
+--AU('TermClose', { pattern = '*', callback = function() vim.cmd('bw!') end })
 
 local function startInteractiveShellJobs(cmds_params)
   for i, params in pairs(cmds_params) do
@@ -76,7 +81,7 @@ K("n", "<Leader>Q", ":<C-u>qa!<CR>", keymaps_opts)
 K("n", "<Leader>z", ":<C-u>wa<CR>", keymaps_opts)
 K("n", "<Leader>ZZ", ":<C-u>wqa<CR>", keymaps_opts)
 K("c", "<expr>/", "getcmdtype() == '/' ? '\\/' : '/'", {})
-K("i", "jk", function() vim.cmd'stopinsert'; if vim.bo.buftype == '' then vim.cmd'w' end end , keymaps_opts)
+K("i", "jk", function() vim.cmd'stopinsert'; if vim.bo.modifiable and vim.fn.bufname() ~= '' then vim.cmd'w' end end , keymaps_opts)
 K("n", "<leader>w", "<cmd>w<CR>", keymaps_opts)
 K("n", "L", "J", keymaps_opts)
 K("n", "J", "gt", keymaps_opts)
@@ -209,19 +214,13 @@ end
 
 vim.cmd('command! Rename lua will_rename_callback()')
 
+local tree_api = require 'nvim-tree.api'
 require 'nvim-tree'.setup({ diagnostics = { enable = true }, on_attach = function(bufnr)
-  local tree_api = require 'nvim-tree.api'
   tree_api.events.subscribe(tree_api.events.Event.WillRenameNode, will_rename_callback)
   tree_api.config.mappings.default_on_attach(bufnr)
-
-  K('n', '<C-y>',  require'nvim-tree.api'.tree.toggle )
-
-AU({ "VimEnter" }, { callback = function(data) if (vim.fn.isdirectory(data.file) == 1 or data.file == '') then require"nvim-tree.api".tree.open() end ;vim.notify(vim.inspect(data)) end })
-
 end })
-
--- :e | completion
--- @:
+K('n', '<C-y>',  tree_api.tree.toggle )
+AU({ "VimEnter" }, { callback = function(data) if (vim.fn.isdirectory(data.file) == 1 or data.file == '') then tree_api.tree.open() end end })
 
 require 'leap'.add_default_mappings()
 
@@ -722,7 +721,7 @@ Hl(0, 'WinSeparator', { bg = 'None' })
 
 require 'colorizer'.setup { user_default_options = { css_fn = false, tailwind = true } }
 
---require 'nvim-web-devicons'.setup { {color_icons = true }}
+require 'nvim-web-devicons'.setup { {color_icons = true }}
 
 vim.cmd [[ inoremap <expr> ] searchpair('\[', '', '\]', 'nbW', 'synIDattr(synID(line("."), col("."), 1), "name") =~? "String"') ? ']' : "\<C-n>"]]
 
