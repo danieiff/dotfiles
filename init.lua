@@ -226,7 +226,7 @@ require 'leap'.add_default_mappings()
 
 require 'nvim-treesitter.configs'.setup {
   ensure_installed = { "bash", "lua", "python", "javascript", "typescript", "html", "css", "json", "yaml", "toml", "go",
-    "rust", "jsonc", "graphql", "dockerfile", "vim", "tsx" },
+    "rust", "jsonc", "graphql", "dockerfile", "vim", "tsx", "markdown", "markdown_inline" },
   highlight = { enable = true },
   indent = { enable = true }, -- type '=' operator to fix indentation
   context_commentstring = {
@@ -480,6 +480,8 @@ rt.setup({
     end,
   },
 })
+
+require 'lspconfig'.gopls.setup {}
 
 --require'lspconfig'.textlsp.setup {}
 

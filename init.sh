@@ -99,6 +99,7 @@ cargo install ripgrep
 cargo install git-delta
 cargo install fd-find
 cargo install deno --locked
+cargo install bat
 
 sudo apt install gh
 sudo apt install yq

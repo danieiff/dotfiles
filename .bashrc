@@ -28,8 +28,7 @@ GIT_PS1_SHOWUPSTREAM=auto # local behind(<) ahead(>) diverged(<>) same(=)
 PS1='\[\e[0;100m\]\u@\h \A \w $(__git_ps1)\[\e[0m\] '
 
 ## Alias
-alias nvim="nvim --server ${NVIM} --remote-silent $(realpath ${1:-.})"
-alias v="nvim"
+alias v="~/neovim/build/bin/nvim --server $NVIM --remote-silent"
 alias shrc='nvim ~/.bashrc'
 alias .shrc='source ~/.bashrc'
 alias trash='gio trash'
@@ -134,8 +133,7 @@ alias rn-expo="REACT_NATIVE_PACKAGER_HOSTNAME=$(ipconfig.exe | grep -m 1 'IPv4 A
 
 # sudo ln -s /mnt/c/Program\ Files\ \(x86\)/Google/Chrome/Application/chrome.exe /usr/bin/chrome
 
-alias lk='_look'
-_look() {
+lk() {
   if [ "$1" = "-a" ]; then
     local find_result=$(find . -type f -o -type l)
   else
@@ -145,7 +143,7 @@ _look() {
     | sed 's/\.\///g' \
     | grep -v -e '.jpg' -e '.gif' -e '.png' -e '.jpeg' \
     | sort -r \
-    | fzf-tmux -p80% --select-1 --prompt 'vim ' --preview 'bat --color always {}' --preview-window=right:70%
+    | fzf-tmux -p80% --select-1 --prompt 'nvim ' --preview 'bat --color always {}' --preview-window=right:70%
   ))
   [ "$target_files" = "" ] && return
   nvim -p ${target_files[@]}
