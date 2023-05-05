@@ -62,6 +62,7 @@ neovim_plugins=(
   "https://github.com/hrsh7th/cmp-nvim-lsp"
   "https://github.com/jose-elias-alvarez/null-ls.nvim"
   "https://github.com/glepnir/lspsaga.nvim"
+  "https://github.com/b0o/SchemaStore.nvim"
 
   "https://github.com/lewis6991/gitsigns.nvim"
   "https://github.com/mfussenegger/nvim-dap"
@@ -71,15 +72,14 @@ neovim_plugins=(
 
 for repo in "${neovim_plugins[@]}"; do git clone --depth 1 "$repo"; done
 
-curl -vLJO -H 'Accept: application/octet-stream' https://api.github.com/repos/
 mkdir -p ~/.config/lsp/lua && cd "$_"
-sumneko/lua-language-server/releases/assets/86357324
-tar -xvf <lua-language-server.tar.gz>
+curl https://api.github.com/repos/LuaLS/lua-language-server/releases/latest | grep browser_download_url.*linux-x64\. | grep -Eo 'https://[^\"]*' | xargs wget -O - | tar -xz
 echo 'export PATH=$PATH:~/.config/lsp/lua/bin' >> ~/.bashrc
 npm i -g bash-language-server
 npm i -g typescript typescript-language-server
 npm i -g vscode-langservers-extracted
 npm i -g @tailwindcss/language-server
+## TODO: https://github.com/redhat-developer/yaml-language-server
 
 # WSL
  sudo apt install wslu
