@@ -453,6 +453,25 @@ require 'lspconfig'.lua_ls.setup {
 }
 
 require 'lspconfig'.bashls.setup { }
+
+local jsonls_capabilities = vim.lsp.protocol.make_client_capabilities()
+jsonls_capabilities.textDocument.completion.completionItem.snippetSupport = true
+require  'lspconfig'.jsonls.setup { 
+  capabilities = jsonls_capabilities,
+  settings = {
+    json = {
+      schemas = require 'schemastore'.json.schemas(),
+      validate = { enable = true }
+    }
+  }
+}
+require 'lspconfig'.yamlls.setup {
+  settings = {
+    yaml = {
+      schemas = require('schemastore').yaml.schemas(),
+    },
+  },
+}
 require 'lspconfig'.tsserver.setup { }
 require 'lspconfig'.tailwindcss.setup {
   on_attach = function(_, bufnr) require("tailwindcss-colors").buf_attach(bufnr) end,
