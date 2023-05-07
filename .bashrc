@@ -145,7 +145,28 @@ lk() {
     | sort -r \
     | fzf-tmux -p80% --select-1 --prompt 'nvim ' --preview 'bat --color always {}' --preview-window=right:70%
   ))
+  `
   [ "$target_files" = "" ] && return
   nvim -p ${target_files[@]}
 }
 
+myselect() {
+  readarray -t options <<< $@
+  select opt in "${options[@]}" "Quit" ; do
+    if (( REPLY == 1 + "${#options[@]}" )) ; then break
+
+    elif (( REPLY > 0 && REPLY <= "${#options[@]}" )) ; then
+      echo $opt
+      break
+    fi
+  done
+}
+
+ghinstall() {
+  local download_urls=`
+    curl https://api.github.com/repos/$1/releases/latest \
+    | grep browser_download_url* \
+    | grep -Eo 'https://[^\"]*'
+  `
+  myselect "$download_urls" | xargs curl -LJO | tar -xzf
+}

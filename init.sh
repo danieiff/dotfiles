@@ -73,7 +73,7 @@ neovim_plugins=(
 for repo in "${neovim_plugins[@]}"; do git clone --depth 1 "$repo"; done
 
 mkdir -p ~/.config/lsp/lua && cd "$_"
-curl https://api.github.com/repos/LuaLS/lua-language-server/releases/latest | grep browser_download_url.*linux-x64\. | grep -Eo 'https://[^\"]*' | xargs wget -O - | tar -xz
+ghinstall LuaLS/lua-language-server
 echo 'export PATH=$PATH:~/.config/lsp/lua/bin' >> ~/.bashrc
 npm i -g bash-language-server
 npm i -g typescript typescript-language-server
