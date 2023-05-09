@@ -83,9 +83,28 @@ npm i -g @tailwindcss/language-server
 
 # WSL
  sudo apt install wslu
- printf '[interop]\nappendWindowsPath = false\n' | sudo tee /etc/wsl.conf # Reloading WSL takes >8 sec after terminates 
+ printf '[boot]\nsystemd = true\n[interop]\nappendWindowsPath = false\n' | sudo tee /etc/wsl.conf # Reloading WSL takes >8 sec after terminates
  printf 'export PATH=$PATH:$(wslpath "$(wslvar USERPROFILE)")/AppData/Local/Microsoft\ VS\ Code/bin:\n' >> .bashrc # VSCode 'code' command  
  cp dotfiles/windows-terminal.json /mnt/c/User/UserName/AppData/Local/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState/settings.json
+
+## WSL SSH
+sudo apt install openssh-server
+### For test in localhost
+sudo service ssh status # requires '[boot] systemd = true' in '/etc/wsl.conf
+ssh-keygen
+cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+ssh <user>@localhost
+### For remote client (Run these on powershell as admin)
+# $wsl_ipaddress1 = (wsl -d "Ubuntu" hostname -I).split(" ", 2)[0]
+# netsh interface portproxy delete v4tov4 listenaddress=0.0.0.0 listenport=22
+# netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=22 connectaddress=$wsl_ipaddress1 connectport=22
+# netsh interface portproxy show v4tov4
+# New-NetFireWallRule -DisplayName 'WSL Expo ports for LAN development' -Direction 'Inbound' -LocalPort 19000-19002 -Action Allow -Protocol TCP } # ssh <user>@<windows ip addr> from remote client
+### For host windows-shells of wsl
+# ssh <user>@<wsl ip addr> (after ssh key setup)
+chmod 700 ~/.ssh
+chmod 600 ~/.ssh/authorized_keys
+
 
 # Firebase
 npm i -g firebase-tools
