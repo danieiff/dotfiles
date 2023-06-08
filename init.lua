@@ -646,51 +646,44 @@ K('n', '<leader>p', run_prettier_sync) --, { silent = true })
 K('n', '<leader>P', run_prettier_async)
 --npx onchange "**/*" -- npx prettier --write --ignore-unknown {{changed}}
 
-local null_ls = require("null-ls")
-null_ls.setup({
-  diagnostics_format = "#{m} (#{s}: #{c})",
+local null_ls = require 'null-ls'
+null_ls.setup {
+  -- diagnostics_format = "#{m} (#{s}: #{c})",
   sources = {
     null_ls.builtins.diagnostics.eslint,
-    --null_ls.builtins.diagnostics.actionlint,
-    null_ls.builtins.formatting.prettier,
-    --null_ls.builtins.formatting.stylelint,
-    --null_ls.builtins.formatting.rustywind,
-
-    --null_ls.builtins.code_actions.proselint
-    --null_ls.builtins.completion.spell,
-    --null_ls.builtins.diagnostics.cspell,
-    --null_ls.builtins.diagnostics.alex,
-    --null_ls.builtins.diagnostics.codespell,
-    --null_ls.builtins.diagnostics.misspell
+    null_ls.builtins.formatting.prettier.with { prefer_local = 'node_modules/.bin' },
+    null_ls.builtins.diagnostics.stylelint.with { prefer_local = 'node_modules/.bin' },
+    null_ls.builtins.diagnostics.actionlint,
     --null_ls.builtins.formatting.prismaFmt,
-    --null_ls.builtins.diagnostics.commitlint,
+    --null_ls.builtins.formatting.deno_fmt,
+    --null_ls.builtins.formatting.deno_lint,
 
-    --null_ls.builtins.code_actions.gomodifytags -- requires Go tree-sitter parser
     --null_ls.builtins.formatting.stylua,
+    --null_ls.builtins.code_actions.gomodifytags -- requires Go tree-sitter parser
     --null_ls.builtins.formatting.golines,
+    --null_ls.builtins.formatting.gofmt,
     null_ls.builtins.formatting.rustfmt,
     --null_ls.builtins.code_actions.ltrs
-    --null_ls.builtins.diagnostics.buf
-    --null_ls.builtins.diagnostics.editorconfig_checker
-    --null_ls.builtins.diagnostics.gitlint
-    --null_ls.builtins.code_actions.gitrebase
-
     --null_ls.builtins.diagnostics.cfn_lint
 
-    null_ls.builtins.code_actions.gitsigns,
-    --null_ls.builtins.code_actions.refactoring,
-    --null_ls.builtins.completion.luasnip,
-    --null_ls.builtins.completion.vsnip,
-    --null_ls.builtins.completion.tags
+    --null_ls.builtins.completion.luasnip, -- If use instead of nvim-cmp, uncomment this, and set up keymap in luasnip config.
+    --null_ls.builtins.diagnostics.protolint
+    --null_ls.builtins.formatting.protolint
+    --null_ls.builtins.diagnostics.buf
+    --null_ls.builtins.formatting.buf
+    --null_ls.builtins.completion.buf
+
+    null_ls.builtins.code_actions.gitrebase, -- builtin. filetype 'gitrebase'
+    null_ls.builtins.diagnostics.commitlint.with { extra_args = { '--extends', '@commitlint/config-conventional' } },
+    null_ls.builtins.code_actions.gitsigns, --.with({
+    --   config = {
+    --     filter_actions = function(title)
+    --       return title:lower():match("blame") == nil -- filter out blame actions
+    --     end,
+    --   },
+    -- })
   },
-})
-local gitsigns = null_ls.builtins.code_actions.gitsigns.with({
-    config = {
-        filter_actions = function(title)
-            return title:lower():match("blame") == nil -- filter out blame actions
-        end,
-    },
-})
+}
 
 -- Define the command to run Prettier
 --local prettier_command = {'node', './format.js'}
