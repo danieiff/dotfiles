@@ -1,4 +1,5 @@
-local K, Hl, AU, CMD = vim.keymap.set, vim.api.nvim_set_hl, vim.api.nvim_create_autocmd, vim.api.nvim_create_user_command
+local K, HL, CMD, AUC, AUG = vim.keymap.set, vim.api.nvim_set_hl, vim.api.nvim_create_user_command,
+    vim.api.nvim_create_autocmd, vim.api.nvim_create_augroup
 
 local options = {
   updatetime = 3000, timeoutlen = 1000,
@@ -153,6 +154,13 @@ K( 'n', 'vp', '`[v`]', keymaps_opts )
 -- :bufdo vimgrepa {pattern} % -- (reset) :cex ""
 -- :vim {pattern} {file} | cw -- autocmd QuickFixCmdPost *grep* cwindow
 -- helps: quickfix.txt :vimgrep :cwindow :args cmdline-special pattern-overview wildcards
+
+require 'auto-session'.setup {
+  auto_save_enabled = true,
+  auto_session_enabled = true,
+  auto_session_enable_last_session = vim.loop.cwd() == vim.loop.os_homedir(),
+}
+
 require 'telescope'.setup()
 require 'telescope'.load_extension("undo")
 require 'fzf-lua'
@@ -448,21 +456,22 @@ local capabilities = require('cmp_nvim_lsp').default_capabilities()
 --},
 --})
 
--- vim.lsp.set_log_level("debug") --:LspLog  
-CMD( 'LspRestart2', 'lua vim.lsp.stop_client(vim.lsp.get_active_clients()) | edit', {bar= true})
-CMD( 'LspCapa', 'lua =vim.lsp.get_active_clients()[1].server_capabilities', {})
-
 Hl(0, 'LspDiagnosticsLineNrWarning', { fg = '#E5C07B', bg = '#4E4942', --[[gui = 'bold']] })
+-- vim.lsp.set_log_level("debug") --:LspLog
+CMD('LspRestart2', 'lua vim.lsp.stop_client(vim.lsp.get_active_clients()) | edit', { bar = true })
+CMD('LspCapa', 'lua =vim.lsp.get_active_clients()[1].server_capabilities', {})
 
 K('n', '<space>e', vim.diagnostic.open_float)
 K('n', '<leader>D', vim.diagnostic.goto_prev)
 K('n', '<leader>d', vim.diagnostic.goto_next)
 K('n', '<space>q', vim.diagnostic.setloclist)
 
-AU('LspAttach', {
-  group = vim.api.nvim_create_augroup('UserLspConfig', {}),
+local augroup_fmt = AUG('LspFormatting', {})
+
+AUC('LspAttach', {
+  group = AUG('UserLspConfig', {}),
   callback = function(ev)
-    vim.bo[ev.buf].omnifunc = 'v:lua.vim.lsp.omnifunc' --<c-x><c-o>
+    -- vim.bo[ev.buf].omnifunc = 'v:lua.vim.lsp.omnifunc' --<c-x><c-o> --'nvim-cmp' is used instead.
 
     local opts = { buffer = ev.buf } --:help vim.lsp.*
     K('n', 'gD', vim.lsp.buf.declaration, opts)
@@ -477,28 +486,36 @@ AU('LspAttach', {
     K('n', '<space>rn', vim.lsp.buf.rename, opts)
     K('n', '<space>ca', vim.lsp.buf.code_action, opts)
     K('n', 'gr', vim.lsp.buf.references, opts)
-    K('n', '<space>f', function() vim.lsp.buf.format { async = true } end, opts)
 
-    --AU({'CursorHold', 'CursorHoldI'}, { callback = vim.diagnostic.open_float})
+    --AUC({'CursorHold', 'CursorHoldI'}, { callback = vim.diagnostic.open_float})
     --vim.cmd [[autocmd! CursorHold,CursorHoldI * lua vim.diagnostic.open_float(nil, {focus=false})]]
 
     local client = vim.lsp.get_client_by_id(ev.data.client_id)
-    if client.supports_method('textDocument/codeAction') then
-      local function code_action_listener()
-        local context = { diagnostics = vim.lsp.diagnostic.get_line_diagnostics() }
-        local params = vim.lsp.util.make_range_params()
-        params.context = context
-        vim.lsp.buf_request(0, 'textDocument/codeAction', params, function(err, result, ctx, config)
-          -- do something with result - e.g. check if empty and show some indication such as a sign
-        end)
-      end
-      AU({'CursorHold', 'CursorHoldI'}, { callback = code_action_listener } )
+
+    if client.supports_method 'textDocument/formatting' then
+      vim.api.nvim_clear_autocmds { group = augroup_fmt, buffer = ev.buf }
+      AUC('BufWritePre', { group = augroup_fmt, buffer = ev.buf, callback = function()
+        vim.lsp.buf.format { filter = function(c) return c.name ~= 'tsserver' end, bufnr = ev.buf }
+      end })
     end
+
+    -- if client.supports_method 'textDocument/codeAction' then
+    --   local function code_action_listener()
+    --     local context = { diagnostics = vim.lsp.diagnostic.get_line_diagnostics() }
+    --     local params = vim.lsp.util.make_range_params()
+    --     params.context = context
+    --     vim.lsp.buf_request(0, 'textDocument/codeAction', params, function(err, result, ctx, config)
+    --       -- do something with result - e.g. check if empty and show some indication such as a sign
+    --     end)
+    --   end
+    --
+    --   AUC({ 'CursorHold', 'CursorHoldI' }, { callback = code_action_listener })
+    -- end
 
     require 'lspsaga'.setup {}
     K("n", "gh", "<cmd>Lspsaga lsp_finder<CR>")
-    K({"n","v"}, "<leader>ca", "<cmd>Lspsaga code_action<CR>")
-    K("n", "gr", "<cmd>Lspsaga rename<CR>") 
+    K({ "n", "v" }, "<leader>ca", "<cmd>Lspsaga code_action<CR>")
+    K("n", "gr", "<cmd>Lspsaga rename<CR>")
     K("n", "gR", "<cmd>Lspsaga rename ++project<CR>")
     K("n", "gp", "<cmd>Lspsaga peek_definition<CR>") -- supports definition_action_keys tagstack. Use <C-t> to jump back
     K("n", "gd", "<cmd>Lspsaga goto_definition<CR>")
@@ -510,9 +527,9 @@ AU('LspAttach', {
     K("n", "<leader>sc", "<cmd>Lspsaga show_cursor_diagnostics<CR>")
     K("n", "[e", "<cmd>Lspsaga diagnostic_jump_prev<CR>")
     K("n", "]e", "<cmd>Lspsaga diagnostic_jump_next<CR>")
-    K("n", "[E", function() require"lspsaga.diagnostic":goto_prev({ severity = vim.diagnostic.severity.ERROR }) end)
-    K("n", "]E", function() require"lspsaga.diagnostic":goto_next({ severity = vim.diagnostic.severity.ERROR }) end)
-    K("n","<leader>o", "<cmd>Lspsaga outline<CR>")
+    K("n", "[E", function() require "lspsaga.diagnostic":goto_prev({ severity = vim.diagnostic.severity.ERROR }) end)
+    K("n", "]E", function() require "lspsaga.diagnostic":goto_next({ severity = vim.diagnostic.severity.ERROR }) end)
+    K("n", "<leader>o", "<cmd>Lspsaga outline<CR>")
     K("n", "K", "<cmd>Lspsaga hover_doc<CR>")
     K("n", "K", "<cmd>Lspsaga hover_doc ++keep<CR>")
     -- ++quiet hides 'no hover doc' notification. Pressing the key twice will enter the hover window
@@ -522,10 +539,12 @@ AU('LspAttach', {
     -- you should use the wincmd command "<C-w>w"
     K("n", "<Leader>ci", "<cmd>Lspsaga incoming_calls<CR>")
     K("n", "<Leader>co", "<cmd>Lspsaga outgoing_calls<CR>")
-    K({"n", "t"}, "<A-d>", "<cmd>Lspsaga term_toggle<CR>")
+    K({ "n", "t" }, "<A-d>", "<cmd>Lspsaga term_toggle<CR>")
   end
 })
 
+require 'trouble'.setup {}
+require 'lsp_signature'.setup {}
 require 'lspconfig'.lua_ls.setup {
   settings = {
     Lua = {
@@ -534,11 +553,12 @@ require 'lspconfig'.lua_ls.setup {
         globals = { 'vim', 'require', 'print' },
       },
       workspace = {
-        library = vim.api.nvim_get_runtime_file("", true),-- Make the server aware of Neovim runtime files
+        library = vim.api.nvim_get_runtime_file("", true), -- Make the server aware of Neovim runtime files
       },
-      telemetry = { enable = false },-- Do not send telemetry data containing a randomized but unique identifier
+      telemetry = { enable = false }, -- Do not send telemetry data containing a randomized but unique identifier
     },
   },
+  capabilities
 }
 
 require 'lspconfig'.bashls.setup { capabilities }
@@ -565,7 +585,7 @@ require 'lspconfig'.yamlls.setup {
   },
   capabilities
 }
-require 'lspconfig'.tsserver.setup { }
+require 'lspconfig'.tsserver.setup {}
 require 'lspconfig'.tailwindcss.setup {
   on_attach = function(_, bufnr) require("tailwindcss-colors").buf_attach(bufnr) end,
   --:TailwindColorsAttach
@@ -685,6 +705,7 @@ null_ls.setup {
   },
 }
 
+require 'octo'.setup {}
 -- Define the command to run Prettier
 --local prettier_command = {'node', './format.js'}
 --
