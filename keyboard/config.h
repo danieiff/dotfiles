@@ -12,18 +12,18 @@
 
 #define MASTER_LEFT
 
-#define TAPPING_TERM 120
+#define TAPPING_TERM 200 // Time before hold starts
+#define TAPPING_TOGGLE 2 // for some Tap Toggle actions such as 'TT(layer)'
 
-// #define MOUSEKEY_MOVE_DELTA 4
+#define ONESHOT_TIMEOUT 5000
+#define ONESHOT_TAP_TOGGLE 2 // locks the One Shot key
+
+#define MOUSEKEY_MOVE_DELTA 4
 #define MOUSEKEY_INTERVAL 16
 
-#define AUTO_SHIFT_MODIFIERS
-#define AUTO_SHIFT_TIMEOUT 190
+#define AUTO_SHIFT_MODIFIERS // Enable Auto Shift for 1 or more modifier keys press.
+#define AUTO_SHIFT_TIMEOUT 180 // Holding for this time will get Shifted.
 
-#define ONESHOT_TAP_TOGGLE 3
-#define ONESHOT_TIMEOUT 5000
+#define DYNAMIC_MACRO_NO_NESTING // Safety for Dynamic Macro prevents recursive invoking
 
-#define DYNAMIC_MACRO_NO_NESTING
-
-#define NO_DEBUG
-#define NO_PRINT
+#define UNICODE_SELECTED_MODES UNICODE_MODE_WINDOWS, UNICODE_MODE_MACOS

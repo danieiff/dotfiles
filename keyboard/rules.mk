@@ -4,14 +4,13 @@ AUDIO_ENABLE = no
 
 SPLIT_KEYBOARD = yes
 
-EXTRAKEY_ENABLE = yes       # Audio control and System control
+EXTRAKEY_ENABLE = yes # Audio control and System control
 MOUSEKEY_ENABLE = yes
-
-DYNAMIC_MACRO_ENABLE = yes
-
-UNICODE_ENABLE = yes
-
 AUTO_SHIFT_ENABLE = yes
+# TAP_DANCE_ENABLE = yes
+DYNAMIC_MACRO_ENABLE = yes
+UNICODEMAP_ENABLE = yes
+
 CONSOLE_ENABLE = yes
 
 # VIA_ENABLE = yes
