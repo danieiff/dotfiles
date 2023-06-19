@@ -12,7 +12,8 @@
 
 #define MASTER_LEFT
 
-// #define TAPPING_TERM 200 // Time before hold starts
+#undef TAPPING_TERM
+#define TAPPING_TERM 180 // Time before hold starts
 #define TAPPING_TOGGLE 2 // for some Tap Toggle actions such as 'TT(layer)'
 
 #define ONESHOT_TIMEOUT 5000
