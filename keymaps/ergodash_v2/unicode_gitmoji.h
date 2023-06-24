@@ -68,49 +68,10 @@ enum unicode_names {
     NECKTIE,
     STETHOSCOPE,
     BRICKS,
+    TECHNOLOGIST,
     MONEY_WITH_WINGS,
     THREAD,
-    SAFETY_VEST,
-    UP,
-    DOWN,
-    LEFT,
-    RIGHT,
-    HOR,
-    VER,
-    LT,
-    LB,
-    RT,
-    RB,
-    VERR,
-    VERL,
-    HORB,
-    HORT,
-    CRSS,
-    B_HOR,
-    B_VER,
-    B_LT,
-    B_LB,
-    B_RT,
-    B_RB,
-    B_VERR,
-    B_VERL,
-    B_HORB,
-    B_HORT,
-    B_CRSS,
-    QUESTION,
-    CIRCLE_GES,
-    CROSS_GES,
-    OK,
-    GOOD,
-    GRIN,
-    SMILE,
-    ROFL,
-    GRIN_SWE,
-    TEAR,
-    CRY_LOUD,
-    SWEAT,
-    APOLOGY,
-    CROSS
+    SAFETY_VEST
 };
 
 const uint32_t unicode_map[] PROGMEM = {
@@ -183,44 +144,8 @@ const uint32_t unicode_map[] PROGMEM = {
     [NECKTIE] = 0x1f454, // 👔 Add or update business logic.
     [STETHOSCOPE] = 0x1fa7a, // 🩺 Add or update healthcheck.
     [BRICKS] = 0x1f9f1, // 🧱 Infrastructure related changes.
+    [TECHNOLOGIST] = 0x1f9d1, // 🧑‍💻 Improve developer experience.
     [MONEY_WITH_WINGS] = 0x1f4b8, // 💸 Add sponsorships or money related infrastructure.
     [THREAD] = 0x1f9f5, // 🧵 Add or update code related to multithreading or concurrency.
     [SAFETY_VEST] = 0x1f9ba, // 🦺 Add or update code related to validation.
-    [UP] = 0x2191, // ↑
-    [DOWN] = 0x2193, // ↓
-    [LEFT] = 0x2190, // ←
-    [RIGHT] = 0x2192, // →
-    [HOR] = 0x2500, // ─
-    [VER] = 0x2502, // │
-    [LT] = 0x250c, // ┌
-    [LB] = 0x2514, // └
-    [RT] = 0x2510, // ┐
-    [RB] = 0x2518, // ┘
-    [VERR] = 0x251c, // ├
-    [VERL] = 0x2524, // ┤
-    [HORB] = 0x252c, // ┬
-    [HORT] = 0x2534, // ┴
-    [CRSS] = 0x253c, // ┼
-    [B_HOR] = 0x2501, // ━
-    [B_VER] = 0x2503, // ┃
-    [B_LT] = 0x250f, // ┏
-    [B_LB] = 0x2517, // ┗
-    [B_RT] = 0x2513, // ┓
-    [B_RB] = 0x251b, // ┛
-    [B_VERR] = 0x2523, // ┣
-    [B_VERL] = 0x2528, // ┨
-    [B_HORB] = 0x2533, // ┳
-    [B_HORT] = 0x253b, // ┻
-    [B_CRSS] = 0x254b, // ╋
-    [QUESTION] = 0x2754, // ❔
-    [OK] = 0x1f44c, // 👌
-    [GOOD] = 0x1f44d, // 👍
-    [GRIN] = 0x1f600, // 😀
-    [SMILE] = 0x263a, // ☺
-    [ROFL] = 0x1f923, // 🤣
-    [GRIN_SWE] = 0x1f613, // 😓
-    [TEAR] = 0x1f972, // 🥲
-    [CRY_LOUD] = 0x1f62d, // 😭
-    [APOLOGY] = 0x1f647, // 🙇
-    [CROSS] = 0x274c, // ❌
 };
