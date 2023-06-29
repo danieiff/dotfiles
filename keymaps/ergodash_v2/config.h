@@ -14,19 +14,17 @@
 
 #undef TAPPING_TERM
 #define TAPPING_TERM 170 // Time before hold starts
-#define TAPPING_TERM_PER_KEY // allows customize
+#define TAPPING_TERM_PER_KEY
 #define TAPPING_TOGGLE 2 // for some Tap Toggle actions such as 'TT(layer)'
-
-#define HOLD_ON_OTHER_KEY_PRESS_PER_KEY // easier hold
 
 #define ONESHOT_TIMEOUT 5000
 #define ONESHOT_TAP_TOGGLE 2 // locks the One Shot key
 
 #define MOUSEKEY_MOVE_DELTA 4
-#define MOUSEKEY_INTERVAL 16
+#define MOUSEKEY_INTERVAL 20
 
 #define AUTO_SHIFT_MODIFIERS // Enable Auto Shift for 1 or more modifier keys press.
-#define AUTO_SHIFT_TIMEOUT 160 // Holding for this time will get Shifted.
+#define AUTO_SHIFT_TIMEOUT 140 // Holding for this time will get Shifted.
 #define AUTO_SHIFT_REPEAT
 
 #define DYNAMIC_MACRO_NO_NESTING // Safety for Dynamic Macro prevents recursive invoking

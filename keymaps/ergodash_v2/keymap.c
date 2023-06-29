@@ -1,5 +1,6 @@
 #include QMK_KEYBOARD_H
-#include "user_unicode_map.h"
+#include "unicode_gitmoji.h"
+#include "mousekey.h"
 
 typedef enum {
     _QWERTY,
@@ -7,15 +8,35 @@ typedef enum {
     _LOWER,
 } layer_t;
 
-// enum custom_keycodes {};
+enum custom_keycodes {
+    SFT_CLK = SAFE_RANGE,
+    CTL_CLK,
+    SQR_BRC,
+    CRL_BRC,
+    _EMOJI1,
+    _EMOJI2,
+    _EMOJI3,
+    _EMOJI4
+};
 
 #define MPLY_VOLU LT(0, KC_VOLU)
 #define MUTE_VOLD LT(0, KC_VOLD)
+#define PSCR_CCLK LT(0, CTL_CLK)
+#define RCLK_SCLK LT(0, SFT_CLK)
 #define SFT_ENT LT(0, KC_ENT)
+#define EMOJI1 LT(0, _EMOJI1)
+#define EMOJI2 LT(0, _EMOJI2)
+#define EMOJI3 LT(0, _EMOJI3)
+#define EMOJI4 LT(0, _EMOJI4)
 
 
-#define ACTION_TAP_DANCE_FN_ADVANCED_USER(user_fn_on_each_tap, user_fn_on_dance_finished, user_fn_on_dance_reset, user_user_data) \
-    { .fn = {user_fn_on_each_tap, user_fn_on_dance_finished, user_fn_on_dance_reset}, .user_data = (void *)user_user_data, }
+const char *choice(const char *unicode_choices[]);
+const char *negative_choices[];
+const char *question_choices[];
+
+
+#define ACTION_TAP_DANCE_CUSTOM(user_user_data) \
+    { .fn = {NULL, td_finished, td_reset}, .user_data = (td_user_data_t *)user_user_data }
 
 typedef enum {
     TD_NONE,
@@ -37,6 +58,7 @@ typedef struct {
         KEYCODE8_TWICE,
         KEYCODE16,
         UNICODE,
+        UNICODE_CHOICE,
         LAYER_HOLD,
         LAYER_TOGGLE,
         LAYER_ONESHOT
@@ -44,8 +66,9 @@ typedef struct {
     union {
         uint8_t keycode8;
         uint16_t keycode16;
-        char* unicode;
         layer_t layer;
+        char* unicode;
+        const char** unicode_choices;
     };
 } td_keycode_t;
 
@@ -57,157 +80,87 @@ typedef struct {
   } options;
 } td_user_data_t;
 
-// typedef td_keycode_t td_user_data_t[td_state_nums];
-
-td_state_t cur_dance(tap_dance_state_t *state, bool is_permissive_hold);
 void td_finished(tap_dance_state_t *state, void *user_data);
 void td_reset(tap_dance_state_t *state, void *user_data);
 
 enum tap_dances {
-    TD_RAISE,
-    TD_LOWER,
-    TD_ESC_ALT,
+    TD_LAYER,
     TD_EISU_GUI,
-    TD_PSCR_SIGN,
-    TD_EMO_POSI,
-    TD_EMO_NEGA,
-    TD_ARROW,
-    TD_GITMOJI_MISC,
-    TD_PGCTL,
-    TD_PRN,
-    TD_BRC,
-    TD_L_CLK,
+    TD_UC_ARROW,
+    TD_PG,
+    // TD_BRC
 };
 
 tap_dance_action_t tap_dance_actions[] = {
-    [TD_RAISE] = ACTION_TAP_DANCE_FN_ADVANCED_USER( NULL, td_finished, td_reset,
-        &((td_user_data_t) {
-            .actions = {
-                [TD_SINGLE_TAP] = { LAYER_TOGGLE, .layer= _RAISE },
-                [TD_SINGLE_HOLD] = { LAYER_HOLD, .layer= _RAISE },
-                [TD_DOUBLE_TAP] = { UNICODE, .unicode= " " },
-                [TD_DOUBLE_HOLD] = { UNICODE, .unicode= " " }
-            },
-        })
-    ),
-    [TD_LOWER] = ACTION_TAP_DANCE_FN_ADVANCED_USER( NULL, td_finished, td_reset,
-        &((td_user_data_t) {
-            .actions = {
-                [TD_SINGLE_TAP] = { LAYER_ONESHOT, .layer= _LOWER },
-                [TD_SINGLE_HOLD] = { LAYER_HOLD, .layer= _LOWER },
-                [TD_DOUBLE_TAP] = { UNICODE, .unicode= " " },
-                [TD_DOUBLE_HOLD] = { UNICODE, .unicode= " " }
-            },
-        })
-    ),
-    [TD_ESC_ALT] = ACTION_TAP_DANCE_FN_ADVANCED_USER( NULL, td_finished, td_reset,
-        &((td_user_data_t) {
-            .actions = {
-                [TD_SINGLE_TAP] = { KEYCODE8, .keycode8 = KC_ESC },
-                [TD_SINGLE_HOLD] = { KEYCODE8_HOLD, .keycode8 = KC_LALT },
-                [TD_DOUBLE_TAP] = { UNICODE, .unicode= " " },
-                [TD_DOUBLE_HOLD] = { UNICODE, .unicode= " " }
-            },
-            .options = TD_PERMISSIVE_HOLD,
-
-        })
-    ),
-    [TD_EISU_GUI] = ACTION_TAP_DANCE_FN_ADVANCED_USER( NULL, td_finished, td_reset,
-        &((td_user_data_t) {
-            .actions = {
-                [TD_SINGLE_TAP] = { KEYCODE16, .keycode16 = A(KC_GRV) },
-                [TD_SINGLE_HOLD] = { KEYCODE8_HOLD, .keycode8 = KC_LGUI },
-                [TD_DOUBLE_TAP] = { UNICODE, .unicode= " " },
-                [TD_DOUBLE_HOLD] = { UNICODE, .unicode= " " }
-            },
-            .options = TD_PERMISSIVE_HOLD,
-        })
-    ),
-    [TD_PSCR_SIGN] = ACTION_TAP_DANCE_FN_ADVANCED_USER( NULL, td_finished, td_reset,
-        &((td_user_data_t) {
-            .actions = {
-                [TD_SINGLE_TAP] = { KEYCODE8, .keycode8 = KC_PSCR },
-                [TD_SINGLE_HOLD] = { UNICODE, .unicode= "❔" },
-                [TD_DOUBLE_TAP] = { UNICODE, .unicode= "👌" },
-                [TD_DOUBLE_HOLD] = { UNICODE, .unicode= "❌" }
-            },
-        })
-    ),
-    [TD_EMO_POSI] = ACTION_TAP_DANCE_FN_ADVANCED_USER( NULL, td_finished, td_reset,
-        &((td_user_data_t) {
-            .actions = {
-                [TD_SINGLE_TAP] = { UNICODE, .unicode= "👍" },
-                [TD_SINGLE_HOLD] = { UNICODE, .unicode= "😀" },
-                [TD_DOUBLE_TAP] = { UNICODE, .unicode= "☺" },
-                [TD_DOUBLE_HOLD] = { UNICODE, .unicode= "🤣" }
-            },
-        })
-    ),
-    [TD_EMO_NEGA] = ACTION_TAP_DANCE_FN_ADVANCED_USER( NULL, td_finished, td_reset,
-        &((td_user_data_t) {
-            .actions = {
-                [TD_SINGLE_TAP] = { UNICODE, .unicode = "🙇" },
-                [TD_SINGLE_HOLD] = { UNICODE, .unicode= "😓" },
-                [TD_DOUBLE_TAP] = { UNICODE, .unicode= "🥲" },
-                [TD_DOUBLE_HOLD] = { UNICODE, .unicode= "😭" },
-            },
-        })
-    ),
-    [TD_ARROW] = ACTION_TAP_DANCE_FN_ADVANCED_USER( NULL, td_finished, td_reset,
-        &((td_user_data_t) {
-            .actions = {
-                [TD_SINGLE_TAP] = { UNICODE, .unicode= "→" },
-                [TD_SINGLE_HOLD] = { UNICODE, .unicode= "←" },
-                [TD_DOUBLE_TAP] = { UNICODE, .unicode= "↑" },
-                [TD_DOUBLE_HOLD] = { UNICODE, .unicode= "↓" },
-            },
-        })
-    ),
-    [TD_PGCTL] = ACTION_TAP_DANCE_FN_ADVANCED_USER( NULL, td_finished, td_reset,
-        &((td_user_data_t) {
-            .actions = {
-                [TD_SINGLE_TAP] = { KEYCODE8, .keycode8= KC_PGDN },
-                [TD_SINGLE_HOLD] = { KEYCODE8, .keycode8= KC_PGUP },
-                [TD_DOUBLE_TAP] = { KEYCODE8,  .keycode8= KC_END },
-                [TD_DOUBLE_HOLD] = { KEYCODE8, .keycode8= KC_HOME },
-                },
-        })
-    ),
-    [TD_BRC] = ACTION_TAP_DANCE_FN_ADVANCED_USER( NULL, td_finished, td_reset,
-        &((td_user_data_t) {
-            .actions = {
-                [TD_SINGLE_TAP] = { KEYCODE8, .keycode8= KC_LBRC },
-                [TD_SINGLE_HOLD] = { KEYCODE16, .keycode16 = S(KC_LBRC) },
-                [TD_DOUBLE_TAP] = { KEYCODE8, .keycode8= KC_RBRC },
-                [TD_DOUBLE_HOLD] = { KEYCODE16, .keycode16 = S(KC_RBRC) },
-            },
-        })
-    ),
-    [TD_L_CLK] = ACTION_TAP_DANCE_FN_ADVANCED_USER( NULL, td_finished, td_reset,
-        &((td_user_data_t) {
-            .actions = {
-                [TD_SINGLE_TAP] = { KEYCODE8, .keycode8= KC_BTN1 },
-                [TD_SINGLE_HOLD] = { KEYCODE8_HOLD, .keycode8= KC_BTN1 },
-                [TD_DOUBLE_TAP] = { KEYCODE16, .keycode16 = S(KC_BTN1) },
-                [TD_DOUBLE_HOLD] = { KEYCODE16, .keycode16 = C(KC_BTN1) },
-            },
-        })
-    ),
+    [TD_LAYER] = ACTION_TAP_DANCE_CUSTOM( &((td_user_data_t) {
+        .actions = {
+            [TD_SINGLE_TAP] = { LAYER_ONESHOT, .layer = _LOWER },
+            [TD_SINGLE_HOLD] = { LAYER_HOLD, .layer = _RAISE },
+            [TD_DOUBLE_TAP] =  { UNICODE_CHOICE, .unicode_choices = negative_choices },
+            [TD_DOUBLE_HOLD] = { UNICODE, .unicode = "_(._.)_" }
+        },
+        .options = TD_PERMISSIVE_HOLD,
+    })),
+    [TD_EISU_GUI] = ACTION_TAP_DANCE_CUSTOM( &((td_user_data_t) {
+        .actions = {
+            [TD_SINGLE_TAP] = { KEYCODE16, .keycode16 = A(KC_GRV) },
+            [TD_SINGLE_HOLD] = { KEYCODE8_HOLD, .keycode8 = KC_LGUI },
+            [TD_DOUBLE_TAP] = { UNICODE, .unicode = "d(•ᴗ•◍)" },
+            [TD_DOUBLE_HOLD] = { UNICODE, .unicode = "(ᕑᗢᓫ∗)" },
+        },
+        .options = TD_PERMISSIVE_HOLD,
+    })),
+    [TD_UC_ARROW] = ACTION_TAP_DANCE_CUSTOM( &((td_user_data_t) {
+        .actions = {
+            [TD_SINGLE_TAP] = { UNICODE, .unicode = "→" },
+            [TD_SINGLE_HOLD] = { UNICODE, .unicode = "←" },
+            [TD_DOUBLE_TAP] = { UNICODE, .unicode = "↓" },
+            [TD_DOUBLE_HOLD] = { UNICODE, .unicode = "↑" },
+        },
+    })),
+    [TD_PG] = ACTION_TAP_DANCE_CUSTOM( &((td_user_data_t) {
+        .actions = {
+            [TD_SINGLE_TAP] = { KEYCODE8, .keycode8 = KC_PGDN },
+            [TD_SINGLE_HOLD] = { KEYCODE8, .keycode8 = KC_PGUP },
+            [TD_DOUBLE_TAP] = { KEYCODE8,  .keycode8 = KC_END },
+            [TD_DOUBLE_HOLD] = { KEYCODE8, .keycode8 = KC_HOME },
+        },
+    })),
+    // [TD_BRC] = ACTION_TAP_DANCE_CUSTOM( &((td_user_data_t) {
+    //     .actions = {
+    //         [TD_SINGLE_TAP] = { KEYCODE8, .keycode8 = KC_LBRC },
+    //         [TD_SINGLE_HOLD] = { KEYCODE16, .keycode16 = S(KC_LBRC) },
+    //         [TD_DOUBLE_TAP] = { KEYCODE8,  .keycode8 = KC_RBRC },
+    //         [TD_DOUBLE_HOLD] = { KEYCODE16, .keycode16 = S(KC_RBRC) },
+    //     },
+    // })),
 };
-
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
   [_QWERTY] = LAYOUT(
 //┌────────┬────────┬────────┬────────┬────────┬────────┬────────┐                          ┌────────┬────────┬────────┬────────┬────────┬────────┬────────┐
-  MPLY_VOLU,    KC_1,    KC_2,    KC_3,    KC_4,    KC_5, TD(TD_EMO_POSI),            TD(TD_EMO_NEGA),    KC_6,    KC_7,    KC_8,    KC_9,    KC_0, TD(TD_PGCTL),
+  MUTE_VOLD,    KC_1,    KC_2,    KC_3,    KC_4,    KC_5,  KC_DEL,                          TD(TD_PG),    KC_6,    KC_7,    KC_8,    KC_9,    KC_0, MPLY_VOLU,
 //├────────┼────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┼────────┤
-  MUTE_VOLD,    KC_Q,    KC_W,    KC_E,    KC_R,    KC_T, KC_RGHT,                              KC_UP,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P, KC_BSLS,
+    KC_RBRC,    KC_Q,    KC_W,    KC_E,    KC_R,    KC_T, KC_RGHT,                              KC_UP,    KC_Y,    KC_U,    KC_I,    KC_O,    KC_P, KC_BSLS,
 //├────────┼────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┼────────┤
      KC_TAB,    KC_A,    KC_S,    KC_D,    KC_F,    KC_G, KC_LEFT,                            KC_DOWN,    KC_H,    KC_J,    KC_K,    KC_L, KC_SCLN, KC_QUOT,
 //├────────┼────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┼────────┤
-TD(TD_RAISE),   KC_Z,    KC_X,    KC_C,    KC_V,    KC_B, TD(TD_EISU_GUI),                    KC_MINS,    KC_N,    KC_M, KC_COMM,  KC_DOT, KC_SLSH,  KC_GRV,
+TD(TD_LAYER),   KC_Z,    KC_X,    KC_C,    KC_V,    KC_B, TD(TD_EISU_GUI),                    KC_MINS,    KC_N,    KC_M, KC_COMM,  KC_DOT, KC_SLSH,  KC_GRV,
 //├────────┼────────┼────────┼────────┼────────┼────────┼────────┼────────┐        ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┼────────┤
-TD(TD_LOWER),TD(TD_ARROW),_______,_______,TD(TD_BRC), TD(TD_ESC_ALT), CTL_T(KC_SPC),   SFT_ENT, KC_BSPC, KC_EQL, TD(TD_PSCR_SIGN), TD(TD_GITMOJI_MISC), _______, _______
+     EMOJI1,  EMOJI2,   EMOJI3, EMOJI4,    KC_LBRC,ALT_T(KC_ESC),CTL_T(KC_SPC),      SFT_ENT, KC_BSPC,  KC_EQL,  TD(TD_UC_ARROW), _______, _______, _______
+//└────────┴────────┴────────┴────────┘        └────────┴────────┴────────┘        └────────┴────────┴────────┘        └────────┴────────┴────────┴────────┘
+  ),
+  [_RAISE] = LAYOUT(
+//┌────────┬────────┬────────┬────────┬────────┬────────┬────────┐                          ┌────────┬────────┬────────┬────────┬────────┬────────┬────────┐
+    _______, _______, _______, _______, _______, _______, _______,                             UC_MAC, AS_DOWN,  AS_RPT,   AS_UP, DT_DOWN, DT_PRNT,   DT_UP,
+//├────────┼────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┼────────┤
+    _______, KC_BRIU, KC_WH_L, KC_MS_U, KC_WH_R, KC_WH_U, _______,                            UC_WINC, _______, _______, _______, _______, _______, _______,
+//├────────┼────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┼────────┤
+    _______, KC_BRID, KC_MS_L, KC_MS_D, KC_MS_R, KC_WH_D, _______,                            _______, _______, _______, _______, _______, _______,  KC_F12,
+//├────────┼────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┼────────┤
+    _______,   KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5, _______,                            _______,   KC_F6,   KC_F7,   KC_F8,   KC_F9,  KC_F10,  KC_F11,
+//├────────┼────────┼────────┼────────┼────────┼────────┼────────┼────────┐        ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┼────────┤
+    _______, _______, DM_PLY1, DM_PLY2,        PSCR_CCLK,RCLK_SCLK,KC_BTN1,          _______, _______, _______,          DM_REC1, DM_REC2, DM_RSTP, _______
 //└────────┴────────┴────────┴────────┘        └────────┴────────┴────────┘        └────────┴────────┴────────┘        └────────┴────────┴────────┴────────┘
   ),
   [_LOWER] = LAYOUT(
@@ -237,57 +190,115 @@ TD(TD_LOWER),TD(TD_ARROW),_______,_______,TD(TD_BRC), TD(TD_ESC_ALT), CTL_T(KC_S
     _______, _______, _______, _______,          _______, _______, _______,          _______, _______, _______,          _______, _______, _______, _______
 //└────────┴────────┴────────┴────────┘        └────────┴────────┴────────┘        └────────┴────────┴────────┘        └────────┴────────┴────────┴────────┘
   ),
-  [_RAISE] = LAYOUT(
-//┌────────┬────────┬────────┬────────┬────────┬────────┬────────┐                          ┌────────┬────────┬────────┬────────┬────────┬────────┬────────┐ UC_WINC,  UC_MAC,
-    _______, _______, _______, _______, _______, _______, _______,                             UC_MAC, AS_DOWN,  AS_RPT,   AS_UP, DT_DOWN, DT_PRNT,   DT_UP,
-//├────────┼────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┼────────┤
-    _______, KC_BRIU, KC_WH_L, KC_MS_U, KC_WH_R, KC_WH_U, _______,                            UC_WINC,   KC_F6,   KC_F7,   KC_F8,   KC_F9,  KC_F10,  KC_F11,
-//├────────┼────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┼────────┤
-    _______, KC_BRID, KC_MS_L, KC_MS_D, KC_MS_R, KC_WH_D, _______,                            _______,    KC_1,    KC_2,    KC_3,    KC_4,    KC_5,  KC_F12,
-//├────────┼────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┼────────┤
-    _______,   KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5, C(KC_BTN1),                         _______, _______,    KC_6,    KC_7,    KC_8,    KC_9, DM_RSTP,
-//├────────┼────────┼────────┼────────┼────────┼────────┼────────┼────────┐        ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┼────────┤
-    _______, _______, _______, TD(TD_L_CLK),  KC_BTN2, S(KC_BTN1), KC_BTN1,          _______, _______,    KC_0,          DM_REC1, DM_PLY1, DM_REC2, DM_PLY2
-//└────────┴────────┴────────┴────────┘        └────────┴────────┴────────┘        └────────┴────────┴────────┘        └────────┴────────┴────────┴────────┘
-  ),
 };
 
+uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
+    switch (keycode) {
+        case TD(TD_PG):
+            return TAPPING_TERM + 150;
+        case TD(TD_UC_ARROW):
+            return TAPPING_TERM + 100;
+        case TD(TD_LAYER):
+            return TAPPING_TERM + 100;
+        case TD(TD_EISU_GUI):
+            return TAPPING_TERM + 100;
+        // case TD(TD_BRC):
+        //     return TAPPING_TERM + 100;
+        case CTL_T(KC_SPC):
+            return TAPPING_TERM + 50;
+        case KC_BSPC:
+            return TAPPING_TERM + 50;
+        default:
+            return TAPPING_TERM;
+    }
+}
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
 
 # ifdef CONSOLE_ENABLE
-    uprintf("KL: kc: 0x%04X, col: %2u, row: %2u, pressed: %u, time: %5u, int: %u, count: %u\n", keycode, record->event.key.col, record->event.key.row, record->event.pressed, record->event.time, record->tap.interrupted, record->tap.count);
+    uprintf("kl: kc: 0x%04x, col: %2u, row: %2u, pressed: %u, time: %5u, int: %u, count: %u\n", keycode, record->event.key.col, record->event.key.row, record->event.pressed, record->event.time, record->tap.interrupted, record->tap.count);
 # endif
 
-  bool hold_start = !record->tap.count && record->event.pressed;
-  // bool hold_end = !record->tap.count && !record->event.pressed;
-  // bool tap_start = record->tap.count && record->event.pressed;
-  // bool tap_end = record->tap.count && !record->event.pressed;
-  switch (keycode) {
-    case MPLY_VOLU:
-      if (hold_start) {
-        tap_code(KC_MPLY);
-        return false;
-      }
-      break;
-    case MUTE_VOLD:
-      if (hold_start) {
-        tap_code(KC_MUTE);
-        return false;
-      }
-      break;
-    case SFT_ENT:
-      if (hold_start) {
-        tap_code16(LSFT(KC_ENT));
-        return false;
-      }
-      break;
-    case TD(TD_ESC_ALT): return TAPPING_TERM - 50;
-    case TD(TD_EISU_GUI): return TAPPING_TERM - 80;
-    case TD(TD_L_CLK): return TAPPING_TERM + 100;
-  }
+    bool hold_start = !record->tap.count && record->event.pressed;
+    bool hold_end = !record->tap.count && !record->event.pressed;
+    bool tap_start = record->tap.count && record->event.pressed;
+    // bool tap_end = record->tap.count && !record->event.pressed;
+    switch (keycode) {
+        case PSCR_CCLK:
+            if (tap_start) {
+                register_mods(MOD_BIT(KC_LCTL));
+                tap_code_delay(KC_BTN1, 5);
+                unregister_mods(MOD_BIT(KC_LCTL));
+                return false;
+            } else if (hold_start) {
+                tap_code(KC_PSCR);
+                return false;
+            }
+            break;
+        case RCLK_SCLK:
+            if (tap_start) {
+                register_mods(MOD_BIT(KC_LSFT));
+                wait_ms(5);
+                tap_code(KC_BTN1);
+                unregister_mods(MOD_BIT(KC_LSFT));
+                return false;
+            } else if (hold_start) {
+                register_code(KC_BTN2);
+                return false;
+            } else if (hold_end) {
+                unregister_code(KC_BTN2);
+                return false;
+            }
+            break;
+        case MPLY_VOLU:
+            if (hold_start) {
+               tap_code(KC_MPLY);
+               return false;
+            }
+            break;
+        case MUTE_VOLD:
+            if (hold_start) {
+                tap_code(KC_MUTE);
+                return false;
+            }
+            break;
+        case SFT_ENT:
+            if (hold_start) {
+                tap_code16(LSFT(KC_ENT));
+                return false;
+            }
+            break;
+        case EMOJI1:
+            if (tap_start) {
+                send_unicode_string("d(•ᴗ•◍)");
+            } else if (hold_start) {
+                send_unicode_string("(ᕑᗢᓫ∗)");
+            }
+            return false;
+        case EMOJI2:
+            if (tap_start) {
+                send_unicode_string("(σ❛ﾛ❜)σ");
+            } else if (hold_start) {
+                send_unicode_string(choice(question_choices));
+            }
+            return false;
+        case EMOJI3:
+            if (tap_start) {
+                send_unicode_string("(*._.)ゞ");
+            } else if (hold_start) {
+                // send_unicode_string("");
+            }
+            return false;
+        case EMOJI4:
+            if (tap_start) {
+                send_unicode_string(choice(negative_choices));
+            } else if (hold_start) {
+                send_unicode_string("_(._.)_");
+            }
+            return false;
+    }
 
-  return true;
+    return true;
 }
 
 uint16_t unicodemap_index(uint16_t keycode) {
@@ -314,6 +325,21 @@ uint16_t unicodemap_index(uint16_t keycode) {
     }
 }
 
+bool _seeded = false;
+const char *choice(const char *choices[]) {
+    if (_seeded == false) {
+        srand(timer_read32());
+        _seeded = true;
+    }
+    size_t choices_size = 0;
+    while (choices[choices_size] != NULL) {
+        choices_size++;
+    }
+    return choices[rand() % choices_size];
+}
+
+const char *negative_choices[] = { "🤦", "(⩿ _ ⪀″)", "(´- -`⑈)", NULL };
+const char *question_choices[] = { "(?__?)", "❔", NULL };
 
 td_state_t cur_dance(tap_dance_state_t *state, bool is_permissive_hold) {
     switch (state->count) {
@@ -335,14 +361,17 @@ void td_finished(tap_dance_state_t *state, void *_user_data) {
     user_data->state = cur_dance(state, user_data->options & TD_PERMISSIVE_HOLD);
     td_keycode_t td_keycode = user_data->actions[user_data->state];
 
-    uprintf("finished state: %u, keytype: %u\n", user_data->state, td_keycode.type );
+# ifdef CONSOLE_ENABLE
+    uprintf("finished count: %u, interrupted: %u, pressed: %u, state: %u, keytype: %u\n", state->count, state->interrupted, state->pressed, user_data->state, td_keycode.type );
+# endif
 
     switch(td_keycode.type) {
         case KEYCODE8: tap_code(td_keycode.keycode8); break;
         case KEYCODE8_HOLD: register_code(td_keycode.keycode8); break;
-        case KEYCODE8_TWICE: tap_code(td_keycode.keycode8); tap_code(td_keycode.keycode8); break;
+        case KEYCODE8_TWICE: tap_code(td_keycode.keycode8); register_code(td_keycode.keycode8); break;
         case KEYCODE16: tap_code16(td_keycode.keycode16); break;
         case UNICODE: send_unicode_string(td_keycode.unicode); break;
+        case UNICODE_CHOICE: send_unicode_string(choice(td_keycode.unicode_choices)); break;
         case LAYER_HOLD: layer_on(td_keycode.layer); break;
         case LAYER_TOGGLE: layer_invert(td_keycode.layer); break;
         case LAYER_ONESHOT: set_oneshot_layer(td_keycode.layer, ONESHOT_START); break;
@@ -354,18 +383,23 @@ void td_reset(tap_dance_state_t *state, void *_user_data) {
 
     td_user_data_t *user_data = (td_user_data_t *)_user_data;
     td_keycode_t td_keycode = user_data->actions[user_data->state];
-    uprintf("finished state: %u, keytype: %u\n", user_data->state, td_keycode.type );
+
+# ifdef CONSOLE_ENABLE
+    uprintf("reset count: %u,interrupted: %u, pressed: %u, state: %u, keytype: %u\n", state->count, state->interrupted, state->pressed, user_data->state, td_keycode.type );
+# endif
 
     switch(td_keycode.type) {
         case KEYCODE8: break;
         case KEYCODE8_HOLD: unregister_code(td_keycode.keycode8); break;
+        case KEYCODE8_TWICE: unregister_code(td_keycode.keycode8); break;
         case KEYCODE16: break;
         case UNICODE: break;
+        case UNICODE_CHOICE: break;
         case LAYER_HOLD: layer_off(td_keycode.layer); break;
         case LAYER_TOGGLE: break;
         case LAYER_ONESHOT: clear_oneshot_layer_state(ONESHOT_PRESSED); break;
         default: break;
     }
 
-    state = TD_NONE;
+    user_data->state = TD_NONE;
 }
