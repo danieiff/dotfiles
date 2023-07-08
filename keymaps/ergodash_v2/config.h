@@ -20,7 +20,7 @@
 #define ONESHOT_TIMEOUT 5000
 #define ONESHOT_TAP_TOGGLE 2 // locks the One Shot key
 
-#define MOUSEKEY_MOVE_DELTA 4
+#define MOUSEKEY_MOVE_DELTA
 #define MOUSEKEY_INTERVAL 20
 
 #define AUTO_SHIFT_MODIFIERS // Enable Auto Shift for 1 or more modifier keys press.
