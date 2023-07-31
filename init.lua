@@ -11,8 +11,16 @@ local options = {
   pumheight = 10, pumblend = 10, winblend = 10, showtabline = 2, number = true, relativenumber = true, signcolumn = "yes",
   termguicolors = true, laststatus = 3 , cmdheight = 0, --statuscolumn = '%#NonText#%{&nu?v:lnum:""}%=%{&rnu&&(v:lnum%2)?" ".v:relnum:""}%#LineNr#%{&rnu&&!(v:lnum%2)?" ".v:relnum:""}',
   foldmethod = 'expr', foldexpr = "nvim_treesitter#foldexpr()", foldenable = false,
+vim.fn.digraph_setlist {
+  { 'j[', '「' }, { 'j]', '」' }, { 'j{', '『' }, { 'j}', '』' }, { 'j<', '【' }, { 'j>', '】' },
+  { 'js', '　' }, { 'j,', '、' }, { 'j.', '。' }, { 'jj', 'j' },
+  { 'j1', '１' }, { 'j2', '２' }, { 'j3', '３' }, { 'j4', '４' }, { 'j5', '５' },
+  { 'j6', '６' }, { 'j7', '７' }, { 'j8', '８' }, { 'j9', '９' }, { 'j0', '０' }
 }
-for k, v in pairs(options) do vim.opt[k] = v end
+K('fj', 'f<C-k>j')
+K('Fj', 'F<C-k>j')
+K('tj', 't<C-k>j')
+K('Tj', 'T<C-k>j')
 
 local keymaps_opts = { noremap = true, } -- silent = true }
 vim.g.mapleader = " "
@@ -933,7 +941,6 @@ vim.cmd [[
 --augroup END
 
 require 'nvim-cursorword'
-require 'digraph'
 
 -- local luasnip = require 'luasnip' --?
 --local cmp = require'cmp'
