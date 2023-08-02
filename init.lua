@@ -1,8 +1,57 @@
 local K, HL, CMD, AUC, AUG = vim.keymap.set, vim.api.nvim_set_hl, vim.api.nvim_create_user_command,
     vim.api.nvim_create_autocmd, vim.api.nvim_create_augroup
+-- local uv = vim.loop
+local function run_shell_cmd_async(command, callback)
+  local stdout = uv.new_pipe(false)
+  local stderr = uv.new_pipe(false)
 
 local options = {
   updatetime = 3000, timeoutlen = 1000,
+  local handle, pid
+  handle, pid = uv.spawn(command, {
+    stdio = { nil, stdout, stderr },
+    detached = true
+  }, function(code, signal)
+    stdout:close()
+    stderr:close()
+    handle:close()
+
+    -- Call the callback with the output or error
+    if code == 0 then
+      callback(nil, stdout:read_stop())
+    else
+      callback("Error: " .. stderr:read_stop())
+    end
+
+    local output = ""
+    local stderr_output = ""
+
+    stdout:read_start(function(err, data)
+      if data then
+        output = output .. data
+      else
+        uv.unref(handle)
+      end
+    end)
+
+    stderr:read_start(function(err, data)
+      if data then stderr_output = stderr_output .. data end
+    end)
+  end
+  )
+end
+
+local K, HL, CMD, AUC, AUG = function(lhs, rhs, opts)
+      opts = opts or {}
+      local mode = opts.mode or 'n'
+      opts.mode = nil
+      vim.keymap.set(mode, lhs, rhs, opts)
+    end,
+    vim.api.nvim_set_hl,
+    vim.api.nvim_create_user_command,
+    vim.api.nvim_create_autocmd,
+    vim.api.nvim_create_augroup
+
   virtualedit = 'block',
   autowriteall = true, undofile = true, -- persistent undo history saved in {undodir}
   shell = os.getenv'SHELL'..' -l',
