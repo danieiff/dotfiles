@@ -1,47 +1,4 @@
-local K, HL, CMD, AUC, AUG = vim.keymap.set, vim.api.nvim_set_hl, vim.api.nvim_create_user_command,
-    vim.api.nvim_create_autocmd, vim.api.nvim_create_augroup
--- local uv = vim.loop
-local function run_shell_cmd_async(command, callback)
-  local stdout = uv.new_pipe(false)
-  local stderr = uv.new_pipe(false)
-
-local options = {
-  updatetime = 3000, timeoutlen = 1000,
-  local handle, pid
-  handle, pid = uv.spawn(command, {
-    stdio = { nil, stdout, stderr },
-    detached = true
-  }, function(code, signal)
-    stdout:close()
-    stderr:close()
-    handle:close()
-
-    -- Call the callback with the output or error
-    if code == 0 then
-      callback(nil, stdout:read_stop())
-    else
-      callback("Error: " .. stderr:read_stop())
-    end
-
-    local output = ""
-    local stderr_output = ""
-
-    stdout:read_start(function(err, data)
-      if data then
-        output = output .. data
-      else
-        uv.unref(handle)
-      end
-    end)
-
-    stderr:read_start(function(err, data)
-      if data then stderr_output = stderr_output .. data end
-    end)
-  end
-  )
-end
-
-local K, HL, CMD, AUC, AUG = function(lhs, rhs, opts)
+K, HL, CMD, AUC, AUG = function(lhs, rhs, opts)
       opts = opts or {}
       local mode = opts.mode or 'n'
       opts.mode = nil
@@ -52,14 +9,21 @@ local K, HL, CMD, AUC, AUG = function(lhs, rhs, opts)
     vim.api.nvim_create_autocmd,
     vim.api.nvim_create_augroup
 
+---@ CONFIG INIT START
+
+---@ Misc Options, Keymaps
+
+for k, v in pairs {
+  autowriteall = true, undofile = true,
+  shell = os.getenv 'SHELL' .. ' -l',
   virtualedit = 'block',
-  autowriteall = true, undofile = true, -- persistent undo history saved in {undodir}
-  shell = os.getenv'SHELL'..' -l',
-  showmatch = true, matchtime = 1, ignorecase = true, smartcase = true,
-  tabstop = 2, shiftwidth = 2, expandtab = true, smartindent = true, list = true, listchars = { tab = '__', trail = '_' },
-  pumheight = 10, pumblend = 10, winblend = 10, showtabline = 2, number = true, relativenumber = true, signcolumn = "yes",
-  termguicolors = true, laststatus = 3 , cmdheight = 0, --statuscolumn = '%#NonText#%{&nu?v:lnum:""}%=%{&rnu&&(v:lnum%2)?" ".v:relnum:""}%#LineNr#%{&rnu&&!(v:lnum%2)?" ".v:relnum:""}',
-  foldmethod = 'expr', foldexpr = "nvim_treesitter#foldexpr()", foldenable = false,
+  ignorecase = true, smartcase = true,
+  tabstop = 2, shiftwidth = 0, expandtab = true,
+  pumblend = 30, winblend = 30,
+  laststatus = 3, cmdheight = 0, number = true, signcolumn = 'number',
+  foldmethod = 'expr', foldexpr = vim.treesitter.foldexpr(), foldenable = false, }
+do vim.opt[k] = v end
+
 vim.fn.digraph_setlist {
   { 'j[', '「' }, { 'j]', '」' }, { 'j{', '『' }, { 'j}', '』' }, { 'j<', '【' }, { 'j>', '】' },
   { 'js', '　' }, { 'j,', '、' }, { 'j.', '。' }, { 'jj', 'j' },
@@ -763,7 +727,6 @@ null_ls.setup {
 }
 
 require 'octo'.setup {}
--- Define the command to run Prettier
 --local prettier_command = {'node', './format.js'}
 --
 ---- Define a function to start the Prettier job
@@ -910,89 +873,15 @@ require 'colorizer'.setup { user_default_options = { css_fn = false, tailwind = 
 
 require 'nvim-web-devicons'.setup { {color_icons = true }}
 
-vim.cmd [[ inoremap <expr> ] searchpair('\[', '', '\]', 'nbW', 'synIDattr(synID(line("."), col("."), 1), "name") =~? "String"') ? ']' : "\<C-n>"]]
-
---vim.cmd [[
---  command! -nargs=? -complete=dir -bang CD  call s:ChangeCurrentDir('<args>', '<bang>')
---  function! s:ChangeCurrentDir(directory, bang)
---      if a:directory == ''
---          lcd %:p:h
---      else
---          execute 'lcd' . a:directory
---      endif
---
---      if a:bang == ''
---          pwd
---      endif
---  endfunction
---
---  " Change current directory.
---  nnoremap <silent> <Space>cd :<C-u>CD<CR>
---]]
-
---vim.cmd [[
---  function! s:is_changed() "{{{
---      try
---          " When no `b:vimrc_changedtick` variable
---          " (first time), not changed.
---          return exists('b:vimrc_changedtick')
---          \   && b:vimrc_changedtick < b:changedtick
---      finally
---          let b:vimrc_changedtick = b:changedtick
---      endtry
---  endfunction "}}}
---  autocmd vimrc CursorMovedI * if s:is_changed() | doautocmd User changed-text | endif
---
---  let s:current_changed_times = 0
---  let s:max_changed_times = 20
---  function! s:changed_text() "{{{
---      if s:current_changed_times >= s:max_changed_times - 1
---          call feedkeys("\<C-g>u", 'n')
---          let s:current_changed_times = 0
---      else
---          let s:current_changed_times += 1
---      endif
---  endfunction "}}}
---  autocmd vimrc User changed-text call s:changed_text()
---]]
 
 
---vim.opt.clipboard = {
---  name = 'WslClipboard',
---  copy = { ['+'] = 'clip.exe', ['*'] = 'clip.exe' },
---  paste = {
---    ['+'] = 'powershell.exe -c [Console]::Out.Write($(Get-Clipboard -Raw).tostring().replace("`r", ""))',
---    ['*'] = 'powershell.exe -c [Console]::Out.Write($(Get-Clipboard -Raw).tostring().replace("`r", ""))'
---  },
---  cache_enabled = 0
---}
 
-vim.cmd [[ 
-    let g:clipboard = {
-    \   'name': 'WslClipboard',
-    \   'copy': {
-    \      '+': 'clip.exe',
-    \      '*': 'clip.exe',
-    \    },
-    \   'paste': {
-    \      '+': 'powershell.exe -c [Console]::Out.Write($(Get-Clipboard -Raw).tostring().replace("`r", ""))',
-    \      '*': 'powershell.exe -c [Console]::Out.Write($(Get-Clipboard -Raw).tostring().replace("`r", ""))',
-    \   },
-    \   'cache_enabled': 0,
-    \ }
-    ]]
 
---set number
---augroup numbertoggle
--- autocmd!
--- autocmd BufEnter,FocusGained,InsertLeave,WinEnter * if &nu && mode() != "i" | set rnu   | endif
--- autocmd BufLeave,FocusLost,InsertEnter,WinLeave   * if &nu                  | set nornu | endif
---augroup END
 
-require 'nvim-cursorword'
+
+
 
 -- local luasnip = require 'luasnip' --?
---local cmp = require'cmp'
 --
 --  cmp.setup({
 --    snippet = {
@@ -1081,5 +970,3 @@ require 'nvim-cursorword'
 --}
 
 
-vim.api.nvim_create_autocmd({ "BufReadPost" },
-  { pattern = { "*" }, callback = function() vim.api.nvim_exec('silent! normal! g`"zv', false) end, })
