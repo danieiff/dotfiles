@@ -873,6 +873,88 @@ require 'colorizer'.setup { user_default_options = { css_fn = false, tailwind = 
 
 require 'nvim-web-devicons'.setup { {color_icons = true }}
 
+local progress_token_to_title = {}
+local progress_title_to_order = {}
+local clients_title_progress = {}
+local spinner_frames = { "⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷", index = 1 }
+
+local function update_token_progress_notif(win, buf)
+  spinner_frames.index = (spinner_frames.index) % #spinner_frames + 1
+  local lines = {}
+  for client_id, title_tbl in pairs(clients_title_progress) do
+    local t = vim.tbl_values(title_tbl)
+    table.sort(t, function(a, b) return a.order - b.order > 0 end)
+    local spinner = (next(clients_title_progress[client_id]) and spinner_frames[spinner_frames.index] or '󰄬') .. ' '
+    table.insert(lines, spinner .. vim.lsp.get_client_by_id(client_id).name)
+    for _, prog_msg in ipairs(t) do table.insert(lines, ' ' .. prog_msg.progress_info) end
+  end
+  if not next(progress_token_to_title) and #lines == 0 then return vim.api.nvim_win_close(win, false) end
+
+  vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+  vim.api.nvim_win_set_height(win, #lines)
+
+  vim.defer_fn(function() update_token_progress_notif(win, buf) end, 100)
+end
+
+vim.lsp.handlers["$/progress"] = function(_, result, ctx)
+  local client_id = ctx.client_id
+  local token = result.token
+  local val = result.value
+  local title = vim.tbl_get(progress_token_to_title, client_id, token, 'title')
+  local message_maybe_prev = val.message or
+      vim.tbl_get(table.pack(table.unpack(clients_title_progress)), client_id, title, 'message') or ''
+  local percentage = val.percentage and val.percentage .. '%' or ''
+
+  if result.value.kind == "begin" then
+    -- initialize
+    progress_token_to_title[client_id] = vim.tbl_deep_extend('error', progress_token_to_title[client_id] or {},
+      { [token] = { title = val.title } })
+
+    progress_title_to_order[client_id] = vim.tbl_deep_extend('keep', progress_title_to_order[client_id] or {},
+      { [val.title] = #vim.tbl_keys(progress_title_to_order[client_id] or {}) + 1 })
+
+    if not next(clients_title_progress) then
+      local buf = vim.api.nvim_create_buf(false, true)
+      local win = vim.api.nvim_open_win(buf, false, {
+        relative = 'win', anchor = 'NE', width = 45, height = 1, row = 0, col = vim.fn.winwidth(0), style = 'minimal'
+      })
+      update_token_progress_notif(win, buf)
+    end
+
+    clients_title_progress[client_id] = vim.tbl_deep_extend('force', clients_title_progress[client_id] or {}, {
+      [val.title] = {
+        progress_info = ('%s %s %s'):format(val.title, message_maybe_prev, percentage), message = message_maybe_prev, completed = false, title =
+          val.title, order = progress_title_to_order[client_id][val.title]
+      }
+    })
+  elseif result.value.kind == "report" and vim.tbl_get(progress_token_to_title, client_id, token) then
+    clients_title_progress[client_id] = vim.tbl_deep_extend('force', clients_title_progress[client_id], {
+      [title] = {
+        progress_info = ('%s %s %s'):format(title, message_maybe_prev, percentage), message = message_maybe_prev, completed = false, title =
+          title, order = progress_title_to_order[client_id][title]
+      }
+    })
+  elseif result.value.kind == "end" and vim.tbl_get(progress_token_to_title, client_id, token) then
+    clients_title_progress[client_id] = vim.tbl_deep_extend('force', clients_title_progress[client_id], {
+      [title] = {
+        progress_info = ('%s %s %s'):format(title, message_maybe_prev, 'Complete'), message = message_maybe_prev, completed = true, title =
+          title, order = progress_title_to_order[client_id][title]
+      }
+    })
+    -- cleanup
+    vim.defer_fn(function()
+      if not vim.tbl_get(clients_title_progress, client_id, title, 'completed') then return end
+      clients_title_progress[client_id][title] = nil
+      vim.defer_fn(function()
+        if next(vim.tbl_get(clients_title_progress, client_id) or {}) then return end
+        clients_title_progress[client_id] = nil
+      end, 500)
+    end, 1000)
+
+    progress_token_to_title[client_id][token] = nil
+    if not next(progress_token_to_title[client_id]) then progress_token_to_title[client_id] = nil end
+  end
+end
 
 
 
