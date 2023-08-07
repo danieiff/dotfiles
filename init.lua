@@ -176,10 +176,6 @@ K( 'n', 'vp', '`[v`]', keymaps_opts )
 -- :vim {pattern} {file} | cw -- autocmd QuickFixCmdPost *grep* cwindow
 -- helps: quickfix.txt :vimgrep :cwindow :args cmdline-special pattern-overview wildcards
 
-require 'auto-session'.setup {
-  auto_save_enabled = true,
-  auto_session_enabled = true,
-  auto_session_enable_last_session = vim.loop.cwd() == vim.loop.os_homedir(),
 }
 
 require 'telescope'.setup()
@@ -956,12 +952,36 @@ vim.lsp.handlers["$/progress"] = function(_, result, ctx)
   end
 end
 
+---@ Session
 
+for _, v in ipairs { 'curdir', 'blank' } do vim.opt.sessionoptions:remove(v) end
+local session_aug = AUG('UserSessionAUG', {})
 
+local sessions_dir = vim.fn.stdpath 'data' .. '/sessions/'
+local function normalize_session_path(dir) return sessions_dir .. vim.fn.fnamemodify(dir, ':p:h'):gsub('/', '%%') end
 
+local function load_session_if_exists(dir)
+  if vim.loop.fs_stat(normalize_session_path(dir)) then
+    vim.cmd.source(vim.fn.fnameescape(normalize_session_path(dir)))
+    vim.schedule(function() vim.cmd 'silent! tabdo windo edit' end)
+    return true
+  end
+  return false
+end
 
+local function mksession(dir)
+  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+    -- if vim.bo[buf].filetype == 'gitcommit' then vim.cmd.bd(buf) end
+  end
+  vim.cmd 'Neotree close'
+  vim.cmd.mksession { args = { vim.fn.fnameescape(normalize_session_path(dir)) }, bang = true }
+end
 
-
+AUC('VimEnter', {
+  group = session_aug,
+  callback = function()
+    -- Prevent restoring session in nested nvim instance (in ':term lazygit' for example)
+    if vim.bo.filetype == 'gitcommit' then return vim.api.nvim_clear_autocmds({ group = session_aug }) end
 
 -- local luasnip = require 'luasnip' --?
 --
@@ -1044,6 +1064,21 @@ end
 --      { name = 'cmdline' }
 --    })
 --  })
+    local vim_argv = vim.fn.argv()
+    local edit_fn = load_session_if_exists(vim.fn.getcwd()) and vim.api.nvim_buf_get_name(0) ~= ''
+        and vim.cmd.tabedit or vim.cmd.edit
+    for _, path in ipairs(vim_argv) do edit_fn(path) end
+  end
+})
+AUC('VimLeave', { group = session_aug, callback = function() mksession(vim.fn.getcwd()) end })
+AUC('DirChangedPre', {
+  group = session_aug,
+  callback = function()
+    mksession(vim.g.prev_cwd)
+    vim.cmd '%bwipe! | clearjumps'
+  end
+})
+AUC('DirChanged', { group = session_aug, callback = function(ev) load_session_if_exists(ev.file) end })
 
 -- Set up lspconfig.
 --local capabilities = require('cmp_nvim_lsp').default_capabilities()
@@ -1051,4 +1086,53 @@ end
 --  capabilities = capabilities
 --}
 
+local function delete_selected(selected) os.remove(normalize_session_path(selected[1])) end
+fzf_lua.config.set_action_helpstr(delete_selected, "delete-session")
+
+local function session_files(file)
+  local cwd_pat = vim.fn.fnamemodify(vim.fn.getcwd(), ':p:~')
+  local bufs, buf_pat = {}, "^badd%s*%+%d+%s*"
+  for line in io.lines(file) do
+    if line:find(buf_pat) then bufs[#bufs + 1] = line:gsub(buf_pat, ''):gsub(cwd_pat, ''):gsub('^%./', '') end
+  end
+  return bufs
+end
+
+local FzfLuaSessionPreviewer = fzf_lua_previewer_builtin.base:extend()
+function FzfLuaSessionPreviewer:new(o, opts, fzf_win)
+  FzfLuaSessionPreviewer.super.new(self, o, opts, fzf_win)
+  setmetatable(self, FzfLuaSessionPreviewer)
+  return self
+end
+
+function FzfLuaSessionPreviewer:gen_winopts()
+  return vim.tbl_extend('force', self.winopts, { wrap = false, number = false })
+end
+
+function FzfLuaSessionPreviewer:populate_preview_buf(entry_str)
+  local tmpbuf = self:get_tmp_buffer()
+  vim.api.nvim_buf_set_lines(tmpbuf, 0, -1, false, session_files(normalize_session_path(entry_str)))
+  self:set_preview_buf(tmpbuf)
+  self.win:update_scrollbar()
+end
+
+CMD('Sessions', function()
+  fzf_lua.fzf_exec(
+    function(fzf_cb)
+      for _, s in ipairs(vim.fn.readdir(sessions_dir)) do
+        fzf_cb(vim.fn.fnamemodify(s:gsub('%%', '/'),
+          ':p:~:h'))
+      end
+      fzf_cb()
+    end,
+    {
+      prompt = 'Session> ',
+      actions = {
+        ['default'] = function(selected) vim.cmd.cd(selected[1]) end,
+        ['ctrl-x'] = { fn = delete_selected, reload = true }
+      },
+      previewer = FzfLuaSessionPreviewer
+    })
+end, {})
+CMD('SessionClearAUC', function() vim.api.nvim_clear_autocmds({ group = session_aug }) end, {})
 
