@@ -210,6 +210,26 @@ require 'fzf-lua'
 function will_rename_callback(data)
 
   local Path = require('plenary.path')
+AUC('FileType', {
+  pattern = 'gitcommit',
+  callback = function(ev)
+    local firstline = vim.api.nvim_buf_get_lines(ev.buf, 0, 1, false)[1]
+    if firstline == '' then
+      local cmd           = ([[curl https://api.openai.com/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer %s \
+  -d '{
+     "model": "gpt-3.5-turbo",
+     "messages": [{"role": "user", "content": "Write a git conventional commit message from this git diff: %s"}],
+     "temperature": 0.7
+   }']]):format(os.getenv 'OPENAI_API_KEY', vim.fn.system 'git diff --cached')
+      local result        = vim.fn.system(cmd)
+      local resultMessage = vim.json_decode(result).choices[1].message.content
+      vim.api.nvim_buf_set_lines(ev.buf, 0, 1, false, vim.fn.join(resultMessage, '\n'))
+    end
+  end
+})
+
 
   local function validatePath(_path)
     local path = Path:new(_path)
