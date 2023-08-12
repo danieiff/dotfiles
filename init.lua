@@ -1,3 +1,112 @@
+local packages = {
+  "https://github.com/EdenEast/nightfox.nvim",
+  "https://github.com/NvChad/nvim-colorizer.lua",
+  "https://github.com/nvim-tree/nvim-web-devicons",
+  "https://github.com/nvim-lualine/lualine.nvim",
+
+  "https://github.com/nvim-lua/plenary.nvim",
+  "https://github.com/MunifTanjim/nui.nvim",
+  "https://github.com/mrbjarksen/neo-tree-diagnostics.nvim",
+  "https://github.com/nvim-neo-tree/neo-tree.nvim",
+  "https://github.com/ibhagwan/fzf-lua",
+  -- "https://github.com/folke/trouble.nvim",
+  -- "https://github.com/simrat39/symbols-outline.nvim",
+
+  "https://github.com/nvim-treesitter/nvim-treesitter",
+  "https://github.com/nvim-treesitter/nvim-treesitter-textobjects",
+  "https://github.com/nvim-treesitter/nvim-treesitter-context",
+  "https://github.com/numToStr/Comment.nvim",
+  "https://github.com/JoosepAlviste/nvim-ts-context-commentstring",
+  "https://github.com/lukas-reineke/indent-blankline.nvim",
+  "https://github.com/kylechui/nvim-surround",
+  "https://github.com/danieiff/nvim-ts-autotag",
+  "https://github.com/windwp/nvim-autopairs",
+  "https://github.com/ggandor/leap.nvim",
+
+  "https://github.com/neovim/nvim-lspconfig",
+  "https://github.com/glepnir/lspsaga.nvim",
+  "https://github.com/ray-x/lsp_signature.nvim",
+  "https://github.com/VidocqH/lsp-lens.nvim",
+  "https://github.com/lvimuser/lsp-inlayhints.nvim",
+  "https://github.com/folke/neodev.nvim",
+  "https://github.com/pmizio/typescript-tools.nvim",
+  -- "https://github.com/simrat39/rust-tools.nvim",
+  -- "https://github.com/ray-x/go.nvim",
+  -- "https://github.com/mfussenegger/nvim-jdtls",
+  "https://github.com/jose-elias-alvarez/null-ls.nvim",
+  "https://github.com/b0o/SchemaStore.nvim",
+
+  "https://github.com/hrsh7th/nvim-cmp",
+  "https://github.com/hrsh7th/cmp-nvim-lsp",
+  "https://github.com/hrsh7th/cmp-buffer",
+  "https://github.com/petertriho/cmp-git",
+  -- "https://github.com/lukas-reineke/cmp-rg",
+  "https://github.com/saadparwaiz1/cmp_luasnip",
+  "https://github.com/L3MON4D3/LuaSnip",
+  "https://github.com/danieiff/friendly-snippets",
+  -- "https://github.com/Exafunction/codeium.vim",
+  "https://github.com/jcdickinson/codeium.nvim",
+
+  "https://github.com/mfussenegger/nvim-dap",
+  "https://github.com/rcarriga/nvim-dap-ui",
+  -- "https://github.com/nvim-neotest/neotest",
+  "https://github.com/mxsdev/nvim-dap-vscode-js",
+  --"https://github.com/rcarriga/cmp-dap"
+  "https://github.com/Vigemus/iron.nvim",
+
+  -- "https://github.com/Saecki/crates.nvim",
+
+  "https://github.com/lewis6991/gitsigns.nvim",
+  "https://github.com/sindrets/diffview.nvim",
+  --"https://github.com/pwntester/octo.nvim",
+
+  -- "https://github.com/chipsenkbeil/distant.nvim",
+}
+
+local packdir = vim.fn.stdpath 'config' .. '/pack/tett/start'
+if vim.tbl_get(vim.loop.fs_stat(packdir) or {}, 'type') ~= 'directory' then os.execute('mkdir -p ' .. packdir) end
+
+vim.fn.jobstart({ 'ls' },
+  {
+    cwd = packdir,
+    stdout_buffered = true,
+    on_stdout = function(_, data)
+      local packages_not_downloaded = vim.tbl_filter(
+        function(p) return not vim.tbl_contains(data, vim.fn.fnamemodify(p, ':t')) end,
+        packages)
+      if #packages_not_downloaded == 0 then return end
+      local package_download_jobs = {}
+      for _, url in ipairs(packages_not_downloaded) do
+        local jobid = vim.fn.jobstart('git clone --depth 1 ' .. url, {
+          cwd = packdir,
+          stderr_buffered = true,
+          on_stderr = function(_, log) if #log > 2 then vim.print(log) end end
+        })
+        table.insert(package_download_jobs, jobid)
+      end
+      local allSuccess = true
+      for i, status in ipairs(vim.fn.jobwait(package_download_jobs)) do
+        if status == 0 then
+          vim.print('Downloaded ' .. packages_not_downloaded[i])
+        else
+          allSuccess = false
+          vim.print(('Failed to download %s, status: %s'):format(packages_not_downloaded[i], status))
+        end
+      end
+      if allSuccess then vim.cmd 'source $MYVIMRC' end
+    end,
+    on_stderr = function(_, e) if #e ~= 1 or e[1] ~= '' then vim.print(e) end end
+  })
+
+local function safe_require(package_name, cb)
+  local is_exist, package = pcall(require, package_name)
+  if is_exist then
+    if cb then cb(package) end
+  else
+    vim.notify('Failed to require a package: ' .. package_name, vim.log.levels.WARN)
+  end
+end
+
 K, HL, CMD, AUC, AUG = function(lhs, rhs, opts)
       opts = opts or {}
       local mode = opts.mode or 'n'
