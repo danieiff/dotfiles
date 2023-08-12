@@ -24,53 +24,8 @@ curl -fsSL https://raw.githubusercontent.com/tj/n/master/bin/n | bash -s lts
 npm install -g n
 
 # NeoVim
-wget https://github.com/neovim/neovim/releases/download/stable/nvim-linux64.tar.gz
-tar xzvf nvim-linux64.tar.gz
+output=$(ghinstall "neovim/neovim") && sudo ln -s ~/"$output"/bin/nvim /bin/nvim
 ln -s ~/dotfiles/init.lua ~/.config/nvim/init.lua
-
-mkdir -p ~/.config/nvim/pack/my/start && cd "$_"
-
-neovim_plugins=(
-
-  "https://github.com/github/copilot.vim"
-  "https://github.com/ggandor/leap.nvim"
-  "https://github.com/EdenEast/nightfox.nvim"
-  "https://github.com/NvChad/nvim-colorizer.lua"
-  
-  "https://github.com/nvim-tree/nvim-web-devicons"
-
-  "https://github.com/nvim-lua/plenary.nvim"
-  "https://github.com/nvim-telescope/telescope.nvim"
-  "https://github.com/debugloop/telescope-undo.nvim"
-  "https://github.com/ibhagwan/fzf-lua"
-  "https://github.com/nvim-tree/nvim-tree.lua"
-  
-  "https://github.com/nvim-treesitter/nvim-treesitter"
-  "https://github.com/nvim-treesitter/nvim-treesitter-textobjects"
-  "https://github.com/nvim-treesitter/nvim-treesitter-context"
-  "https://github.com/numToStr/Comment.nvim"
-  "https://github.com/JoosepAlviste/nvim-ts-context-commentstring"
-  "https://github.com/simrat39/symbols-outline.nvim"
-  "https://github.com/lukas-reineke/indent-blankline.nvim"
-  "https://github.com/kylechui/nvim-surround"
-  "https://github.com/danieiff/nvim-ts-autotag"
- 
-  "https://github.com/windwp/nvim-autopairs"
-
-  "https://github.com/neovim/nvim-lspconfig"
-  "https://github.com/hrsh7th/nvim-cmp"
-  "https://github.com/hrsh7th/cmp-nvim-lsp"
-  "https://github.com/jose-elias-alvarez/null-ls.nvim"
-  "https://github.com/glepnir/lspsaga.nvim"
-  "https://github.com/b0o/SchemaStore.nvim"
-
-  "https://github.com/lewis6991/gitsigns.nvim"
-  "https://github.com/mfussenegger/nvim-dap"
-
-  "https://github.com/pwntester/octo.nvim"
-)
-
-for repo in "${neovim_plugins[@]}"; do git clone --depth 1 "$repo"; done
 
 mkdir -p ~/.config/lsp/lua && cd "$_"
 ghinstall LuaLS/lua-language-server
