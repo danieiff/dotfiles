@@ -10,7 +10,7 @@
 //4: about 26kbps
 //5: about 20kbps
 
-#define MASTER_LEFT
+#define MASTER_LEFT // MASTER_RIGHT
 
 #undef TAPPING_TERM
 #define TAPPING_TERM 170 // Time before hold starts
