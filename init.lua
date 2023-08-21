@@ -47,12 +47,10 @@ local packages = {
   -- "https://github.com/Exafunction/codeium.vim",
   "https://github.com/jcdickinson/codeium.nvim",
 
-  "https://github.com/mfussenegger/nvim-dap",
+  "https://github.com/danieiff/nvim-dap",
   "https://github.com/rcarriga/nvim-dap-ui",
   -- "https://github.com/nvim-neotest/neotest",
-  "https://github.com/mxsdev/nvim-dap-vscode-js",
   --"https://github.com/rcarriga/cmp-dap"
-  "https://github.com/Vigemus/iron.nvim",
 
   -- "https://github.com/Saecki/crates.nvim",
 
@@ -959,56 +957,228 @@ require 'gitsigns'.setup {
     map({ 'o', 'x' }, 'ih', ':<C-U>Gitsigns select_hunk<CR>')
 
   end
+---@ DAP
+
+local dap, dapui, dap_widgets, dap_utils = require 'dap', require 'dapui', require 'dap.ui.widgets', require 'dap.utils'
+
+K("<Leader>di", dap.toggle_breakpoint)
+K("<Leader>dI", function() dap.set_breakpoint(vim.fn.input "Breakpoint condition: ") end)
+K("<Leader>dp", function() dap.set_breakpoint(nil, nil, vim.fn.input "Log point message: ") end)
+K("<Leader>ds", dap.continue)
+K("<Leader>dl", dap.run_to_cursor)
+K("<Leader>dS", dap.disconnect)
+K("<Leader>dn", dap.step_over)
+K("<Leader>dN", dap.step_into)
+K("<Leader>do", dap.step_out)
+K("<Leader>dww", function() dap.toggle() end)
+K("<Leader>dw[", function() dap.toggle(1) end)
+K("<Leader>dw]", function() dap.toggle(2) end)
+K('<Leader>dr', dap.repl.open)
+K('<Leader>dl', dap.run_last)
+K('<Leader>dh', dap_widgets.hover, { mode = { 'n', 'v' } })
+K('<Leader>dH', dap_widgets.preview, { mode = { 'n', 'v' } })
+K('<Leader>dm', function() dap_widgets.centered_float(dap_widgets.frames) end)
+K('<Leader>dM', function() dap_widgets.centered_float(dap_widgets.scopes) end)
+
+dap.adapters['pwa-node'] = {
+  type = "server",
+  host = "localhost",
+  port = "${port}",
+  executable = {
+    command = "node",
+    args = { os.getenv "HOME" .. "/.config/js-debug/src/dapDebugServer.js", "${port}" }
+  }
 }
-vim.cmd "set statusline=%{get(b:,'gitsigns_status','')}"
+dap.adapters['pwa-chrome'] = {
+  type = "server",
+  host = "localhost",
+  port = "${port}",
+  executable = {
+    command = "node",
+    args = { os.getenv "HOME" .. "/.config/js-debug/src/dapDebugServer.js", "${port}" }
+  }
+}
+for _, ext in ipairs { 'javascript', 'typescript', 'typescriptreact', 'javascriptreact', 'vue', 'svelte' } do
+  dap.configurations[ext] = {
+    {
+      name = "Launch file",
+      type = "pwa-node",
+      request = "launch",
+      -- trace = true, -- include debugger info (available in all configs of 'vscode-js-debug')
+      program = "${file}",
+      outFiles = { "${workspaceFolder}/dist/**/*.js", "!**/node_modules/**" },
+      resolveSourceMapLocations = { "${workspaceFolder}/**", "!**/node_modules/**" },
+    },
+    {
+      name = "Launch Current File (pwa-node with ts-node)",
+      type = "pwa-node",
+      request = "launch",
+      runtimeExecutable = "node",
+      runtimeArgs = { "--loader", "ts-node/esm" },
+      args = { "${file}" },
+      skipFiles = { "<node_internals>/**", "node_modules/**" },
+      resolveSourceMapLocations = { "${workspaceFolder}/**", "!**/node_modules/**" },
+    },
+    {
+      name = "Launch Test Current File (pwa-node with deno)",
+      type = "pwa-node",
+      request = "launch",
+      runtimeExecutable = "deno",
+      runtimeArgs = { "test", "--inspect-brk", "--allow-all", "${file}" },
+      console = "integratedTerminal",
+      attachSimplePort = 9229,
+    },
+    {
+      name = "Debug Jest Tests",
+      type = "pwa-node",
+      request = "launch",
+      runtimeExecutable = "node",
+      runtimeArgs = { "./node_modules/jest/bin/jest.js" }, -- "--runInBand" },
+      console = "integratedTerminal",
+      internalConsoleOptions = "neverOpen",
+    },
+    {
+      name = "Launch Test Current File (pwa-node with vitest)",
+      type = "pwa-node",
+      request = "launch",
+      program = "${workspaceFolder}/node_modules/vitest/vitest.mjs",
+      args = { "--inspect-brk", "--threads", "false", "run", "${file}" },
+      console = "integratedTerminal",
+      skipFiles = { "<node_internals>/**", "node_modules/**" },
+    },
+    {
+      name = "Debug Mocha Tests",
+      request = "launch",
+      type = "pwa-node",
+      runtimeExecutable = "node",
+      runtimeArgs = { "./node_modules/mocha/bin/mocha.js" },
+      console = "integratedTerminal",
+      internalConsoleOptions = "neverOpen",
+    },
+    {
+      name = "Attach Program (pwa-node, select pid)",
+      type = "pwa-node",
+      request = "attach",
+      processId = dap_utils.pick_process,
+      skipFiles = { "<node_internals>/**" },
+    },
+    {
+      name = 'Launch chrome',
+      type = "pwa-chrome",
+      request = "launch",
+      program = "${file}",
+      url = function() return 'http://localhost:' .. vim.fn.input("Select port: ", 8080) end,
+      port = 9222
+    },
+    {
+      name = 'Attach chrome',
+      type = "pwa-chrome",
+      request = "attach",
+      program = "${file}",
+      port = 9222
+    }
+  }
+end
 
--- " Status Line
--- set statusline=%<%f%<%{FileTime()}%<%h%m%r%=%-20.(line=%03l,col=%02c%V,totlin=%L%)\%h%m%r%=%-30(,BfNm=%n%Y%)\%P\*%=%{CurTime()}
--- set rulerformat=%15(%c%V\ %p%%%)
--- "set rulerformat=%<%f%<%{FileTime()}%<%h%m%r%=%-20.(line=%03l,col=%02c%V,totlin=%L%)\%h%m%r%=%-30(,BfNm=%n%Y%)\%P\*%=%{CurTime()}
+local keymap_restore = {}
+dap.listeners.after['event_initialized']['me'] = function()
+  for _, buf in pairs(vim.api.nvim_list_bufs()) do
+    local keymaps = vim.api.nvim_buf_get_keymap(buf, 'n')
+    for _, keymap in pairs(keymaps) do
+      if keymap.lhs == "K" then
+        table.insert(keymap_restore, keymap)
+        vim.api.nvim_buf_del_keymap(buf, 'n', 'K')
+      end
+    end
+  end
+  K('<leader>dk', require 'dap.ui.widgets'.hover, { silent = true })
+end
+
+dap.listeners.after['event_terminated']['me'] = function()
+  for _, keymap in pairs(keymap_restore) do
+    vim.api.nvim_buf_set_keymap(keymap.buffer, keymap.mode, keymap.lhs, keymap.rhs, { silent = not not keymap.silent })
+  end
+  keymap_restore = {}
+end
+
+CMD("RunScriptWithArgs", function(t)
+  local args = vim.split(vim.fn.expand(t.args), '\n')
+  local approval = vim.fn.confirm(
+    ("Will try to run:\n    %s %s %s\n\nDo you approve? "):format(vim.bo.filetype, vim.fn.expand '%', t.args),
+    "&Yes\n&No", 1
+  )
+  if approval == 1 then
+    dap.run({
+      type = 'pwa-chrome', --vim.bo.filetype,
+      request = 'launch',
+      name = 'Launch file with custom arguments (adhoc)',
+      program = '${file}',
+      args = args,
+    })
+  end
+end, { complete = 'file', nargs = '*' })
+K('<leader>R', ":RunScriptWithArgs ")
+
+-- dap.listeners.before['event_progressStart']['progress-notifications'] = function(session, body)
+--   local notif_data = get_notif_data("dap", body.progressId)
 --
--- function! FileTime()
---   let ext=tolower(expand("%:e"))
---   let fname=tolower(expand('%<'))
---   let filename=fname . '.' . ext
---   let msg=""
---   let msg=msg." ".strftime("(Modified %b,%d %y %H:%M:%S)",getftime(filename))
---   return msg
--- endfunction
+--   local message = format_message(body.message, body.percentage)
+--   notif_data.notification = vim.notify(message, "info", {
+--     title = format_title(body.title, session.config.type),
+--     icon = spinner_frames[1],
+--     timeout = false,
+--     hide_from_history = false,
+--   })
 --
--- function! CurTime()
---   let ftime=""
---   let ftime=ftime." ".strftime("%x %b,%d %y %H:%M:%S")
---   return ftime
--- endfunction
+--   notif_data.notification.spinner = 1,
+--       update_spinner("dap", body.progressId)
+-- end
+--
+-- dap.listeners.before['event_progressUpdate']['progress-notifications'] = function(session, body)
+--   local notif_data = get_notif_data("dap", body.progressId)
+--   notif_data.notification = vim.notify(format_message(body.message, body.percentage), "info", {
+--     replace = notif_data.notification,
+--     hide_from_history = false,
+--   })
+-- end
+--
+-- dap.listeners.before['event_progressEnd']['progress-notifications'] = function(session, body)
+--   local notif_data = client_notifs["dap"][body.progressId]
+--   notif_data.notification = vim.notify(body.message and format_message(body.message) or "Complete", "info", {
+--     icon = "",
+--     replace = notif_data.notification,
+--     timeout = 3000
+--   })
+--   notif_data.spinner = nil
+-- end
 
--- into vanilla statusbar
---local current_treesitter_context = function()
---  local f = require'nvim-treesitter'.statusline({
---    indicator_size = 300,
---    type_patterns = {"class", "function", "method", "interface", "type_spec", "table", "if_statement", "for_statement", "for_in_statement"}
---  })
---  if f == nil then f = "*" end
---  return string.format("%s", f) -- convert to string, it may be a empty ts node
---end
---function status_line()
---    return table.concat {
---        "%#StatusLeft#",
---        "%f",
---        " %h%w%m%r",
---  current_treesitter_context(),
---        "%=%-14.",
---  "(%l,%c%V%)",
---        "%P"
---    }
---end
---vim.o.statusline = "%!luaeval('status_line()')"
+dapui.setup()
+dap.listeners.after.event_initialized["dapui_config"] = dapui.open
+dap.listeners.before.event_terminated["dapui_config"] = dapui.close
+dap.listeners.before.event_exited["dapui_config"] = dapui.close
 
+-- vim.cmd 'au FileType dap-repl lua require"dap.ext.autocompl".attach()'
 
-require 'nightfox'.setup { options = { transparent = true, inverse = { search = true } } }
-vim.cmd 'colorscheme nordfox'
-Hl(0, '@variable', { fg = 'NONE' })
-Hl(0, 'WinSeparator', { bg = 'None' })
+require 'dap.ext.vscode'.load_launchjs(nil, {
+  -- ["python"] = {
+  --   "python",
+  -- },
+  ["pwa-node"] = {
+    "javascript",
+    "typescript",
+  },
+  ["node"] = {
+    "javascript",
+    "typescript",
+  },
+  -- ["cppdbg"] = {
+  --   "c",
+  --   "cpp",
+  -- },
+  -- ["dlv"] = {
+  --   "go",
+  -- },
+})
 
 --Hl( 0, 'Normal', { bg = 'NONE' } )
 --Hl( 0, 'NonText', { bg = 'NONE' } )
