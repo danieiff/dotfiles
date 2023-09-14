@@ -10,6 +10,49 @@ local languages = {
     }
   }
 }
+local prettier = {
+  formatCanRange = true,
+  formatCommand =
+  'prettierd ${INPUT} ${--tab-width:tabWidth} ${--use-tabs:insertSpaces} ${--range-start=charStart} ${--range-start=charEnd}',
+  -- './node_modules/.bin/prettier --stdin --stdin-filepath ${INPUT} ${--range-start:charStart} ${--range-end:charEnd} ${--tab-width:tabSize} ${--use-tabs:!insertSpaces}',
+
+  formatStdin = true,
+  rootMarkers = {
+    '.prettierrc',
+    '.prettierrc.json',
+    '.prettierrc.js',
+    '.prettierrc.yml',
+    '.prettierrc.yaml',
+    '.prettierrc.json5',
+    '.prettierrc.mjs',
+    '.prettierrc.cjs',
+    '.prettierrc.toml',
+    'package.json',
+  },
+}
+local eslint = {
+  prefix = 'eslint',
+  lintCommand = './node_modules/.bin/eslint --no-color --format visualstudio --stdin-filename ${INPUT} --stdin',
+  lintStdin = true,
+  lintFormats = { '%f(%l,%c): %trror %m', '%f(%l,%c): %tarning %m' },
+  lintIgnoreExitCode = true,
+  rootMarkers = {
+    '.eslintrc',
+    '.eslintrc.cjs',
+    '.eslintrc.js',
+    '.eslintrc.json',
+    '.eslintrc.yaml',
+    '.eslintrc.yml',
+    'package.json',
+  },
+}
+local exts_js = { 'typescript', 'javascript', 'typescriptreact', 'javascriptreact', 'vue', 'svelte', 'astro' }
+for _, ext in ipairs(exts_js) do languages[ext] = { prettier, eslint } end
+local exts_prettier = { 'html', 'json', 'jsonc', 'yaml', 'markdown' }
+for _, ext in ipairs(exts_prettier) do languages[ext] = { prettier } end
+
+
+
 require 'lspconfig'.efm.setup {
   init_options = {
     documentFormatting = true,
