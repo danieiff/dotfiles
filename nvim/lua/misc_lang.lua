@@ -127,3 +127,51 @@ npm run build
 
 })
 
+local json_yaml_au = vim.api.nvim_create_augroup('JsonYamlAUG', {})
+AUC('FileType', {
+  pattern = { 'json', 'jsonc', 'yaml' },
+  group = json_yaml_au,
+  callback = function()
+    vim.api.nvim_clear_autocmds({ group = json_yaml_au })
+
+    -- require 'util'.ensure_pack_installed { { url = "https://github.com/b0o/SchemaStore.nvim" } }
+
+    local jsonls_capabilities = vim.lsp.protocol.make_client_capabilities()
+    jsonls_capabilities.textDocument.completion.completionItem.snippetSupport = true
+    -- print(vim.inspect(jsonls_capabilities.textDocument.completion))
+    -- print(vim.inspect(capabilities))
+    -- print(vim.tbl_deep_extend('error',jsonls_capabilities, capabilities))
+    require 'lspconfig'.jsonls.setup {
+      capabilities = jsonls_capabilities, --vim.tbl_deep_extend('error',jsonls_capabilities, capabilities),
+      settings = {
+        json = {
+          schemas = require 'schemastore'.json.schemas(),
+          validate = { enable = true }
+        }
+      }
+    }
+
+    local yaml_ls = 'yaml-language-server'
+    if not vim.g.npm_list:find(yaml_ls:gsub('-', '%%-') .. '\n') then vim.fn.jobstart('npm i -g ' .. yaml_ls) end
+    require 'lspconfig'.yamlls.setup {
+      settings = {
+        yaml = {
+          schemaStore = { enable = false, url = "" },
+          schemas = require 'schemastore'.yaml.schemas(),
+          -- To use a schema for validation, there are two options:
+          -- 1. Add a modeline to the file. A modeline is a comment of the form:
+          -- # yaml-language-server: $schema=<urlToTheSchema|relativeFilePath|absoluteFilePath}>
+          -- or add here:
+          -- ["https://raw.githubusercontent.com/instrumenta/kubernetes-json-schema/master/v1.18.0-standalone-strict/all.json"] = "/*.k8s.yaml",
+          -- ["https://json.schemastore.org/github-workflow.json"] = "/.github/workflows/*",
+          --   ["../path/relative/to/file.yml"] = "/.github/workflows/*",
+          --   ["/path/from/root/of/project"] = "/.github/workflows/*",
+
+        },
+      },
+    }
+
+    vim.cmd.edit()
+  end
+})
+
