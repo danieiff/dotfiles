@@ -133,10 +133,10 @@ K('<C-w><', ':vertical resize -10<cr>')
 K('<C-w>>', ':vertical resize +10<cr>')
 K('<C-e>', ('<C-e>'):rep(10))
 K('<C-y>', ('<C-y>'):rep(10))
-K('<C-Left>', ':tabprevious<cr>')
-K('<C-Right>', ':tabnext<cr>')
-K('<C-Down>', ':bprevious<cr>')
-K('<C-Up>', ':bnext<cr>')
+K('<C-Left>', ':tabprevious<cr>', { silent = true })
+K('<C-Right>', ':tabnext<cr>', { silent = true })
+K('<C-Down>', ':bprevious<cr>', { silent = true })
+K('<C-Up>', ':bnext<cr>', { silent = true })
 
 K('<leader>w', vim.cmd.write)
 K('<leader>W', '<cmd>noautocmd w<cr>')
@@ -211,7 +211,7 @@ vim.fn.digraph_setlist {
   --┌────────┬────────┬────────┬────────┬────────┬────────┬────────┐                          ┌────────┬────────┬────────┬────────┬────────┬────────┬────────┐
   --│        │        │        │        │        │        │        │                          │        │        │        │        │        │        │        │
   --├────────┼────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┼────────┤
-  --│        │ ✨  💥 │ 🚨  🎨 │ 💡  🔊 │ 📝     │ 🔀 (⏪️)│        │                          │        │ ✅  🧪 │ 🤡  ⚗  │  🏷 🦺 │        │        │        │
+  --│        │ ✨  💥 │ 🚨  🎨 │ 💡  🔊 │ 📝     │ 🔀 (⏪️)│        │                          │        │ ✅  🧪 │ 🤡  ⚗  │  🏷️ 🦺 │        │        │        │
   --├────────┼────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┼────────┤
   --│        │ 🐛  🚑 │ 🩹  ♻  │ 🔥  🚚 │  🗑 👽 │        │        │                          │        │ 👔  💸 │ 🧱  🗃 │ ⚡  🧵 │ 🔒  🛂 │        │        │
   --├────────┼────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┼────────┤
@@ -664,7 +664,6 @@ require 'nvim-surround'.setup()
 require 'nvim-autopairs'.setup()
 
 require 'codeium'.setup {}
--- K('<S-Tab>', vim.fn['codeium#Accept'], { expr = true, mode = { 'i', 's' } })
 
 local luasnip = require 'luasnip'
 
@@ -926,13 +925,13 @@ local augroup_lsp = AUG('UserLspAUG', {})
 AUC('LspAttach', {
   group = AUG('UserLspConfigAUG', {}),
   callback = function(ev)
-    vim.diagnostic.setqflist { open = false }
     K('[e', vim.diagnostic.goto_prev)
     K(']e', vim.diagnostic.goto_next)
     K('[E', function() vim.diagnostic.goto_prev { severity = vim.diagnostic.severity.ERROR } end)
     K(']E', function() vim.diagnostic.goto_next { severity = vim.diagnostic.severity.ERROR } end)
     K('<leader>d', vim.diagnostic.open_float)
     K('<leader>D', vim.diagnostic.setloclist)
+    K('<leader>dq', vim.diagnostic.setqflist)
 
     local client = vim.lsp.get_client_by_id(ev.data.client_id)
 
@@ -976,6 +975,7 @@ AUC('LspAttach', {
     K('gt', vim.lsp.buf.type_definition)
     K('gr', vim.lsp.buf.references)
     K('gi', vim.lsp.buf.implementation)
+    K('gl', vim.lsp.buf.declaration)
     K('K', vim.lsp.buf.hover)
     K('<leader>sh', vim.lsp.buf.signature_help)
     K('<space>wa', vim.lsp.buf.add_workspace_folder)
@@ -1079,7 +1079,7 @@ dap.listeners.after['event_initialized']['me'] = function()
   for _, buf in pairs(vim.api.nvim_list_bufs()) do
     local keymaps = vim.api.nvim_buf_get_keymap(buf, 'n')
     for _, keymap in pairs(keymaps) do
-      if keymap.lhs == "K" then
+      if keymap.lhs == "<leader>dk" then
         table.insert(keymap_restore, keymap)
         vim.api.nvim_buf_del_keymap(buf, 'n', 'K')
       end
@@ -1087,7 +1087,6 @@ dap.listeners.after['event_initialized']['me'] = function()
   end
   K('<leader>dk', require 'dap.ui.widgets'.hover, { silent = true })
 end
-
 dap.listeners.after['event_terminated']['me'] = function()
   for _, keymap in pairs(keymap_restore) do
     vim.api.nvim_buf_set_keymap(keymap.buffer, keymap.mode, keymap.lhs, keymap.rhs, { silent = not not keymap.silent })
@@ -1121,11 +1120,8 @@ require 'misc_lang'
 
 ---@ UI
 
-require 'vscode'.setup { transparent = true, italic_comments = true, disable_nvimtree_bg = true }
-require 'vscode'.load()
-require 'github-theme'.setup { options = { transparent = true } }
 require 'nightfox'.setup { options = { transparent = true, inverse = { search = true } } }
-vim.cmd 'colorscheme vscode'
+vim.cmd 'colorscheme nordfox'
 
 require 'colorizer'.setup { user_default_options = { css_fn = false, tailwind = true } }
 
@@ -1137,7 +1133,6 @@ local function status_line()
   local statusline = vim.fn.join(vim.tbl_filter(function(item) return item ~= nil end, {
     vim.g.gitsigns_head,
     '%F',
-    current_treesitter_context(),
   }), ' ')
 
 
@@ -1255,7 +1250,7 @@ end
 
 ---@ Session
 
-for _, v in ipairs { 'curdir', 'blank' } do vim.opt.sessionoptions:remove(v) end
+for _, v in ipairs { 'curdir' } do vim.opt.sessionoptions:remove(v) end
 local session_aug = AUG('UserSessionAUG', {})
 
 local sessions_dir = vim.fn.stdpath 'data' .. '/sessions/'
@@ -1272,7 +1267,7 @@ end
 
 local function mksession(dir)
   for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-    if vim.bo[buf].filetype == 'gitcommit' then vim.cmd.bd(buf) end
+    if vim.tbl_contains({ 'gitcommit', '' }, vim.bo[buf].filetype) then vim.cmd.bd(buf) end
   end
   vim.cmd 'Neotree close'
   vim.cmd.mksession { args = { vim.fn.fnameescape(normalize_session_path(dir)) }, bang = true }
