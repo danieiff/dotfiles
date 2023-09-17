@@ -11,8 +11,8 @@ local packages = {
   "https://github.com/mrbjarksen/neo-tree-diagnostics.nvim",
   "https://github.com/nvim-neo-tree/neo-tree.nvim",
   "https://github.com/ibhagwan/fzf-lua",
-  -- "https://github.com/folke/trouble.nvim",
-  -- "https://github.com/simrat39/symbols-outline.nvim",
+  "https://github.com/folke/trouble.nvim",
+  "https://github.com/simrat39/symbols-outline.nvim",
 
   "https://github.com/nvim-treesitter/nvim-treesitter",
   "https://github.com/nvim-treesitter/nvim-treesitter-textobjects",
@@ -24,17 +24,17 @@ local packages = {
   "https://github.com/danieiff/nvim-ts-autotag",
   "https://github.com/windwp/nvim-autopairs",
   "https://github.com/ggandor/leap.nvim",
+  "https://github.com/mbbill/undotree",
+  "https://github.com/debugloop/telescope-undo.nvim",
 
   "https://github.com/hrsh7th/nvim-cmp",
   "https://github.com/hrsh7th/cmp-nvim-lsp",
   "https://github.com/hrsh7th/cmp-buffer",
-  "https://github.com/petertriho/cmp-git",
-  -- "https://github.com/lukas-reineke/cmp-rg",
+  "https://github.com/lukas-reineke/cmp-rg",
   "https://github.com/saadparwaiz1/cmp_luasnip",
   "https://github.com/L3MON4D3/LuaSnip",
   "https://github.com/danieiff/friendly-snippets",
-  -- "https://github.com/Exafunction/codeium.vim",
-  "https://github.com/jcdickinson/codeium.nvim",
+  "https://github.com/jcdickinson/codeium.nvim", -- "https://github.com/Exafunction/codeium.vim",
 
   "https://github.com/lewis6991/gitsigns.nvim",
   "https://github.com/sindrets/diffview.nvim",
@@ -45,13 +45,15 @@ local packages = {
   "https://github.com/ray-x/lsp_signature.nvim",
   "https://github.com/VidocqH/lsp-lens.nvim",
   "https://github.com/lvimuser/lsp-inlayhints.nvim",
-  "https://github.com/jose-elias-alvarez/null-ls.nvim",
 
   "https://github.com/danieiff/nvim-dap",
   "https://github.com/rcarriga/nvim-dap-ui",
   "https://github.com/theHamsta/nvim-dap-virtual-text",
   "https://github.com/nvim-neotest/neotest",
+  "https://github.com/nvim-neotest/neotest-jest"
 
+  -- "https://github.com/jackmort/chatgpt.nvim"
+  -- "https://github.com/jamestthompson3/nvim-remote-containers"
   -- "https://github.com/chipsenkbeil/distant.nvim",
 }
 vim.g.packdir = vim.fn.stdpath 'config' .. '/pack/tett/start'
@@ -65,6 +67,7 @@ vim.fn.jobstart({ 'ls' },
     cwd = vim.g.packdir,
     stdout_buffered = true,
     on_stdout = function(_, data)
+      vim.g.packages = data
       local packages_not_downloaded = vim.tbl_filter(
         function(p) return not vim.tbl_contains(data, vim.fn.fnamemodify(p, ':t')) end,
         packages)
@@ -92,6 +95,7 @@ vim.fn.jobstart({ 'ls' },
     on_stderr = function(_, e) if #e ~= 1 or e[1] ~= '' then vim.print(e) end end
   })
 
+vim.g.npm_list = vim.fn.system('npm -g list -p')
 K, HL, CMD, AUC, AUG = function(lhs, rhs, opts)
       opts = opts or {}
       local mode = opts.mode or 'n'
