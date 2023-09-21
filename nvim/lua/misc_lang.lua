@@ -1,21 +1,37 @@
 local dap = require 'dap'
 
+-- https://github.com/mattn/efm-langserver/blob/master/schema.md
+-- https://github.com/creativenull/efmls-configs-nvim/main/doc
+-- https://github.com/fatih/gomodifytags
+-- https://github.com/yoheimuta/protolint
+-- https://github.com/rhysd/actionlint
+-- 'commitlint --extends @commitlint/config-conventional'
+-- prettier eslint stylelint
 if not vim.fn.executable 'efm-langserver' then vim.fn.startjob('go install github.com/mattn/efm-langserver@latest') end
 local languages = {
+  go = {
+    {
+      prefix = 'golangci-lint',
+      lintCommand = 'golangci-lint run --color never --out-format tab ${INPUT}',
+      lintStdin = false,
+      lintFormats = { '%.%#:%l:%c %m' },
+      rootMarkers = {},
+    }
+  },
   gitcommit = {
     {
       lintCommand = 'gitlint --contrib contrib-title-conventional-commits',
       lintStdin = true,
       lintFormats = { '%l: %m: "%r"', '%l: %m', }
     }
+  },
   }
 }
 local prettier = {
   formatCanRange = true,
   formatCommand =
-  'prettierd ${INPUT} ${--tab-width:tabWidth} ${--use-tabs:insertSpaces} ${--range-start=charStart} ${--range-start=charEnd}',
-  -- './node_modules/.bin/prettier --stdin --stdin-filepath ${INPUT} ${--range-start:charStart} ${--range-end:charEnd} ${--tab-width:tabSize} ${--use-tabs:!insertSpaces}',
-
+  "prettierd '${INPUT}' ${--tab-width=tabSize} ${--use-tabs=!insertSpaces} ${--range-start=charStart} ${--range-end=charEnd}",
+  -- "./node_modules/.bin/prettier --stdin --stdin-filepath '${INPUT}' ${--range-start:charStart} ${--range-end:charEnd} ${--tab-width:tabSize} ${--use-tabs:!insertSpaces}",
   formatStdin = true,
   rootMarkers = {
     '.prettierrc',
@@ -66,6 +82,7 @@ require 'lspconfig'.efm.setup {
     rootMarkers = { ".git/" },
     languages = languages,
   },
+  filetypes = vim.tbl_keys(languages)
 }
 
 AUC('FileType', {
