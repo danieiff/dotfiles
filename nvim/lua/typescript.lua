@@ -203,12 +203,7 @@ AUC('FileType', {
   once = true,
   callback = function()
     require 'util'.ensure_npm_deps { '@vue/language-server' }
-    require 'lspconfig'.volar.setup {
-    }
     --https://github.com/johnsoncodehk/volar/tree/20d713b/packages/vue-language-server
-
-    --Volar by default supports Vue 3 projects. Vue 2 projects need
-    --[additional configuration](https://github.com/vuejs/language-tools/tree/master/packages/vscode-vue#usage).
 
     local util = require 'lspconfig.util'
     local function get_typescript_server_path(root_dir)
@@ -221,12 +216,11 @@ AUC('FileType', {
       return util.search_ancestors(root_dir, check_dir) and found_ts or global_ts
     end
     require 'lspconfig'.volar.setup {
+      filetypes = { 'typescript', 'javascript', 'javascriptreact', 'typescriptreact', 'vue', 'json' },
       on_new_config = function(new_config, new_root_dir)
         new_config.init_options.typescript.tsdk = get_typescript_server_path(new_root_dir)
       end,
 
-      -- Take over mode: https://vuejs.org/guide/typescript/overview.html#note-on-vue-cli-and-ts-loader
-      -- filetypes = { 'typescript', 'javascript', 'javascriptreact', 'typescriptreact', 'vue', 'json' }
     }
   end
 })
