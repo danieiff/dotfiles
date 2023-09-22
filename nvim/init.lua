@@ -674,10 +674,10 @@ end
 -- TODO: glob '*.code-snippets' and pass if exists
 if vim.loop.fs_stat '.code-snippets' then require "luasnip.loaders.from_vscode".load_standalone({ path = ".code-snippets" }) end
 
-vim.keymap.set({ "i", "s" }, "<C-L>", function() luasnip.jump(1) end, { silent = true })
-vim.keymap.set({ "i", "s" }, "<C-J>", function() luasnip.jump(-1) end, { silent = true })
-vim.keymap.set({ "i", "s" }, "<C-E>", function() if luasnip.choice_active() then luasnip.change_choice(1) end end,
-  { silent = true })
+K("<C-L>", function() luasnip.jump(1) end, { silent = true, mode = { "i", "s" } })
+K("<C-J>", function() luasnip.jump(-1) end, { silent = true, mode = { "i", "s" } })
+K("<C-E>", function() if luasnip.choice_active() then luasnip.change_choice(1) end end,
+  { silent = true, mode = { "i", "s" } })
 K("<C-j>", luasnip.expand, { silent = true, mode = { 'i', 's' } })
 K("<C-l>", function() if luasnip.choice_active() then luasnip.change_choice(1) end end,
   { silent = true, mode = { 'i', 's' } })
@@ -709,17 +709,18 @@ cmp.setup({
     ['<Tab>'] = cmp.mapping.confirm({ select = true }),
   }),
   sources = cmp.config.sources({ { name = 'nvim_lsp' }, { name = 'luasnip' }, { name = 'rg', keyword_length = 3 },
+    { name = 'codeium' },
     {
       name = 'buffer',
       option = {
         get_bufnrs = function() return vim.tbl_map(vim.api.nvim_win_get_buf, vim.api.nvim_list_wins()) end,
         indexing_interval = 1500
       }
-    }, { name = 'codeium' } }),
+    }
+  }),
   sorting = {
     comparators = {
       function(...) return require 'cmp_buffer':compare_locality(...) end,
-      -- The rest of your comparators...
     }
   },
   view = { entries = { name = 'custom', selection_order = 'near_cursor' } },
@@ -761,13 +762,11 @@ cmp.setup({
   },
 })
 
-require 'cmp_git'.setup()
 cmp.setup.filetype('gitcommit',
   {
-    sources = cmp.config.sources({ { name = 'luasnip' }, { name = 'git' }, { name = 'codeium' } },
+    sources = cmp.config.sources({ { name = 'luasnip' }, { name = 'codeium' } },
       { { name = 'buffer', option = { indexing_interval = 1500 } } })
   })
-
 cmp.setup.cmdline({ '/', '?' }, { mapping = cmp.mapping.preset.cmdline(), sources = { { name = 'buffer' } } })
 cmp.event:on('confirm_done', require 'nvim-autopairs.completion.cmp'.on_confirm_done())
 
@@ -941,12 +940,15 @@ AUC('LspAttach', {
 
     if client.server_capabilities.documentFormattingProvider then
       vim.api.nvim_clear_autocmds { group = augroup_lsp, buffer = ev.buf }
+
       AUC('BufWritePre', {
         group = augroup_lsp,
         buffer = ev.buf,
         callback = function()
-          vim.lsp.buf.format { filter = function(c) return c.name ~= 'typescript-tools' end, bufnr =
-              ev.buf }
+          vim.lsp.buf.format { filter = function(c)
+            return not vim.tbl_contains({ 'typescript-tools', 'jsonls', 'yaml-language-server' },
+              c.name)
+          end, bufnr = ev.buf }
         end
       })
     end
@@ -1156,7 +1158,7 @@ require 'lualine'.setup {
     }, 'diagnostics', 'searchcount' },
     lualine_c = { 'buffers' },
     lualine_x = { 'windows' },
-    -- lualine_y = { { function() return vim.fn['codeium#GetStatusString']() end } },
+    lualine_y = { { function() return vim.fn['codeium#GetStatusString']() end } },
     lualine_z = { 'progress' }
   }
 }
