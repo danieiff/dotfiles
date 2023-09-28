@@ -104,6 +104,17 @@ require 'lspconfig'.efm.setup {
 }
 
 AUC('FileType', {
+  pattern = 'markdown',
+  once = true,
+  callback = function()
+    require 'util'.ensure_npm_deps { 'grammarly-languageserver' }
+    require 'lspconfig'.grammarly.setup { cmd = { "n", "run", "16", "/usr/local/bin/grammarly-languageserver", "--stdio" }, }
+    -- vim.schedule(vim.cmd.edit)
+    vim.schedule(vim.cmd.edit)
+  end
+})
+
+AUC('FileType', {
   pattern = 'lua',
   once = true,
   callback = function()
