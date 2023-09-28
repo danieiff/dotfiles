@@ -72,11 +72,19 @@ local eslint = {
     'package.json',
   },
 }
+local stylelint = {
+  prefix = 'stylelint',
+  lintCommand = './node_modules/.bin/stylelint --no-color --formatter compact --stdin --stdin-filename ${INPUT}',
+  lintStdin = true,
+  lintFormats = { '%.%#: line %l, col %c, %trror - %m', '%.%#: line %l, col %c, %tarning - %m' },
+  -- rootMarkers = { '.stylelintrc' },
+}
 local exts_js = { 'typescript', 'javascript', 'typescriptreact', 'javascriptreact', 'vue', 'svelte', 'astro' }
 for _, ext in ipairs(exts_js) do languages[ext] = { prettier, eslint } end
 local exts_prettier = { 'html', 'json', 'jsonc', 'yaml', 'markdown' }
 for _, ext in ipairs(exts_prettier) do languages[ext] = { prettier } end
-
+local exts_css = { "css", "scss", "less", "sass" }
+for _, ext in ipairs(exts_css) do languages[ext] = { prettier, stylelint } end
 
 
 require 'lspconfig'.efm.setup {
