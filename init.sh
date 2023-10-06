@@ -36,10 +36,10 @@ npm i -g vscode-langservers-extracted
 npm i -g @tailwindcss/language-server
 ## TODO: https://github.com/redhat-developer/yaml-language-server
 
+
 # WSL
- sudo apt install wslu
- printf 'export PATH=$PATH:$(wslpath "$(wslvar USERPROFILE)")/AppData/Local/Microsoft\ VS\ Code/bin:\n' >> .bashrc # VSCode 'code' command  
- cp dotfiles/windows-terminal.json /mnt/c/User/UserName/AppData/Local/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState/settings.json
+WslLocalAppData="$(wslpath "$(powershell.exe \$Env:LocalAppData)" | tr -d "\r")"
+ln -s ~/dotfiles/windows-terminal.json "$WslLocalAppData/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState/settings.json"
 
 ## WSL SSH
 sudo apt install openssh-server
@@ -59,6 +59,16 @@ ssh "$(whoami)@localhost"
 
 chmod 700 ~/.ssh
 chmod 600 ~/.ssh/authorized_keys
+
+## RN Expo
+# Foreach ( $port in 19000,19001,19002 ) { netsh interface portproxy add v4tov4 listenport=$port connectport=$port connectaddress=$($(wsl hostname -I).Trim()) }
+# Foreach ( $dir in "Inbound","Outbound") { New-NetFireWallRule -DisplayName 'WSL Expo ports for LAN development' -Direction $dir -LocalPort 19000-19002 -Action Allow -Protocol TCP }
+
+## Chrome (google-chrome)
+sudo wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+sudo dpkg -i google-chrome-stable_current_amd64.deb
+sudo apt install --fix-broken -y
+sudo dpkg -i google-chrome-stable_current_amd64.deb
 
 
 # Firebase
