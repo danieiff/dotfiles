@@ -1,8 +1,7 @@
 local M = {}
 
 M.ensure_pack_installed = function(deps)
-  local jobs = {}
-  local rt
+  local jobs, rt = {}
   for _, dep in ipairs(deps) do
     local pack = vim.fn.fnamemodify(dep.url, ':t')
     if not vim.tbl_contains(vim.g.packages, pack) then
@@ -10,9 +9,11 @@ M.ensure_pack_installed = function(deps)
       local job = vim.fn.jobstart('git clone --depth 1 ' .. dep.url, {
         cwd = vim.g.packdir,
         on_exit = function(_, code)
-          if code ~= 0 then
+          if code == 0 then
             vim.print('Downloaded: ' .. dep.url)
             if dep.callback then rt = dep.callback() end
+          else
+            vim.print('Download Failed: ' .. dep.url)
           end
         end
       })
