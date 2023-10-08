@@ -1,29 +1,30 @@
 local extensions = { 'typescript', 'javascript', 'typescriptreact', 'javascriptreact', 'vue', 'svelte', 'astro' }
 
 local npm_deps = { 'typescript', 'vscode-langservers-extracted', '@tailwindcss/language-server',
-  '@styled/typescript-styled-plugin', 'typescript-styled-plugin' }
+  '@styled/typescript-styled-plugin', 'typescript-styled-plugin', 'cssmodules-language-server' }
 
 local debug_adapter_dir = vim.fn.stdpath 'config' .. '/js-debug'
 
 local typescript_aug = vim.api.nvim_create_augroup('TypescriptAUG', {})
 
+local capabilities = require('cmp_nvim_lsp').default_capabilities()
+
 AUC('FileType', {
   pattern = extensions,
-  group = typescript_aug,
+  once =true,
   callback = function()
-    vim.api.nvim_clear_autocmds { event = 'FileType', group = typescript_aug }
+    for _, d in ipairs( npm_deps ) do
+      if not vim.g.npm_list:find(d:gsub('-', '%%-') .. '\n') then
+        vim.fn.jobstart('npm i -g ' .. d) 
+      end
+    end
 
-    ---@ Deps
-
-    local job_npm = vim.tbl_map(function(d)
-      if not vim.g.npm_list:find(d:gsub('-', '%%-') .. '\n') then return vim.fn.jobstart('npm i -g ' .. d) end
-    end, npm_deps)
-
-    local job_git = require 'util'.ensure_pack_installed {
+    require 'util'.ensure_pack_installed {
       {
         url = "https://github.com/pmizio/typescript-tools.nvim",
         callback = function()
           require 'typescript-tools'.setup {
+            capabilities = capabilities,
             settings = {
               tsserver_file_preferences = {
                 -- includeInlayParameterNameHints = "none",
@@ -40,6 +41,7 @@ AUC('FileType', {
                 -- allowIncompleteCompletions = false,
                 -- allowRenameOfImportPath = false,
               },
+              importModuleSpecifierPreference = "non-relative",
               -- tsserver_plugins = { "@styled/typescript-styled-plugin" }
             }
           }
@@ -54,20 +56,6 @@ AUC('FileType', {
         { on_exit = function() vim.defer_fn(function() vim.api.nvim_buf_delete(0, { force = true }) end, 2000) end })
     end
 
-    local jobs = vim.list_extend(job_git, job_npm)
-    if next(jobs) then
-      local allSuccess = true
-      for _, status in ipairs(vim.fn.jobwait(jobs)) do
-        if status == 0 then
-          vim.print('Downloaded ' .. packages_not_downloaded[i])
-        else
-          allSuccess = false
-          vim.print(('Failed to download %s, status: %s'):format(packages_not_downloaded[i], status))
-        end
-      end
-      if allSuccess then vim.cmd 'source $MYVIMRC' end
-    end
-
     ---@ Lsp
 
     if vim.tbl_get(vim.loop.fs_stat('./deno.json') or {}, 'type') == 'file' then
@@ -76,13 +64,29 @@ AUC('FileType', {
     end
 
     require 'lspconfig'.tailwindcss.setup {
-      on_attach = function(_, _ --[[ buffer ]]) --[[ require('tailwindcss-colors').buf_attach(_bufnr)  ]] end,
+      on_attach = function(_, _ --[[ buffer ]]) 
+        client.resolved_capabilities.document_formatting = false
+      client.resolved_capabilities.document_range_formatting = false
+      --[[ require('tailwindcss-colors').buf_attach(_bufnr)  ]] end,
+
+
       handlers = {
         ['tailwindcss/getConfiguration'] = function(_, _, params, _, bufnr, _)
           -- tailwindcss lang server wai swap = {
           vim.lsp.buf_notify(bufnr, 'tailwindcss/getConfigurationResponse', { _id = params._id })
         end
       },
+      settings = {
+        tailwindCSS = {
+          experimental = {
+            classRegex = {
+              { "tv\\(([^)]*)\\)",  "[\"'`]([^\"'`]*).*?[\"'`]" },  -- for tailwind-variants
+              { "cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]" },  -- for cva
+              { "cx\\(([^)]*)\\)",  "(?:'|\"|`)([^']*)(?:'|\"|`)" } -- for cva
+            },
+          },
+        },
+      }
     }
 
     if vim.tbl_get(vim.loop.fs_stat('./node_modules/.bin/relay-compiler') or {}, 'type') == 'file' then
@@ -97,6 +101,15 @@ AUC('FileType', {
         path_to_config = nil,
       }
     end
+
+    --[[
+     require'lspconfig'.cssmodules_ls.setup {
+     on_attach = function (client)
+         -- avoid accepting `definitionProvider` responses from this LSP
+         -- client.server_capabilities.definitionProvider = false
+     end,
+     }
+     ]]
 
 
     ---@ Dap
@@ -194,7 +207,7 @@ AUC('FileType', {
       }
     end
 
-    vim.cmd.edit()
+    vim.schedule(vim.cmd.edit)
   end
 })
 
