@@ -96,6 +96,7 @@ vim.fn.jobstart({ 'ls' },
   })
 
 vim.g.npm_list = vim.fn.system('npm -g list -p')
+
 K, HL, CMD, AUC, AUG = function(lhs, rhs, opts)
       opts = opts or {}
       local mode = opts.mode or 'n'
@@ -111,7 +112,7 @@ K, HL, CMD, AUC, AUG = function(lhs, rhs, opts)
 
 for k, v in pairs {
   autowriteall = true, undofile = true,
-  shell = os.getenv 'SHELL' .. ' -l',
+  shell = os.getenv 'SHELL' or 'bash' .. ' -l',
   virtualedit = 'block',
   ignorecase = true, smartcase = true,
   tabstop = 2, shiftwidth = 0, expandtab = true,

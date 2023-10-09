@@ -3,15 +3,18 @@
 sudo apt update && sudo apt upgrade
 
 shelltype="$([ -n "$BASH_VERSION" ] && echo "bash" || echo "zsh")"
-ln -s "~/"$(dirname "${BASH_SOURCE[0]}")"/.${shelltype}rc" ~ && source "$HOME/.${shelltype}rc"
-ln -s ~/"$(dirname "${BASH_SOURCE[0]}")"/.gitconfig ~
+ln -fs "~/"$(dirname "${BASH_SOURCE[0]}")"/.${shelltype}rc" ~ && source "$HOME/.${shelltype}rc"
+ln -fs ~/"$(dirname "${BASH_SOURCE[0]}")"/.gitconfig ~
 
 # Node.js
 curl -L https://bit.ly/n-install | bash
 
 # NeoVim
-output=$(ghinstall "neovim/neovim") && sudo ln -s ~/"$output"/bin/nvim /bin/nvim
-ln -s ~/dotfiles/init.lua ~/.config/nvim/init.lua
+curl -L https://github.com/neovim/neovim/releases/latest/download/nvim-linux64.tar.gz | tar xz
+ln -fs ~/nvim-linux64/bin/nvim /usr/bin/nvim
+mkdir -p ~/.config/nvim/lua
+ln -fs ~/dotfiles/init.lua ~/.config/nvim
+ln -fs ~/dotfiles/lua/* ~/.config/nvim/lua
 
 # WSL
 WslLocalAppData="$(wslpath "$(powershell.exe \$Env:LocalAppData)" | tr -d "\r")"
@@ -19,7 +22,6 @@ ln -s ~/dotfiles/windows-terminal.json "$WslLocalAppData/Packages/Microsoft.Wind
 
 ## WSL SSH
 sudo apt install openssh-server
-### Test within local by myself
 sudo systemctl start ssh
 ### Run in Powershell as Admin
 # $wsl_ipaddress1 = (wsl hostname -I).split(" ", 2)[0]
@@ -35,25 +37,13 @@ chmod 600 ~/.ssh/authorized_keys
 # }
 
 ## Chrome (google-chrome)
-sudo wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+wget curl -LO https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
 sudo dpkg -i google-chrome-stable_current_amd64.deb
 sudo apt install --fix-broken -y
-sudo dpkg -i google-chrome-stable_current_amd64.deb
 
-sudo apt install fzf
-sudo apt install gh
-sudo apt install yq
-sudo apt install clang
+sudo apt install fzf gh yq clang
 
-cargo xtask install --server
-cargo install ripgrep
-cargo install git-delta
-cargo install delta
-cargo install fd-find
-cargo install deno --locked
-cargo install bat
-cargo install viu
-cargo install dotenv-linter
+cargo install ripgrep delta fd-find bat viu dotenv-linter
 
 # Firebase
 npm i -g firebase-tools && sudo apt install default-jdk
