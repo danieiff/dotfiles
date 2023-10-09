@@ -1,4 +1,7 @@
 local language_server = 'bash-language-server'
+local shellcheck = 'shellcheck'
+local debugger_url =
+'https://github.com/rogalmic/vscode-bash-debug/releases/download/untagged-438733f35feb8659d939/bash-debug-0.3.9.vsix'
 local debug_adapter_dir = vim.fn.stdpath 'config' .. '/vscode-bash-debug'
 
 AUC('FileType', {
@@ -6,6 +9,10 @@ AUC('FileType', {
   once = true,
   callback = function()
     ---@ Deps
+    if vim.fn.executable(shellcheck) ~= 1 then
+      vim.fn.jobstart('sudo apt install' .. shellcheck,
+        { on_exit = function(_, code) if code == 0 then vim.print('Downloaded: ' .. language_server) end end })
+    end
 
     if vim.fn.executable(language_server) ~= 1 then
       vim.fn.jobstart('npm i -g ' .. language_server,
@@ -14,8 +21,7 @@ AUC('FileType', {
 
     if vim.tbl_get(vim.loop.fs_stat(debug_adapter_dir) or {}, 'type') ~= 'directory' then
       vim.fn.jobstart(
-        'mkdir -p ' .. debug_adapter_dir .. ' && cd $_ ' ..
-        '&& curl -LO https://github.com/rogalmic/vscode-bash-debug/releases/download/untagged-438733f35feb8659d939/bash-debug-0.3.9.vsix && unzip bash-debug-0.3.9.vsix',
+        'mkdir -p ' .. debug_adapter_dir .. ' && cd $_ && curl -LO ' .. debugger_url,
         { on_exit = function(_, code) if code == 0 then vim.print 'Downloaded: vscode-bash-debug' end end })
     end
 
