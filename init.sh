@@ -12,8 +12,10 @@ curl -L https://github.com/zellij-org/zellij/releases/download/v0.38.2/zellij-x8
 curl -L -o /usr/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 && chmod +x /usr/bin/yq
 
 # Node.js
-curl -fsSL https://raw.githubusercontent.com/tj/n/master/bin/n | bash -s lts && \
-  npm install -g n
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash && \
+  export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")" && \
+  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" && \
+  nvim install 18
 
 # NeoVim
 curl -L https://github.com/neovim/neovim/releases/latest/download/nvim-linux64.tar.gz | tar xz && \
