@@ -15,7 +15,7 @@ curl -L -o /usr/bin/yq https://github.com/mikefarah/yq/releases/latest/download/
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash && \
   export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")" && \
   [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" && \
-  nvim install 18
+  nvm install 18
 
 # NeoVim
 curl -L https://github.com/neovim/neovim/releases/latest/download/nvim-linux64.tar.gz | tar xz && \
@@ -42,7 +42,7 @@ sudo apt install openssh-server
 chmod 600 ~/.ssh/authorized_keys
 
 # ssh-keygen && ssh-copy-id <user@host>
-# # Generate public domain e.g.) https://www.noip.com/
+# # Opt) Generate public domain e.g.) https://www.noip.com/
 # # Config Wifi router to open port or proxy to different port from default of ssh
 # dev() {
 #   ssh -L "${1:-3000}:localhost:${1:-3000}" <user@host>

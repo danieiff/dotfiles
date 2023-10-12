@@ -16,7 +16,7 @@ RUN curl -fsSL https://github.com/zellij-org/zellij/releases/latest/download/zel
 RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash && \
   export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")" && \
   [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" && \
-  nvim install 18
+  nvm install 18
 
 RUN curl -fsSL https://github.com/neovim/neovim/releases/latest/download/nvim-linux64.tar.gz | tar xz && \
   ln -fs /nvim-linux64/bin/nvim /usr/bin/nvim
