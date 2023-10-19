@@ -52,6 +52,14 @@ gistget() {
   done
 }
 
+dev-docker() {
+  "docker run -it -v ~/a:/a -e LOCAL_UID=$(id -u "$USER") -e LOCAL_GID=$(id -g "$USER") $1 /bin/bash"
+}
+
+dev-ssh() {
+  ssh -L "${1:-3000}:localhost:${1:-3000} ${3:-user@host}"
+}
+
 # WSL
 ## Android
 # mkdir ~/Android && ln -s /mnt/c/Users/Hirohisa/AppData/Local/Android/Sdk ~/Android/sdk
@@ -69,4 +77,3 @@ alias rn-expo='REACT_NATIVE_PACKAGER_HOSTNAME=$(/mnt/c/Windows/system32/ipconfig
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-
