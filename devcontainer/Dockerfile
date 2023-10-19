@@ -26,7 +26,7 @@ RUN git clone --depth 1 https://github.com/danieiff/dotfiles && \
 
 RUN nvim +:q
 
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+COPY devcontainer/entrypoint.sh /usr/local/bin/entrypoint.sh
 
 RUN chmod +x /usr/local/bin/entrypoint.sh
 
