@@ -112,13 +112,13 @@ K, HL, CMD, AUC, AUG = function(lhs, rhs, opts)
 
 for k, v in pairs {
   autowriteall = true, undofile = true,
-  shell = os.getenv 'SHELL' or 'bash' .. ' -l',
+  shell = (os.getenv 'SHELL' or 'bash') .. ' -l',
   virtualedit = 'block',
   ignorecase = true, smartcase = true,
   tabstop = 2, shiftwidth = 0, expandtab = true,
   pumblend = 30, winblend = 30, fillchars = 'eob: ',
   laststatus = 3, cmdheight = 0, number = true, signcolumn = 'number',
-  foldmethod = 'expr', foldexpr = vim.treesitter.foldexpr(), foldenable = false, }
+  foldmethod = 'expr', foldexpr = vim.treesitter.foldexpr(), foldenable = false }
 do vim.opt[k] = v end
 
 vim.g.mapleader = ' '
@@ -212,26 +212,32 @@ vim.fn.digraph_setlist {
   --┌────────┬────────┬────────┬────────┬────────┬────────┬────────┐                          ┌────────┬────────┬────────┬────────┬────────┬────────┬────────┐
   --│        │        │        │        │        │        │        │                          │        │        │        │        │        │        │        │
   --├────────┼────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┼────────┤
-  --│        │ ✨  💥 │ 🚨  🎨 │ 💡  🔊 │ 📝     │ 🔀 (⏪️)│        │                          │        │ ✅  🧪 │ 🤡  ⚗  │  🏷️ 🦺 │        │        │        │
+  --│        │ ✨  💥 │ 🚨  🎨 │ 💡  🔊 │ 📝     │ 🔀 (⏪️)│        │                          │        │ ✅  🧪 │ 🤡  ⚗  │  🏷 🦺 │        │        │        │
   --├────────┼────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┼────────┤
   --│        │ 🐛  🚑 │ 🩹  ♻  │ 🔥  🚚 │  🗑 👽 │        │        │                          │        │ 👔  💸 │ 🧱  🗃 │ ⚡  🧵 │ 🔒  🛂 │        │        │
-  --├────────┼────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┼────────┤
+  --├────────┼────────┼────────┼────────┼────────┼────────┼───────
+  --    ├────────┼────────┼────────┼────────┼────────┼────────┼────────┤
   --│        │ 🚧  👷 │ 🔧  🔨 │ ➕  ➖ │  ⬆  ⬇  │ 🚀  🔖 │        │                          │        │ 💄  💫 │ 🚸  ♿ │ 📱  🔍 │ 📈  🌐 │ 💬  🍱 │        │
   --├────────┼────────┼────────┼────────┼────────┼────────┼────────┼────────┐        ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┼────────┤
   --│        │        │        │        │        │        │        │        │        │        │        │        │        │        │        │        │        │
   --└────────┴────────┴────────┴────────┘        └────────┴────────┴────────┘        └────────┴────────┴────────┘        └────────┴────────┴────────┴────────┘
-  { 'eq', '✨' }, { 'eQ', '💥' }, { 'ew', '🚨' }, { 'eW', '🎨' }, { 'ee', '💡' }, { 'eE', '🔊' }, { 'er', '📝' },
-  { 'ea', '🐛' }, { 'eA', '🚑' }, { 'es', '🩹' }, { 'eS', '♻' }, { 'ed', '🔥' }, { 'eD', '🚚' }, { 'ef', '🗑' }, {
+  { 'eq', '✨' }, { 'eQ', '💥' }, { 'ew', '🚨' }, { 'eW', '🎨' }, { 'ee', '💡' }, { 'eE', '🔊' }, {
+  'er',
+  '📝' },
+  { 'ea', '🐛' }, { 'eA', '🚑' }, { 'es', '🩹' }, { 'eS', '♻' }, { 'ed', '🔥' }, { 'eD', '🚚' }, { 'ef',
+  '🗑' }, {
   'eF', '👽' },
   { 'ez', '🚧' }, { 'eZ', '👷' }, { 'ex', '🔧' }, { 'eX', '🔨' }, { 'ec', '➕' }, { 'eC', '➖' }, { 'ev', '⬆' }, {
   'eV', '⬇' }, { 'eb', '🚀' }, { 'eB', '🔖' },
 
   { 'ey', '✅' }, { 'eY', '🧪' }, { 'eu', '🤡' }, { 'eU', '⚗' }, { 'ei', '🏷' }, { 'eI', '🦺' }, { 'eo', '💬' }, {
   'eO', '🍱' },
-  { 'eh', '👔' }, { 'eH', '💸' }, { 'ek', '🧱' }, { 'eK', '🗃' }, { 'el', '⚡' }, { 'eL', '🧵' }, { 'e;', '🔒' }, {
+  { 'eh', '👔' }, { 'eH', '💸' }, { 'ek', '🧱' }, { 'eK', '🗃' }, { 'el', '⚡' }, { 'eL', '🧵' }, { 'e;',
+  '🔒' }, {
   'e:', '🛂' },
-  { 'en', '💄' }, { 'eN', '💫' }, { 'em', '🚸' }, { 'eM', '♿' }, { 'e,', '📱' }, { 'e<', '🔍' }, { 'e.', '📈' }, {
-  'e>', '🌐' }, { 'e/', '🔀' }, --{ 'e?', '⏪️' },
+  { 'en', '💄' }, { 'eN', '💫' }, { 'em', '🚸' }, { 'eM', '♿' }, { 'e,', '📱' }, { 'e<', '🔍' }, { 'e.',
+  '📈' }, {
+  'e>', '🌐' }, { 'e/', '🔀' } --{ 'e?', '⏪️' },
 }
 K('<C-k>e?', '⏪️', { mode = { 'i' } })
 K('fj', 'f<C-k>j')
@@ -312,6 +318,17 @@ fzf_lua.setup {
         ['gif'] = fzf_lua_img_previewer,
         -- ['svg'] = -- viu doesn't support
       }
+    }
+  },
+  git = {
+    status = {
+      preview_pager = 'delta'
+    },
+    -- commit = {
+    --   preview_pager = 'delta'
+    -- },
+    bcommits = {
+      preview_pager = 'delta'
     }
   }
 }
@@ -399,16 +416,18 @@ vim.api.nvim_create_user_command(
     end,
   })
 
-K('<C-g>', function()
-  local wins = vim.api.nvim_list_wins()
-  for _, win in ipairs(wins) do
-    -- vim.api.nvim_win_get_buf
-    vim.api.nvim_buf_get_name()
+K('<C-H>', function()
+  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.regex('^term://.*:lazygit$'):match_str(vim.api.nvim_buf_get_name(buf)) then
+      for _, win in ipairs(vim.api.nvim_list_wins()) do
+        if vim.api.nvim_win_get_buf(win) == buf then
+          return vim.api.nvim_win_close(win, true)
+        end
+      end
+      return vim.cmd('sp | b' .. buf)
+    end
   end
-  if #wins > 1 then
-
-  end
-  vim.cmd 'sp | term lazygit'
+  return vim.cmd 'sp | term lazygit'
 end, { mode = { 'n', 't' } })
 
 K('<leader>gh', ':!gh ')
@@ -535,7 +554,12 @@ require 'neo-tree'.setup({
     end,
     trash_visual = function(state, selected_nodes)
       local paths_to_trash = {}
-      for _, node in ipairs(selected_nodes) do if node.type ~= 'message' then table.insert(paths_to_trash, node.path) end end
+      for _, node in ipairs(selected_nodes) do
+        if node.type ~= 'message' then
+          table.insert(paths_to_trash,
+            node.path)
+        end
+      end
       if vim.fn.confirm('Are you sure you want to trash ' .. #paths_to_trash .. ' items?', '&y\n&n') == 2 then return end
       for _, path in ipairs(paths_to_trash) do vim.cmd('silent !trash ' .. path) end
       require 'neo-tree.sources.filesystem.commands'.refresh(state)
@@ -572,8 +596,10 @@ require 'nvim-cursorword'
 require 'leap'.add_default_mappings()
 
 require 'nvim-treesitter.configs'.setup {
-  ensure_installed = { 'bash', 'lua', 'python', 'javascript', 'typescript', 'html', 'css', 'json', 'yaml', 'toml',
-    'go',
+  ensure_installed = { 'bash', 'lua', 'python', 'javascript', 'typescript', 'html', 'css', 'vue', 'svelte', 'astro',
+    'yaml', 'toml', 'json', 'jsonc', 'comment', 'sql', 'prisma', 'ruby', 'php',
+    'gitcommit', 'git_config', 'git_rebase',
+    'go', 'java', 'c', 'cmake', 'c_sharp', 'java', 'kotlin',
     'rust', 'jsonc', 'graphql', 'dockerfile', 'vim', 'tsx', 'markdown', 'markdown_inline' },
   highlight = { enable = true },
   context_commentstring = {
@@ -655,7 +681,8 @@ require 'nvim-treesitter.configs'.setup {
   },
 }
 
-require 'indent_blankline'.setup { show_current_context = true, show_current_context_start = true, use_treesitter = true }
+require 'ibl'.setup()
+
 require 'Comment'.setup {
   pre_hook = require 'ts_context_commentstring.integrations.comment_nvim'.create_pre_hook(),
   toggler = { line = 'gcc', block = 'gbc' }, --LHS of toggle mappings in NORMAL mode
@@ -709,7 +736,8 @@ cmp.setup({
     end, { 'i', 's' }),
     ['<Tab>'] = cmp.mapping.confirm({ select = true }),
   }),
-  sources = cmp.config.sources({ { name = 'nvim_lsp' }, { name = 'luasnip' }, { name = 'rg', keyword_length = 3 },
+  sources = cmp.config.sources({ { name = 'nvim_lsp' } --[[, { name = 'luasnip' } ]],
+    { name = 'rg',      keyword_length = 3 },
     { name = 'codeium' },
     {
       name = 'buffer',
@@ -761,6 +789,10 @@ cmp.setup({
       return vim_item
     end
   },
+  confirm_opts = {
+    behavior = cmp.ConfirmBehavior.Replace,
+    select = false,
+  },
 })
 
 cmp.setup.filetype('gitcommit',
@@ -770,11 +802,6 @@ cmp.setup.filetype('gitcommit',
   })
 cmp.setup.cmdline({ '/', '?' }, { mapping = cmp.mapping.preset.cmdline(), sources = { { name = 'buffer' } } })
 cmp.event:on('confirm_done', require 'nvim-autopairs.completion.cmp'.on_confirm_done())
-
-local capabilities = vim.tbl_deep_extend('force',
-  vim.lsp.protocol.make_client_capabilities(),
-  require 'cmp_nvim_lsp'.default_capabilities()
-)
 
 ---@ Lsp
 
@@ -945,12 +972,7 @@ AUC('LspAttach', {
       AUC('BufWritePre', {
         group = augroup_lsp,
         buffer = ev.buf,
-        callback = function()
-          vim.lsp.buf.format { filter = function(c)
-            return not vim.tbl_contains({ 'typescript-tools', 'jsonls', 'yaml-language-server' },
-              c.name)
-          end, bufnr = ev.buf }
-        end
+        callback = function() vim.lsp.buf.format { bufnr = ev.buf } end
       })
     end
 
@@ -1092,7 +1114,8 @@ dap.listeners.after['event_initialized']['me'] = function()
 end
 dap.listeners.after['event_terminated']['me'] = function()
   for _, keymap in pairs(keymap_restore) do
-    vim.api.nvim_buf_set_keymap(keymap.buffer, keymap.mode, keymap.lhs, keymap.rhs, { silent = not not keymap.silent })
+    vim.api.nvim_buf_set_keymap(keymap.buffer, keymap.mode, keymap.lhs, keymap.rhs,
+      { silent = not not keymap.silent })
   end
   keymap_restore = {}
 end
@@ -1116,6 +1139,35 @@ require 'dap.ext.vscode'.load_launchjs(nil, {
   -- ["cppdbg"] = { "c", "cpp" },
   -- ["dlv"] = { "go" },
 })
+
+---@ Test
+
+local neotest = require 'neotest'
+neotest.setup {
+  adapters = {
+    require 'neotest-jest' {
+      jestCommand = "jest --watch ",
+      jestConfigFile = "custom.jest.config.ts",
+      -- jestConfigFile = function() -- monorepo
+      --   local file = vim.fn.expand('%:p')
+      --   if file:find "/packages/" then
+      --     return file:match "(.-/[^/]+/)src" .. "jest.config.ts"
+      --   end
+      --   return vim.fn.getcwd() .. "/jest.config.ts"
+      -- end,
+      env = { CI = true },
+      -- cwd = function() -- monorepo
+      --   local file = vim.fn.expand '%:p'
+      --   if file:find "/packages/" then
+      --     return file:match "(.-/[^/]+/)src"
+      --   end
+      --   return vim.fn.getcwd()
+      -- end,
+      cwd = function(path) return vim.fn.getcwd() end,
+    },
+  }
+}
+K("<leader>tw", function() neotest.run.run({ jestCommand = 'jest --watch ' }) end)
 
 require 'typescript'
 require 'bash'
@@ -1174,7 +1226,8 @@ local function update_progress_notif(win, buf)
 
   local lines = {}
   for client_id, title_prog_tbl in pairs(clients_title_progress) do
-    local spinner = (next(clients_title_progress[client_id]) and spinner_frames[spinner_frames.index] or '󰄬') .. ' '
+    local spinner = (next(clients_title_progress[client_id]) and spinner_frames[spinner_frames.index] or '󰄬') ..
+        ' '
     local client_name = vim.tbl_get(vim.lsp.get_client_by_id(client_id) or {}, 'name')
     if not client_name then return vim.api.nvim_win_close(win, false) end
     table.insert(lines, spinner .. client_name)
@@ -1211,14 +1264,21 @@ vim.lsp.handlers["$/progress"] = function(_, result, ctx)
     if not next(clients_title_progress) then
       local buf = vim.api.nvim_create_buf(false, true)
       local win = vim.api.nvim_open_win(buf, false, {
-        relative = 'win', anchor = 'NE', width = 45, height = 1, row = 0, col = vim.fn.winwidth(0), style = 'minimal'
+        relative = 'win',
+        anchor = 'NE',
+        width = 45,
+        height = 1,
+        row = 0,
+        col = vim.fn.winwidth(0),
+        style = 'minimal'
       })
       update_progress_notif(win, buf)
     end
 
     clients_title_progress[client_id] = vim.tbl_deep_extend('force', clients_title_progress[client_id] or {}, {
       [val.title] = {
-        progress_info = ('%s %s %s'):format(val.title, message_maybe_prev, percentage), message = message_maybe_prev, completed = false, title =
+        progress_info = ('%s %s %s'):format(val.title, message_maybe_prev, percentage), message =
+          message_maybe_prev, completed = false, title =
           val.title, order = progress_title_to_order[client_id][val.title]
       }
     })
@@ -1269,9 +1329,6 @@ local function load_session_if_exists(dir)
 end
 
 local function mksession(dir)
-  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
-    if vim.tbl_contains({ 'gitcommit', '' }, vim.bo[buf].filetype) then vim.cmd.bd(buf) end
-  end
   vim.cmd 'Neotree close'
   vim.cmd.mksession { args = { vim.fn.fnameescape(normalize_session_path(dir)) }, bang = true }
 end
@@ -1279,8 +1336,6 @@ end
 AUC('VimEnter', {
   group = session_aug,
   callback = function()
-    -- Prevent restoring session in nested nvim instance (in ':term lazygit' for example)
-    if vim.bo.filetype == 'gitcommit' then return vim.api.nvim_clear_autocmds({ group = session_aug }) end
     local vim_argv = vim.fn.argv()
     local edit = load_session_if_exists(vim.fn.getcwd()) and vim.api.nvim_buf_get_name(0) ~= ''
         and vim.cmd.tabedit or vim.cmd.edit

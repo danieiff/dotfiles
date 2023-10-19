@@ -210,7 +210,7 @@ AUC('FileType', {
     }
 
     local yaml_ls = 'yaml-language-server'
-    if not vim.g.npm_list:find(yaml_ls:gsub('-', '%%-') .. '\n') then vim.fn.jobstart('npm i -g ' .. yaml_ls) end
+    require 'util'.ensure_npm_deps { yaml_ls }
     require 'lspconfig'.yamlls.setup {
       on_attach = function()
         client.resolved_capabilities.document_formatting = false
@@ -244,7 +244,7 @@ AUC('FileType', {
     -- https://github.com/rcjsuen/dockerfile-language-server-nodejs
     require 'util'.ensure_npm_deps { 'dockerfile-language-server-nodejs' }
     require 'lspconfig'.dockerls.setup {}
-    vim.schedule(vim.edit)
+    vim.schedule(vim.cmd.edit)
   end
 })
 
@@ -261,11 +261,9 @@ AUC('FileType', {
   pattern = { 'sql', 'mysql' },
   once = true,
   callback = function()
-    if vim.fn.executable 'sql-language-server' == 0 then
-      vim.fn.jobstart('npm i -g sql-language-server')
-    end
+    require 'util'.ensure_npm_deps { 'sql-language-server' }
     require 'lspconfig'.sqlls.setup {}
-    vim.schedule(vim.edit)
+    vim.schedule(vim.cmd.edit)
   end
 })
 
