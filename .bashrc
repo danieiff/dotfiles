@@ -1,8 +1,12 @@
+eval "$(zellij setup --generate-auto-start bash)"
+source /etc/bash_completion.d/git-prompt
+[ -f ~/.fzf.bash ] && . ~/.fzf.bash
+
 export GIT_PS1_SHOWDIRTYSTATE=true # unstaged * staged +
 export GIT_PS1_SHOWSTASHSTATE=true # stashed $
 export GIT_PS1_SHOWUNTRACKEDFILES=true # untracked %
 export GIT_PS1_SHOWUPSTREAM=auto # local behind < ,ahead > ,diverged <> ,same =
-PS1='\[\e[0;100m\]\u@\h \w $(__git_ps1)\[\e[0m\] '
+export PS1='\[\e[0;100m\]\u@\h \w $(__git_ps1)\[\e[0m\] '
 
 [ -f ~/.fzf.bash ] && . ~/.fzf.bash
 shopt -s expand_aliases # Enable alias, function in login shell
@@ -65,3 +69,4 @@ alias rn-expo='REACT_NATIVE_PACKAGER_HOSTNAME=$(/mnt/c/Windows/system32/ipconfig
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
