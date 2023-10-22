@@ -3,15 +3,12 @@
 local packages = {
   "https://github.com/EdenEast/nightfox.nvim",
   "https://github.com/NvChad/nvim-colorizer.lua",
-  "https://github.com/nvim-tree/nvim-web-devicons",
   "https://github.com/nvim-lualine/lualine.nvim",
 
+  "https://github.com/nvim-tree/nvim-web-devicons",
   "https://github.com/nvim-lua/plenary.nvim",
-  "https://github.com/MunifTanjim/nui.nvim",
-  "https://github.com/mrbjarksen/neo-tree-diagnostics.nvim",
-  "https://github.com/nvim-neo-tree/neo-tree.nvim",
+  "https://github.com/nvim-tree/nvim-tree.lua",
   "https://github.com/ibhagwan/fzf-lua",
-  "https://github.com/folke/trouble.nvim",
   "https://github.com/simrat39/symbols-outline.nvim",
 
   "https://github.com/nvim-treesitter/nvim-treesitter",
@@ -25,7 +22,6 @@ local packages = {
   "https://github.com/windwp/nvim-autopairs",
   "https://github.com/ggandor/leap.nvim",
   "https://github.com/mbbill/undotree",
-  "https://github.com/debugloop/telescope-undo.nvim",
 
   "https://github.com/hrsh7th/nvim-cmp",
   "https://github.com/hrsh7th/cmp-nvim-lsp",
@@ -34,11 +30,13 @@ local packages = {
   "https://github.com/saadparwaiz1/cmp_luasnip",
   "https://github.com/L3MON4D3/LuaSnip",
   "https://github.com/danieiff/friendly-snippets",
-  "https://github.com/jcdickinson/codeium.nvim", -- "https://github.com/Exafunction/codeium.vim",
+  "https://github.com/jcdickinson/codeium.nvim",
+  "https://github.com/jackMort/ChatGPT.nvim",
 
   "https://github.com/lewis6991/gitsigns.nvim",
   "https://github.com/sindrets/diffview.nvim",
   "https://github.com/pwntester/octo.nvim",
+  "https://github.com/nvim-telescope/telescope.nvim",
 
   "https://github.com/neovim/nvim-lspconfig",
   "https://github.com/glepnir/lspsaga.nvim",
@@ -50,11 +48,7 @@ local packages = {
   "https://github.com/rcarriga/nvim-dap-ui",
   "https://github.com/theHamsta/nvim-dap-virtual-text",
   "https://github.com/nvim-neotest/neotest",
-  "https://github.com/nvim-neotest/neotest-jest"
-
-  -- "https://github.com/jackmort/chatgpt.nvim"
-  -- "https://github.com/jamestthompson3/nvim-remote-containers"
-  -- "https://github.com/chipsenkbeil/distant.nvim",
+  "https://github.com/nvim-neotest/neotest-jest",
 }
 vim.g.packdir = vim.fn.stdpath 'config' .. '/pack/tett/start'
 
@@ -87,7 +81,8 @@ vim.fn.jobstart({ 'ls' },
           vim.print('Downloaded ' .. packages_not_downloaded[i])
         else
           allSuccess = false
-          vim.print(('Failed to download %s, status: %s'):format(packages_not_downloaded[i], status))
+          vim.print(('Failed to download %s, status: %s'):format(
+            packages_not_downloaded[i], status))
         end
       end
       if allSuccess then vim.cmd 'source $MYVIMRC' end
@@ -123,72 +118,54 @@ do vim.opt[k] = v end
 
 vim.g.mapleader = ' '
 
-K('\\', '<C-w>')
 K('<C-h>', '<C-w>h')
 K('<C-j>', '<C-w>j')
 K('<C-k>', '<C-w>k')
 K('<C-l>', '<C-w>l')
-K('<C-w>-', ':resize -10<cr>')
-K('<C-w>+', ':resize +10<cr>')
-K('<C-w><', ':vertical resize -10<cr>')
-K('<C-w>>', ':vertical resize +10<cr>')
+K('<C-w>-', '<cmd>resize -10<cr>')
+K('<C-w>+', '<cmd>resize +10<cr>')
+K('<C-w><', '<cmd>vertical resize -10<cr>')
+K('<C-w>>', '<cmd>vertical resize +10<cr>')
 K('<C-e>', ('<C-e>'):rep(10))
 K('<C-y>', ('<C-y>'):rep(10))
-K('<C-Left>', ':tabprevious<cr>', { silent = true })
-K('<C-Right>', ':tabnext<cr>', { silent = true })
-K('<C-Down>', ':bprevious<cr>', { silent = true })
-K('<C-Up>', ':bnext<cr>', { silent = true })
-
+K('<C-Left>', '<cmd>tabprevious<cr>', { silent = true })
+K('<C-Right>', '<cmd>tabnext<cr>', { silent = true })
+K('<C-Down>', '<cmd>bprevious<cr>', { silent = true })
+K('<C-Up>', '<cmd>bnext<cr>', { silent = true })
 K('<leader>w', vim.cmd.write)
 K('<leader>W', '<cmd>noautocmd w<cr>')
-K('<Leader>q', ':<C-u>q<cr>')
-K('<Leader>Q', ':<C-u>q!<cr>')
-K('<Leader>z', ':<C-u>qa<cr>')
-K('<Leader>Z', ':<C-u>qa!<cr>')
-K('<Leader>,', ':<C-u>tabnew $MYVIMRC<cr>')
+K('<Leader>q', '<cmd>q<cr>')
+K('<Leader>Q', '<cmd>q!<cr>')
+K('<Leader>z', '<cmd>qa<cr>')
+K('<Leader>Z', '<cmd>qa!<cr>')
+K('<Leader>,', '<cmd>tabnew $MYVIMRC<cr>')
 K('<Leader>.,', '<cmd>write<cr><cmd>source $MYVIMRC<cr><cmd>helptags ALL<cr>')
-K('<Leader>s', ':<C-u>%s///g' .. ('<Left>'):rep(3))
+K('<Leader>s', ':%s///g' .. ('<Left>'):rep(3))
 K('<Leader>s', ':s///g' .. ('<Left>'):rep(3), { mode = 'v' })
 K('Y', 'y$')
 K('vp', '`[v`]')
 K('+', '<C-a>', { mode = { 'n', 'v' } })
 K('-', '<C-x>', { mode = { 'n', 'v' } })
-K('<cr>', ':call append(expand("."), "")<cr>j')
-K('<bs>', ':call append(line(".")-1, "")<cr>k')
+K('<cr>', '<cmd>call append(expand("."), "")<cr>j')
+K('<bs>', '<cmd>call append(line(".")-1, "")<cr>k')
 K('<leader>bl', function()
-  local cword = vim.fn.expand '<cWORD>'
-  if cword == 'true' then cword = 'false' elseif cword == 'false' then cword = 'true' else return end
-  vim.cmd('normal ciw' .. cword)
+  local bool = { 'true', 'false' }
+  vim.cmd('normal ciw' .. bool[2 - vim.fn.index(bool, vim.fn.expand '<cword>')])
 end)
-K('<leader>:', ': <C-r>=expand("<cword>")<cr><Home>')
-K('<leader>H', ':h <C-r>=expand("<cword>")<cr><cr>')
-
 K('[q', ':cprevious<cr>')
 K(']q', ':cnext<cr>')
 K('[Q', ':<C-u>cfirst<cr>')
 K(']Q', ':<C-u>clast<cr>')
 
 K('<leader>ou', function()
-  local cmd = ''
-  if vim.fn.has 'mac' == 1 then
-    cmd = '!open'
-  elseif vim.fn.has 'win32' == 1 then
-    cmd = '!explorer'
-  elseif vim.fn.executable 'wslview' == 1 then
-    cmd = '!wslview'
-  end
-
   local text = table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), '\n')
   local urls = {}
   for url in text:gmatch('(%a+://[%w-_%.%?%.:/%+=&]+)') do table.insert(urls, url) end
-
-  local link = urls[1]
   if #urls > 1 then
-    vim.ui.select(urls, {}, function(url) link = url end)
-  elseif #urls == 0 then
-    return
+    vim.ui.select(urls, {}, function(url)
+      vim.fn.jobstart('open ' .. vim.fn.escape(url, '#'))
+    end)
   end
-  vim.fn.execute(cmd .. ' ' .. vim.fn.escape(link, '#'))
 end)
 
 if vim.fn.executable 'wslpath' ~= '' then
@@ -224,56 +201,44 @@ vim.fn.digraph_setlist {
   { 'eq', '✨' }, { 'eQ', '💥' }, { 'ew', '🚨' }, { 'eW', '🎨' }, { 'ee', '💡' }, { 'eE', '🔊' }, {
   'er',
   '📝' },
-  { 'ea', '🐛' }, { 'eA', '🚑' }, { 'es', '🩹' }, { 'eS', '♻' }, { 'ed', '🔥' }, { 'eD', '🚚' }, { 'ef',
+  { 'ea', '🐛' }, { 'eA', '🚑' }, { 'es', '🩹' }, { 'eS', '♻' }, { 'ed', '🔥' }, { 'eD', '🚚' }, {
+  'ef',
   '🗑' }, {
   'eF', '👽' },
-  { 'ez', '🚧' }, { 'eZ', '👷' }, { 'ex', '🔧' }, { 'eX', '🔨' }, { 'ec', '➕' }, { 'eC', '➖' }, { 'ev', '⬆' }, {
+  { 'ez', '🚧' }, { 'eZ', '👷' }, { 'ex', '🔧' }, { 'eX', '🔨' }, { 'ec', '➕' }, { 'eC', '➖' }, { 'ev',
+  '⬆' }, {
   'eV', '⬇' }, { 'eb', '🚀' }, { 'eB', '🔖' },
 
-  { 'ey', '✅' }, { 'eY', '🧪' }, { 'eu', '🤡' }, { 'eU', '⚗' }, { 'ei', '🏷' }, { 'eI', '🦺' }, { 'eo', '💬' }, {
+  { 'ey', '✅' }, { 'eY', '🧪' }, { 'eu', '🤡' }, { 'eU', '⚗' }, { 'ei', '🏷' }, { 'eI', '🦺' }, { 'eo',
+  '💬' }, {
   'eO', '🍱' },
-  { 'eh', '👔' }, { 'eH', '💸' }, { 'ek', '🧱' }, { 'eK', '🗃' }, { 'el', '⚡' }, { 'eL', '🧵' }, { 'e;',
+  { 'eh', '👔' }, { 'eH', '💸' }, { 'ek', '🧱' }, { 'eK', '🗃' }, { 'el', '⚡' }, { 'eL', '🧵' }, {
+  'e;',
   '🔒' }, {
   'e:', '🛂' },
-  { 'en', '💄' }, { 'eN', '💫' }, { 'em', '🚸' }, { 'eM', '♿' }, { 'e,', '📱' }, { 'e<', '🔍' }, { 'e.',
+  { 'en', '💄' }, { 'eN', '💫' }, { 'em', '🚸' }, { 'eM', '♿' }, { 'e,', '📱' }, { 'e<', '🔍' }, {
+  'e.',
   '📈' }, {
   'e>', '🌐' }, { 'e/', '🔀' } --{ 'e?', '⏪️' },
 }
 K('<C-k>e?', '⏪️', { mode = { 'i' } })
-K('fj', 'f<C-k>j')
-K('Fj', 'F<C-k>j')
-K('tj', 't<C-k>j')
-K('Tj', 'T<C-k>j')
-
-
-vim.cmd(
-  [[nnoremap <silent> <leader>prettier :let save_cursor_pos = getpos('.')<cr>:if executable('npx')<Bar>silent %!npx prettier --stdin-filepath % --loglevel silent<Bar>endif<cr>:call setpos('.', save_cursor_pos)<cr>]])
 
 AUC('FileType', { pattern = { 'json', 'jsonc', 'yaml', 'python' }, command = 'set tabstop=4' })
-
 
 
 ---@ Terminal
 
 local fzf_lua_img_previewer = { 'viu' }
 
-K('<Leader>tt', ':<C-u>bo sp | term  && sleep 3 && exit' .. ('<left>'):rep(19))
 K('<Leader>t', function()
-  local cmd = vim.fn.input { prompt = 'Command: ', default = vim.fn.expand '<cword>', completion = 'shellcmd',
-    cancelreturn = '' }
-  if cmd == '' then return end
-  vim.cmd 'botright sp +enew'
-  vim.fn.termopen(cmd, { on_exit = function() vim.api.nvim_buf_delete(0, { force = true }) end })
+  local cmd = vim.fn.input { prompt = 'Command: ', completion = 'shellcmd', cancelreturn = '' }
+  if cmd ~= '' then
+    vim.cmd('tabnew | term ' .. cmd); vim.cmd 'startinsert'
+  end
 end)
 K('<C-n>', '<C-\\><C-n>', { mode = 't' })
 K('<C-o>', '<C-\\><C-n><C-o>', { mode = 't' })
-AUC('TermOpen', { callback = function() vim.cmd 'setlocal nonumber | startinsert' end })
-AUC('TermClose', {
-  callback = function(ev)
-    if vim.endswith(ev.file, fzf_lua_img_previewer[1]) then return end
-    vim.cmd('silent! bwipe!' .. ev.buf)
-  end
-})
+AUC('TermClose', { callback = function(ev) vim.cmd('silent! bwipe!' .. ev.buf) end })
 
 local function start_interactive_shell_job(cmds_params)
   for i, params in pairs(cmds_params) do
@@ -284,7 +249,6 @@ local function start_interactive_shell_job(cmds_params)
     vim.defer_fn(function() vim.api.nvim_win_close(win, false) end, 5000)
   end
 end
-
 CMD('RNExpo', function() start_interactive_shell_job { { cmd = 'emu' }, { cmd = 'rn-expo --android' } } end, {})
 --
 CMD('NpmRun',
@@ -296,8 +260,10 @@ CMD('NpmRun',
 
 ---@ General Tools, Plugins
 
-local fzf_lua_previewer_builtin = require 'fzf-lua.previewer.builtin'
+require 'telescope'.setup {}
+
 local fzf_lua = require 'fzf-lua'
+local fzf_lua_previewer_builtin = require 'fzf-lua.previewer.builtin'
 fzf_lua.setup {
   keymap = {
     builtin = {
@@ -316,24 +282,12 @@ fzf_lua.setup {
         ['jpg'] = fzf_lua_img_previewer,
         ['jpeg'] = fzf_lua_img_previewer,
         ['gif'] = fzf_lua_img_previewer,
-        -- ['svg'] = -- viu doesn't support
       }
-    }
-  },
-  git = {
-    status = {
-      preview_pager = 'delta'
-    },
-    -- commit = {
-    --   preview_pager = 'delta'
-    -- },
-    bcommits = {
-      preview_pager = 'delta'
     }
   }
 }
 
-K('<leader><space>', fzf_lua.resume)
+K('<leader> ', fzf_lua.resume)
 K('<leader>f', fzf_lua.files)
 K('<leader>b', fzf_lua.buffers)
 K('<leader>j', fzf_lua.jumps)
@@ -350,18 +304,19 @@ K('<leader>lQ', fzf_lua.quickfix_stack)
 K('<leader>ll', fzf_lua.loclist)
 K('<leader>lL', fzf_lua.loclist_stack)
 
-K('<leader>ff', function()
-  local _src = vim.api.nvim_get_all_options_info()
-  local src = {}
-  for k, _v in pairs(_src) do
-    table.insert(src, k)
-  end
-
-  fzf_lua.fzf_exec(src)
-end)
-
 -- search
-K('<leader>/', fzf_lua.grep)
+K('<leader>/', fzf_lua.lgrep_curbuf)
+K('<leader>)', fzf_lua.live_grep_native)
+K('<leader>(', fzf_lua.live_grep_resume)
+K('<leader>[', fzf_lua.grep_cword)
+K('<leader>{', fzf_lua.grep_cWORD)
+K('<leader>]', fzf_lua.grep_project)
+-- grep_curbuf	search current buffer lines
+-- lgrep_curbuf	live grep current buffer
+-- live_grep	live grep current project
+-- live_grep_resume	live grep continue last search
+-- live_grep_glob	live_grep with rg --glob support
+-- live_grep_native	performant version of live_grep
 K('<leader>?', fzf_lua.search_history)
 -- dap
 -- lsp
@@ -375,48 +330,12 @@ K('<leader>gf', function()
   opts.fzf_opts = { ['--query'] = git_root ~= relative and relative or nil }
   return fzf_lua.git_files(opts)
 end)
-K('<leader>gs', fzf_lua.git_status)
 K('<leader>gS', fzf_lua.git_stash)
 K('<leader>gc', fzf_lua.git_commits)
 K('<leader>gC', fzf_lua.git_bcommits)
 K('<leader>gb', fzf_lua.git_branches)
 
-vim.api.nvim_create_user_command(
-  'ListFilesFromBranch',
-  function(opts)
-    require 'fzf-lua'.files({
-      cmd = "git ls-tree -r --name-only " .. opts.args,
-      prompt = opts.args .. "> ",
-      actions = {
-        ['default'] = false,
-        ['ctrl-s'] = false,
-        ['ctrl-v'] = function(selected, o)
-          local file = require 'fzf-lua'.path.entry_to_file(selected[1], o)
-          local cmd = string.format("DiffviewOpen %s..HEAD -- %s", opts.args, file.path)
-          vim.cmd(cmd)
-        end,
-      },
-      previewer = false,
-      preview = require 'fzf-lua'.shell.raw_preview_action_cmd(function(items)
-        local file = require 'fzf-lua'.path.entry_to_file(items[1])
-        return string.format("git diff %s HEAD -- %s | delta", opts.args, file.path)
-      end)
-    })
-  end,
-  {
-    nargs = 1,
-    force = true,
-    complete = function()
-      local branches = vim.fn.systemlist("git branch --all --sort=-committerdate")
-      if vim.v.shell_error == 0 then
-        return vim.tbl_map(function(x)
-          return x:match("[^%s%*]+"):gsub("^remotes/", "")
-        end, branches)
-      end
-    end,
-  })
-
-K('<C-H>', function()
+K('<C-q>', function()
   for _, buf in ipairs(vim.api.nvim_list_bufs()) do
     if vim.regex('^term://.*:lazygit$'):match_str(vim.api.nvim_buf_get_name(buf)) then
       for _, win in ipairs(vim.api.nvim_list_wins()) do
@@ -424,13 +343,11 @@ K('<C-H>', function()
           return vim.api.nvim_win_close(win, true)
         end
       end
-      return vim.cmd('sp | b' .. buf)
+      return vim.cmd('tabnew | b' .. buf)
     end
   end
-  return vim.cmd 'sp | term lazygit'
+  return vim.cmd 'tabnew | term lazygit'
 end, { mode = { 'n', 't' } })
-
-K('<leader>gh', ':!gh ')
 
 require 'octo'.setup {}
 
@@ -438,7 +355,7 @@ require 'gitsigns'.setup {
   signcolumn = false,
   numhl = true,
   word_diff = true,
-  on_attach = function(bufnr)
+  on_attach = function()
     local gs = package.loaded.gitsigns
 
     K(']h', function()
@@ -495,13 +412,13 @@ AUC('FileType', {
     local firstline = vim.api.nvim_buf_get_lines(ev.buf, 0, 1, false)[1]
     if firstline == '' then
       local cmd           = ([[curl https://api.openai.com/v1/chat/completions \
-  -H "Content-Type: application/json" \
-  -H "Authorization: Bearer %s \
-  -d '{
-     "model": "gpt-3.5-turbo",
-     "messages": [{"role": "user", "content": "Write a git conventional commit message from this git diff: %s"}],
-     "temperature": 0.7
-   }']]):format(os.getenv 'OPENAI_API_KEY', vim.fn.system 'git diff --cached')
+                              -H "Content-Type: application/json" \
+                              -H "Authorization: Bearer %s \
+                              -d '{
+                                "model": "gpt-3.5-turbo",
+                                "messages": [{"role": "user", "content": "Write a git conventional commit message from this git diff: %s"}],
+                                "temperature": 0.7
+      }']]):format(os.getenv 'OPENAI_API_KEY', vim.fn.system 'git diff --cached')
       local result        = vim.fn.system(cmd)
       local resultMessage = vim.json_decode(result).choices[1].message.content
       vim.api.nvim_buf_set_lines(ev.buf, 0, 1, false, vim.fn.join(resultMessage, '\n'))
@@ -509,73 +426,10 @@ AUC('FileType', {
   end
 })
 
+require "nvim-tree".setup()
+K('<C-t>', '<cmd>NvimTreeFocus<cr>')
 
-require 'neo-tree'.setup({
-  sources = {
-    'filesystem',
-    'buffers',
-    'git_status',
-    'diagnostics',
-    'document_symbols'
-  },
-  window = {
-    mappings = {
-      ['<space>'] = { 'toggle_node', nowait = true, },
-      ['i'] = 'run_command',
-    }
-  },
-  filesystem = {
-    filtered_items = {
-      hide_dotfiles = false,
-      hide_gitignored = false
-    },
-    use_libuv_file_watcher = false,
-    window = {
-      mappings = { ['d'] = 'trash' }
-    }
-  },
-  document_symbols = {
-    auto_preview = {
-      -- enabled = true
-    }
-  },
-  diagnostics = { auto_preview = true },
-  default_component_configs = {
-    indent = { indent_size = 1, padding = 0 },
-  },
-  commands = {
-    run_command = function(state) vim.api.nvim_input(": " .. state.tree:get_node():get_id() .. '<Home>') end,
-    trash = function(state)
-      local node = state.tree:get_node()
-      if node.type == 'message' then return end
-      if vim.fn.confirm(string.format('Are you sure you want to trash %s ?', node.path), '&y\n&n') == 2 then return end
-      vim.cmd('silent !trash ' .. node.path)
-      require 'neo-tree.sources.filesystem.commands'.refresh(state)
-    end,
-    trash_visual = function(state, selected_nodes)
-      local paths_to_trash = {}
-      for _, node in ipairs(selected_nodes) do
-        if node.type ~= 'message' then
-          table.insert(paths_to_trash,
-            node.path)
-        end
-      end
-      if vim.fn.confirm('Are you sure you want to trash ' .. #paths_to_trash .. ' items?', '&y\n&n') == 2 then return end
-      for _, path in ipairs(paths_to_trash) do vim.cmd('silent !trash ' .. path) end
-      require 'neo-tree.sources.filesystem.commands'.refresh(state)
-    end
-  },
-})
-
-K('<C-t>', '<cmd>Neotree toggle reveal filesystem right<cr>')
-K('<C-s>', '<cmd>Neotree toggle reveal document_symbols right<cr>')
-require 'trouble'.setup { icons = false }
-K('<leader>xx', '<cmd>TroubleToggle<cr>', { silent = true, noremap = true })
-K('<leader>xw', '<cmd>Neotree toggle reveal diagnostics bottom<cr>', { silent = true, noremap = true })
-K('<leader>xd', '<cmd>TroubleToggle document_diagnostics<cr>', { silent = true, noremap = true })
-K('<leader>xl', '<cmd>TroubleToggle loclist<cr>', { silent = true, noremap = true })
-K('<leader>xq', '<cmd>TroubleToggle quickfix<cr>', { silent = true, noremap = true })
-K('gR', '<cmd>TroubleToggle lsp_references<cr>', { silent = true, noremap = true })
+require 'symbols-outline'.setup {}
 
 AUC('InsertLeave', {
   callback = function(ev)
@@ -589,14 +443,14 @@ AUC('InsertLeave', {
   end,
   nested = true
 })
-AUC('BufReadPost', { callback = function() vim.cmd 'silent! normal! g`"zv' end, })
 
 require 'nvim-cursorword'
 
 require 'leap'.add_default_mappings()
 
 require 'nvim-treesitter.configs'.setup {
-  ensure_installed = { 'bash', 'lua', 'python', 'javascript', 'typescript', 'html', 'css', 'vue', 'svelte', 'astro',
+  ensure_installed = { 'bash', 'lua', 'python', 'javascript', 'typescript', 'html', 'css', 'vue', 'svelte',
+    'astro',
     'yaml', 'toml', 'json', 'jsonc', 'comment', 'sql', 'prisma', 'ruby', 'php',
     'gitcommit', 'git_config', 'git_rebase',
     'go', 'java', 'c', 'cmake', 'c_sharp', 'java', 'kotlin',
@@ -670,15 +524,8 @@ require 'nvim-treesitter.configs'.setup {
       goto_previous = {
         ['[i'] = '@conditional.outer',
       }
-    },
-    lsp_interop = {
-      enable = true,
-      peek_definition_code = {
-        ['<leader>df'] = '@function.outer',
-        ['<leader>dF'] = '@class.outer',
-      },
-    },
-  },
+    }
+  }
 }
 
 require 'ibl'.setup()
@@ -742,7 +589,10 @@ cmp.setup({
     {
       name = 'buffer',
       option = {
-        get_bufnrs = function() return vim.tbl_map(vim.api.nvim_win_get_buf, vim.api.nvim_list_wins()) end,
+        get_bufnrs = function()
+          return vim.tbl_map(vim.api.nvim_win_get_buf,
+            vim.api.nvim_list_wins())
+        end,
         indexing_interval = 1500
       }
     }
@@ -783,7 +633,8 @@ cmp.setup({
         TypeParameter = "󰅲",
         Codeium = "",
       })[vim_item.kind], vim_item.kind)
-      vim_item.menu = ({ buffer = "[Buffer]", nvim_lsp = "[LSP]", luasnip = "[LuaSnip]", nvim_lua = "[Lua]", rg =
+      vim_item.menu = ({ buffer = "[Buffer]", nvim_lsp = "[LSP]", luasnip = "[LuaSnip]", nvim_lua =
+          "[Lua]", rg =
           "[rg]", codeium = "[Codeium]" })
           [entry.source.name]
       return vim_item
@@ -866,17 +717,8 @@ end
 
 CMD('RenameFile', will_rename_callback, { bar = true })
 
---vim.lsp.handlers['textDocument/publishDiagnostics'] = vim.lsp.with(vim.lsp.diagnostic.on_publish_diagnostics, {
---  update_in_insert = false,
---virtual_text = {
---	format = function(diagnostic)
---		return string.format('%s (%s: %s)', diagnostic.message, diagnostic.source, diagnostic.code)
---	end,
---},
---})
-
--- vim.lsp.set_log_level('debug') -- :LspLog
-CMD('LspRestart', 'lua vim.lsp.stop_client(vim.lsp.get_active_clients()) | edit', { bar = true })
+-- vim.lsp.set_log_level'debug' -- :LspLog
+CMD('LspRestart', 'lua vim.lsp.stop_client(vim.lsp.get_active_clients()) | edit', {})
 CMD('LspCapa', function()
   local clients = vim.lsp.buf_get_clients()
   vim.ui.select(vim.tbl_map(function(item) return item.name end, clients), {},
@@ -946,7 +788,6 @@ K('<leader>gG', function()
   -- )
 end)
 
-
 local augroup_lsp = AUG('UserLspAUG', {})
 
 AUC('LspAttach', {
@@ -954,8 +795,8 @@ AUC('LspAttach', {
   callback = function(ev)
     K('[e', vim.diagnostic.goto_prev)
     K(']e', vim.diagnostic.goto_next)
-    K('[E', function() vim.diagnostic.goto_prev { severity = vim.diagnostic.severity.ERROR } end)
-    K(']E', function() vim.diagnostic.goto_next { severity = vim.diagnostic.severity.ERROR } end)
+    K('[E', function() vim.diagnostic.goto_prev { severity = 1 } end)
+    K(']E', function() vim.diagnostic.goto_next { severity = 1 } end)
     K('<leader>d', vim.diagnostic.open_float)
     K('<leader>D', vim.diagnostic.setloclist)
     K('<leader>dq', vim.diagnostic.setqflist)
@@ -1059,7 +900,6 @@ CMD("RunScriptWithArgs", function(t)
     })
   end
 end, { complete = 'file', nargs = '*' })
-K('<leader>R', ":RunScriptWithArgs ")
 
 -- dap.listeners.before['event_progressStart']['progress-notifications'] = function(session, body)
 --   local notif_data = get_notif_data("dap", body.progressId)
@@ -1190,15 +1030,11 @@ local function status_line()
     '%F',
   }), ' ')
 
-
-  if vim.o.filetype == 'neo-tree' then vim.fn.fnamemodify(vim.fn.getcwd(), ':~') end
-
   vim.opt.statusline = statusline
 end
 -- AUC('CursorMoved', { callback = status_line })
 
 require 'lualine'.setup {
-  theme = 'vscode',
   extensions = { 'quickfix', 'nvim-dap-ui' },
   sections = {
     lualine_a = { { 'b:gitsigns_head' } },
@@ -1255,7 +1091,8 @@ vim.lsp.handlers["$/progress"] = function(_, result, ctx)
 
   if val.kind == "begin" then
     -- initialize
-    progress_token_to_title[client_id] = vim.tbl_deep_extend('error', progress_token_to_title[client_id] or {},
+    progress_token_to_title[client_id] = vim.tbl_deep_extend('error',
+      progress_token_to_title[client_id] or {},
       { [token] = { title = val.title } })
 
     progress_title_to_order[client_id] = vim.tbl_deep_extend('keep', progress_title_to_order[client_id] or {},
@@ -1275,27 +1112,32 @@ vim.lsp.handlers["$/progress"] = function(_, result, ctx)
       update_progress_notif(win, buf)
     end
 
-    clients_title_progress[client_id] = vim.tbl_deep_extend('force', clients_title_progress[client_id] or {}, {
-      [val.title] = {
-        progress_info = ('%s %s %s'):format(val.title, message_maybe_prev, percentage), message =
-          message_maybe_prev, completed = false, title =
-          val.title, order = progress_title_to_order[client_id][val.title]
-      }
-    })
+    clients_title_progress[client_id] = vim.tbl_deep_extend('force', clients_title_progress[client_id] or {},
+      {
+        [val.title] = {
+          progress_info = ('%s %s %s'):format(val.title, message_maybe_prev, percentage), message =
+            message_maybe_prev, completed = false, title =
+            val.title, order = progress_title_to_order[client_id][val.title]
+        }
+      })
   elseif val.kind == "report" and vim.tbl_get(progress_token_to_title, client_id, token) then
-    clients_title_progress[client_id] = vim.tbl_deep_extend('force', clients_title_progress[client_id] or {}, {
-      [title] = {
-        progress_info = ('%s %s %s'):format(title, message_maybe_prev, percentage), message = message_maybe_prev, completed = false, title =
-          title, order = progress_title_to_order[client_id][title]
-      }
-    })
+    clients_title_progress[client_id] = vim.tbl_deep_extend('force', clients_title_progress[client_id] or {},
+      {
+        [title] = {
+          progress_info = ('%s %s %s'):format(title, message_maybe_prev, percentage), message =
+            message_maybe_prev, completed = false, title =
+            title, order = progress_title_to_order[client_id][title]
+        }
+      })
   elseif val.kind == "end" and vim.tbl_get(progress_token_to_title, client_id, token) then
-    clients_title_progress[client_id] = vim.tbl_deep_extend('force', clients_title_progress[client_id] or {}, {
-      [title] = {
-        progress_info = ('%s %s %s'):format(title, message_maybe_prev, 'Complete'), message = message_maybe_prev, completed = true, title =
-          title, order = progress_title_to_order[client_id][title]
-      }
-    })
+    clients_title_progress[client_id] = vim.tbl_deep_extend('force', clients_title_progress[client_id] or {},
+      {
+        [title] = {
+          progress_info = ('%s %s %s'):format(title, message_maybe_prev, 'Complete'), message =
+            message_maybe_prev, completed = true, title =
+            title, order = progress_title_to_order[client_id][title]
+        }
+      })
     -- cleanup
     vim.defer_fn(function()
       if not vim.tbl_get(clients_title_progress, client_id, title, 'completed') then return end
@@ -1329,29 +1171,29 @@ local function load_session_if_exists(dir)
 end
 
 local function mksession(dir)
-  vim.cmd 'Neotree close'
+  for _, buf in ipairs(vim.api.nvim_list_bufs()) do
+    if vim.api.nvim_buf_get_option(buf, 'filetype') == 'gitcommit' then vim.cmd('bw!' .. buf) end
+  end
+  vim.cmd 'NvimTreeClose'
   vim.cmd.mksession { args = { vim.fn.fnameescape(normalize_session_path(dir)) }, bang = true }
 end
-
 AUC('VimEnter', {
   group = session_aug,
   callback = function()
     local vim_argv = vim.fn.argv()
-    local edit = load_session_if_exists(vim.fn.getcwd()) and vim.api.nvim_buf_get_name(0) ~= ''
-        and vim.cmd.tabedit or vim.cmd.edit
-    for _, path in ipairs(vim_argv) do edit(path) end
+    load_session_if_exists(vim.fn.getcwd())
+    for _, path in ipairs(vim_argv) do vim.cmd.tabedit(path) end
   end
 })
+
 AUC('VimLeave', { group = session_aug, callback = function() mksession(vim.fn.getcwd()) end })
 AUC('DirChangedPre', {
   group = session_aug,
   callback = function()
-    mksession(vim.g.prev_cwd)
-    vim.cmd '%bwipe! | clearjumps'
+    mksession(vim.g.prev_cwd); vim.cmd '%bwipe! | clearjumps'
   end
 })
 AUC('DirChanged', { group = session_aug, callback = function(ev) load_session_if_exists(ev.file) end })
-
 
 local function delete_selected(selected) os.remove(normalize_session_path(selected[1])) end
 fzf_lua.config.set_action_helpstr(delete_selected, "delete-session")
@@ -1401,7 +1243,6 @@ CMD('Sessions', function()
       previewer = FzfLuaSessionPreviewer
     })
 end, {})
-CMD('SessionClearAUC', function() vim.api.nvim_clear_autocmds({ group = session_aug }) end, {})
 
 -- Inherit from the "buffer_or_file" previewer
 local MyPreviewer = fzf_lua_previewer_builtin.buffer_or_file:extend()
@@ -1494,15 +1335,4 @@ CMD('AE', function()
   )
 end, {})
 
-require("telescope").load_extension("undo")
-require 'telescope'.setup { extensions = {
-  undo = {
-    side_by_side = true,
-    layout_strategy = "vertical",
-    layout_config = {
-      preview_height = 0.8,
-    },
-  },
-}, }
-require 'symbols-outline'.setup {}
-require 'trouble'.setup {}
+require 'nvim-web-devicons'.setup {}
