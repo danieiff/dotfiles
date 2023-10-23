@@ -1,6 +1,6 @@
 #!/bin/bash
 
-sudo apt update && sudo apt install -y curl git tar fzf ripgrep gh bat clang
+sudo apt update && sudo apt install -y curl git tar fzf ripgrep bat clang
 
 # /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
@@ -8,6 +8,14 @@ git clone --depth 1 https://github.com/danieiff/dotfiles && \
   cp -fsr /dotfiles ~/.config && cp -fs /dotfiles/.* ~  || true
 
 curl -L https://github.com/zellij-org/zellij/releases/download/v0.38.2/zellij-x86_64-unknown-linux-musl.tar.gz | tar -C /usr/local/bin -xz
+
+GH_VERSION=$(curl -s https://api.github.com/repos/cli/cli/releases/latest | grep -Po '"tag_name": "v\K[^"]*') && \
+  curl -L "https://github.com/cli/cli/releases/latest/download/gh_${GH_VERSION}_linux_amd64.tar.gz" | tar xvz && \
+  sudo cp gh_"$GH_VERSION"_linux_amd64/bin/gh /bin
+
+LAZYGIT_VERSION=$(curl -s https://api.github.com/repos/jesseduffield/lazygit/releases/latest | grep -Po '"tag_name": "v\K[^"]*') && \
+  curl -L "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz" | tar xvz && \
+  sudo install lazygit /bin
 
 curl -L -o /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 && chmod +x /usr/bin/yq
 

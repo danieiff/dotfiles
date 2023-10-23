@@ -7,12 +7,15 @@ WORKDIR $HOME
 
 COPY --from=docker:dind /usr/local/bin/docker /usr/local/bin/
 
-RUN apt update && apt install -y curl git tar fzf ripgrep gh clang gosu
+RUN apt update && apt install -y curl git tar fzf ripgrep clang gosu
+
+RUN GH_VERSION=$(curl -s "https://api.github.com/repos/cli/cli/releases/latest" | grep -Po '"tag_name": "v\K[^"]*') && \
+  curl -L https://github.com/cli/cli/releases/latest/download/gh_"$GH_VERSION"_linux_amd64.tar.gz | tar xvz && \
+  cp gh_"$GH_VERSION"_linux_amd64/bin/gh /bin
 
 RUN LAZYGIT_VERSION=$(curl -s "https://api.github.com/repos/jesseduffield/lazygit/releases/latest" | grep -Po '"tag_name": "v\K[^"]*') && \
-  curl -Lo lazygit.tar.gz "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz" && \
-  tar xf lazygit.tar.gz lazygit && \
-  install lazygit /usr/local/bin
+  curl -L "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz" | tar xvz && \
+  install lazygit /bin
 
 RUN curl -o /usr/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 && \
   chmod +x /usr/bin/yq
