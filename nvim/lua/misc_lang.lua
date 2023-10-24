@@ -35,7 +35,8 @@ local languages = {
       -- https://github.com/phpstan/phpstan https://github.com/nunomaduro/larastan
       prefix = 'phpstan',
       lintSource = 'phpstan',
-      lintCommand = './vendor/bin/phpstan analyse --no-progress --no-ansi --error-format=raw "${INPUT}"',
+      lintCommand =
+      './vendor/bin/phpstan analyse --no-progress --no-ansi --error-format=raw "${INPUT}"',
       lintStdin = false,
       lintFormats = { '%.%#:%l:%m' },
       rootMarkers = { 'phpstan.neon', 'phpstan.neon.dist', 'composer.json' },
@@ -113,7 +114,9 @@ AUC('FileType', {
   once = true,
   callback = function()
     require 'util'.ensure_npm_deps { 'grammarly-languageserver' }
-    require 'lspconfig'.grammarly.setup { cmd = { "n", "run", "16", "/usr/local/bin/grammarly-languageserver", "--stdio" }, }
+    require 'lspconfig'.grammarly.setup { cmd = { "n", "run", "16",
+      "/usr/local/bin/grammarly-languageserver",
+      "--stdio" }, }
     vim.schedule(vim.cmd.edit)
   end
 })
@@ -124,33 +127,16 @@ AUC('FileType', {
   pattern = 'lua',
   once = true,
   callback = function()
-    require 'util'.ensure_pack_installed {
-      {
-        url = "https://github.com/folke/neodev.nvim",
-        callback = function() require 'neodev'.setup() end
-      }
-    }
-
     if vim.fn.executable(lua_ls) == 0 then
       vim.schedule(function()
-        vim.cmd('tabnew | term mkdir -p ' .. lua_ls_dir .. ' && cd "$_" && ghinstall LuaLS/lua-language-server')
+        vim.cmd('tabnew | term mkdir -p ' ..
+          lua_ls_dir .. ' && cd $_ && ghinstall LuaLS/lua-language-server')
       end)
     end
 
-    ---@ Lsp
+    require 'lspconfig'.lua_ls.setup { cmd = { lua_ls } }
 
-    function lua_lsp_start()
-      vim.lsp.start({
-        name = "lua-language-server",
-        cmd = { lua_ls },
-        before_init = require 'neodev.lsp'.before_init,
-        root_dir = vim.fn.getcwd(),
-        settings = { Lua = {} },
-      })
-    end
-
-    AUC('FileType', { pattern = 'lua', callback = lua_lsp_start })
-    lua_lsp_start()
+    vim.schedule(vim.cmd.edit)
 
     --[[ ---@ Dap
 install local-lua-debugger-vscode, either via:
@@ -212,7 +198,7 @@ AUC('FileType', {
     local yaml_ls = 'yaml-language-server'
     require 'util'.ensure_npm_deps { yaml_ls }
     require 'lspconfig'.yamlls.setup {
-      on_attach = function()
+      on_attach = function(client)
         client.resolved_capabilities.document_formatting = false
         client.resolved_capabilities.document_range_formatting = false
       end,
@@ -233,7 +219,7 @@ AUC('FileType', {
       },
     }
 
-    vim.cmd.edit()
+    vim.schedule(vim.cmd.edit)
   end
 })
 
