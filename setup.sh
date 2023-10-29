@@ -1,11 +1,11 @@
 #!/bin/bash
 
-sudo apt update && sudo apt install -y curl git tar fzf ripgrep bat clang
+set -e
 
-# /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+sudo apt update && sudo apt install -y curl git tar fzf ripgrep bat clang sshfs
 
 git clone --depth 1 https://github.com/danieiff/dotfiles && \
-  cp -fsr /dotfiles ~/.config && cp -fs /dotfiles/.* ~  || true
+  cp -fsr /dotfiles ~/.config && (cp -fs /dotfiles/.* ~  || true)
 
 curl -L https://github.com/zellij-org/zellij/releases/download/v0.38.2/zellij-x86_64-unknown-linux-musl.tar.gz | tar -C /usr/local/bin -xz
 
@@ -23,8 +23,9 @@ curl -L -o /usr/local/bin/viu https://github.com/atanunq/viu/releases/latest/dow
 
 # Node.js
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash && \
-  export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")" && \
-  [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh" && \
+  NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")" && \
+  [ -s "$NVM_DIR/nvm.sh" ] && \
+  /bin/bash "$NVM_DIR/nvm.sh" && \
   nvm install 18
 
 # NeoVim
@@ -33,7 +34,13 @@ curl -L https://github.com/neovim/neovim/releases/latest/download/nvim-linux64.t
   nvim +q && nvim +TSUpdateSync +qa
 
 # Firebase
-npm i -g firebase-tools && sudo apt install default-jdk
+npm i -g firebase-tools && sudo apt -y install default-jdk
+
+curl -fsSL https://get.docker.com -o get-docker.sh && sudo sh get-docker.sh
+
+curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash
+
+curl -L -o devpod "https://github.com/loft-sh/devpod/releases/latest/download/devpod-linux-amd64" && sudo install -c -m 0755 devpod /usr/local/bin && rm -f devpod
 
 # WSL
 if [ "$WSLENV" ]; then
@@ -41,7 +48,7 @@ if [ "$WSLENV" ]; then
   ln -fs ~/dotfiles/windows-terminal-settings.json "$WslLocalAppData/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState/settings.json"
 
   ## SSH https://futurismo.biz/archives/6862/#-nat-
-  sudo apt install openssh-server
+  sudo apt install -y openssh-server
   ### Run in Powershell as Admin
   # $wsl_ipaddress1 = (wsl hostname -I).split(" ", 2)[0]
   # netsh interface portproxy delete v4tov4 listenaddress=0.0.0.0 listenport=22
@@ -61,9 +68,18 @@ if [ "$WSLENV" ]; then
 
   sudo systemctl start sshd
 
+  ## Keyring
+  sudo apt install -y gnome-keyring
+
   ## Chrome (google-chrome)
-  curl -LO https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+  curl -O https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+  set +e
   sudo dpkg -i google-chrome-stable_current_amd64.deb
-  sudo apt install --fix-all -y language-pack-ja fonts-ipafont fonts-ipaexfont
+  set -e
+  sudo apt install --fix-broken -y language-pack-ja fonts-ipafont fonts-ipaexfont
   fc-cache -fv
 fi
+
+# devpod up https://github.com/example/repo --dotfiles https://github.com/danieiff/dotfiles
+# devpod context set-options -o DOTFILES_URL=https://github.com/danieiff/dotfiles -o DOTFILES_SCRIPT=init.sh
+# ssh workspace.devpod
