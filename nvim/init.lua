@@ -10,6 +10,7 @@ local packages = {
   "https://github.com/nvim-tree/nvim-tree.lua",
   "https://github.com/ibhagwan/fzf-lua",
   "https://github.com/simrat39/symbols-outline.nvim",
+  'https://github.com/RRethy/vim-illuminate',
 
   "https://github.com/nvim-treesitter/nvim-treesitter",
   "https://github.com/nvim-treesitter/nvim-treesitter-textobjects",
@@ -444,7 +445,6 @@ AUC('InsertLeave', {
   nested = true
 })
 
-require 'nvim-cursorword'
 
 require 'leap'.add_default_mappings()
 
