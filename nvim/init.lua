@@ -3,7 +3,6 @@
 local packages = {
   "https://github.com/EdenEast/nightfox.nvim",
   "https://github.com/NvChad/nvim-colorizer.lua",
-  "https://github.com/nvim-lualine/lualine.nvim",
 
   "https://github.com/nvim-tree/nvim-web-devicons",
   "https://github.com/nvim-lua/plenary.nvim",
@@ -1020,37 +1019,46 @@ vim.cmd 'colorscheme nordfox'
 
 require 'colorizer'.setup { user_default_options = { css_fn = false, tailwind = true } }
 
-local function status_line()
-  local default_status_colors = { saved = '#228B22', modified = '#C70039' }
-  -- vim.bo.modified
-  -- local tail_space = vim.fn.search([[\s\+$]], 'nwc')
+if vim.o.statusline == '' then
+  local function draw_statusline()
+    local gitsigns_dict, diff_status = vim.b.gitsigns_status_dict, nil
+    if gitsigns_dict then
+      diff_status = ('%%#GitsignsAdd#+%s%%#GitsignsChange#~%s%%#GitsignsDelete#-%s%%*'):format(
+        gitsigns_dict.added,
+        gitsigns_dict.changed,
+        gitsigns_dict.removed
+      )
+    end
 
-  local statusline = vim.fn.join(vim.tbl_filter(function(item) return item ~= nil end, {
-    vim.g.gitsigns_head,
-    '%F',
-  }), ' ')
-
-  vim.opt.statusline = statusline
-end
--- AUC('CursorMoved', { callback = status_line })
-
-require 'lualine'.setup {
-  extensions = { 'quickfix', 'nvim-dap-ui' },
-  sections = {
-    lualine_a = { { 'b:gitsigns_head' } },
-    lualine_b = { {
-      'diff',
-      source = function()
-        return vim.tbl_deep_extend('force', vim.b.gitsigns_status_dict or {},
-          { mode = vim.tbl_get(vim.b, 'gitsigns_status_dict', 'changed') })
+    local diagnostic_status
+    for _, level in ipairs(vim.diagnostic.severity) do
+      local count = #vim.diagnostic.get(0, { severity = vim.diagnostic.severity[level] })
+      if count ~= 0 then
+        diagnostic_status = (diagnostic_status or '') ..
+            ('%%#Diagnostic%s#%s%s%%*'):format(level, level:sub(1, 1), count)
       end
-    }, 'diagnostics', 'searchcount' },
-    lualine_c = { 'buffers' },
-    lualine_x = { 'windows' },
-    lualine_y = { { function() return vim.fn['codeium#GetStatusString']() end } },
-    lualine_z = { 'progress' }
-  }
-}
+    end
+
+    local searchcount = vim.fn.searchcount()
+
+    vim.o.statusline = vim.fn.join(vim.tbl_filter(function(item) return item ~= nil end, {
+      vim.g.gitsigns_head,
+      diff_status,
+      diagnostic_status,
+      ('%s/%s'):format(searchcount.current, searchcount.maxcount),
+      '%P',
+      '%=%f',
+      os.date '%H:%M'
+    }), ' ')
+  end
+
+  AUC(
+    { 'WinEnter', 'BufEnter', 'SessionLoadPost', 'FileChangedShellPost', 'VimResized', 'Filetype', 'CursorMoved',
+      'CursorMovedI', 'ModeChanged' },
+    { callback = draw_statusline }
+  )
+  vim.fn.timer_start(2000, draw_statusline, { ['repeat'] = -1 })
+end
 
 local progress_token_to_title = {}
 local progress_title_to_order = {}
