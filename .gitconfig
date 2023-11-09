@@ -9,10 +9,12 @@
 	tool = nvimdiff
 	algorithm = histogram
 	colorMoved = dimmed-zebra
+  colorMoved = default
 [difftool "nvimdiff"]
 	cmd = "nvim -R -d -c \"wincmd l\" -d \"$LOCAL\" \"$REMOTE\""
 [merge]
 	tool = nvimdiff
+  conflictstyle = diff3
 [mergetool]
 	keepBackup = false
 	prompt = false
@@ -22,4 +24,7 @@
 	defaultBranch = main
 [credential "https://github.com"]
 	helper = 
+	helper = !/usr/bin/gh auth git-credential
+
+[credential "https://gist.github.com"]
 	helper = !/usr/bin/gh auth git-credential

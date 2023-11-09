@@ -1,7 +1,6 @@
 eval "$(zellij setup --generate-auto-start bash)"
-source /etc/bash_completion.d/git-prompt
-[ -f ~/.fzf.bash ] && . ~/.fzf.bash
 
+source /etc/bash_completion.d/git-prompt
 export GIT_PS1_SHOWDIRTYSTATE=true # unstaged * staged +
 export GIT_PS1_SHOWSTASHSTATE=true # stashed $
 export GIT_PS1_SHOWUNTRACKEDFILES=true # untracked %
@@ -53,14 +52,22 @@ gistget() {
 }
 
 dev-docker() {
-  "docker run -it -v ~/a:/a -e LOCAL_UID=$(id -u "$USER") -e LOCAL_GID=$(id -g "$USER") $1 /bin/bash"
+  local docker_home=/home/me
+  docker run -it \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    -v ~/.config/gh:$docker_home/.config/gh \
+    -v ~/.cache/nvim/codeium:$docker_home/.cache/nvim/codeium \
+    -v .:$docker_home/workspace \
+    -e LOCAL_UID="$(id -u "$USER")" \
+    -e LOCAL_GID="$(id -g "$USER")" \
+    "$@"
 }
 
 dev-ssh() {
   ssh -L "${1:-3000}:localhost:${1:-3000} ${3:-user@host}"
 }
 
-# WSL
+if [ "$WSLENV" ]; then
 ## Android
 # mkdir ~/Android && ln -s /mnt/c/Users/Hirohisa/AppData/Local/Android/Sdk ~/Android/sdk
 # ln -s ~/Android/Sdk/platform-tools/adb.exe ~/Android/Sdk/platform-tools/adb
@@ -73,6 +80,10 @@ alias emu-list='$ANDROID_HOME/emulator/emulator -list-avds'
 # Foreach ( $port in 19000,19001,19002 ) { netsh interface portproxy add v4tov4 listenport=$port connectport=$port connectaddress=$($(wsl hostname -I).Trim()) }
 # Foreach ( $dir in "Inbound","Outbound" ) { New-NetFireWallRule -DisplayName 'WSL Expo ports for LAN development' -Direction $dir -LocalPort 19000-19002 -Action Allow -Protocol TCP }
 alias rn-expo='REACT_NATIVE_PACKAGER_HOSTNAME=$(/mnt/c/Windows/system32/ipconfig.exe | grep -m 1 "IPv4 Address" | sed "s/.*: //") npx expo start'
+
+eval "$(echo "$PASS" | gnome-keyring-daemon --unlock --replace 2> /dev/null | sed 's/^/export /g')"
+
+fi
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
