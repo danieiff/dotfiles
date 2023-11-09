@@ -1021,7 +1021,17 @@ require 'colorizer'.setup { user_default_options = { css_fn = false, tailwind = 
 
 if vim.o.statusline == '' then
   local function draw_statusline()
-    local gitsigns_dict, diff_status = vim.b.gitsigns_status_dict, nil
+    local vim_mode_hl = ({
+      ['n']                                                       = 'MiniStatuslineModeNormal',
+      ['v']                                                       = 'MiniStatuslineModeVisual',
+      ['V']                                                       = 'MiniStatuslineModeVisual',
+      [vim.api.nvim_replace_termcodes('<C-V>', true, true, true)] = 'MiniStatuslineModeVisual',
+      ['i']                                                       = 'MiniStatuslineModeInsert',
+      ['R']                                                       = 'MiniStatuslineModeReplace',
+      ['c']                                                       = 'MiniStatuslineModeCommand'
+    })[vim.fn.mode()] or 'MiniStatuslineModeOther'
+
+    local gitsigns_dict, diff_status = vim.b.gitsigns_status_dict, ''
     if gitsigns_dict then
       diff_status = ('%%#GitsignsAdd#+%s%%#GitsignsChange#~%s%%#GitsignsDelete#-%s%%*'):format(
         gitsigns_dict.added,
@@ -1041,17 +1051,21 @@ if vim.o.statusline == '' then
 
     local searchcount = vim.fn.searchcount()
 
+    local file_modified_hl = vim.o.modified and 'NvimTreeModifiedFile' or ''
+
     vim.o.statusline = vim.fn.join(vim.tbl_filter(function(item) return item ~= nil end, {
-      vim.g.gitsigns_head,
+      ('%%#%s# %s %%*'):format(vim_mode_hl, vim.g.gitsigns_head or '    '),
       diff_status,
       diagnostic_status,
-      ('%s/%s'):format(searchcount.current, searchcount.maxcount),
+      ('%s/%s'):format(searchcount.current, searchcount.total) ..
+      '%=' ..
+      ('%%#%s#%s%%*'):format(file_modified_hl, vim.fn.fnamemodify(vim.fn.expand '%', ':.')),
       '%P',
-      '%=%f',
       os.date '%H:%M'
-    }), ' ')
+    }), '  ')
   end
 
+  HL(0, 'Statusline', { bg = 'NONE' })
   AUC(
     { 'WinEnter', 'BufEnter', 'SessionLoadPost', 'FileChangedShellPost', 'VimResized', 'Filetype', 'CursorMoved',
       'CursorMovedI', 'ModeChanged' },
