@@ -1,37 +1,23 @@
-local language_server = 'bash-language-server'
-local shellcheck = 'shellcheck'
-local debugger_url =
-'https://github.com/rogalmic/vscode-bash-debug/releases/download/untagged-438733f35feb8659d939/bash-debug-0.3.9.vsix'
-local debug_adapter_dir = vim.fn.stdpath 'config' .. '/vscode-bash-debug'
-
-AUC('FileType', {
-  pattern = 'sh',
-  once = true,
-  callback = function()
-    ---@ Deps
-    if vim.fn.executable(shellcheck) ~= 1 then
-      vim.fn.jobstart('sudo apt install' .. shellcheck,
-        { on_exit = function(_, code) if code == 0 then vim.print('Downloaded: ' .. language_server) end end })
-    end
-
-    if vim.fn.executable(language_server) ~= 1 then
-      vim.fn.jobstart('npm i -g ' .. language_server,
-        { on_exit = function(_, code) if code == 0 then vim.print('Downloaded: ' .. language_server) end end })
-    end
-
-    if vim.tbl_get(vim.loop.fs_stat(debug_adapter_dir) or {}, 'type') ~= 'directory' then
-      vim.fn.jobstart(
-        'mkdir -p ' .. debug_adapter_dir .. ' && cd $_ && curl -LO ' .. debugger_url,
-        { on_exit = function(_, code) if code == 0 then vim.print 'Downloaded: vscode-bash-debug' end end })
-    end
-
-    ---@ Lsp
-
-    local function start_bash_ls() vim.lsp.start { name = language_server, cmd = { language_server, 'start' } } end
+REQUIRE({
+    {
+      type = 'bin',
+      arg =
+      'curl -fsSL https://github.com/koalaman/shellcheck/releases/download/latest/shellcheck-latest.linux.x86_64.tar.xz | tar xJv',
+      path = 'shellcheck-latest/shellcheck'
+    }, {
+    type = 'npm',
+    arg = 'bash-language-server'
+  }, {
+    type = 'bin',
+    arg =
+    'curl -fsSL https://github.com/rogalmic/vscode-bash-debug/releases/download/untagged-438733f35feb8659d939/bash-debug-0.3.9.vsix -o bash-debug.zip && unzip $_ -d bash-debug',
+    path = 'bash-debug/extension/out/bashDebug.js'
+  }
+  },
+  function(_, ls, db)
+    local function start_bash_ls() vim.lsp.start { name = ls, cmd = { ls, 'start' } } end
     AUC('FileType', { pattern = 'sh', callback = start_bash_ls })
     start_bash_ls()
-
-    ---@ Dap
 
     local dap = require 'dap'
 
@@ -39,7 +25,7 @@ AUC('FileType', {
       type = 'executable',
       name = 'bashdb',
       command = 'node',
-      args = { debug_adapter_dir .. '/extension/out/bashDebug.js' }
+      args = { db }
     }
     dap.configurations.sh = {
       {
@@ -47,8 +33,8 @@ AUC('FileType', {
         request = 'launch',
         name = "Launch file",
         showDebugOutput = true,
-        pathBashdb = debug_adapter_dir .. '/extension/bashdb_dir/bashdb',
-        pathBashdbLib = debug_adapter_dir .. '/extension/bashdb_dir',
+        pathBashdb = DEPS_DIR.bin .. '/extension/bashdb_dir/bashdb',
+        pathBashdbLib = DEPS_DIR.bin .. '/extension/bashdb_dir',
         trace = true,
         file = "${file}",
         program = "${file}",
@@ -63,4 +49,4 @@ AUC('FileType', {
       }
     }
   end
-})
+)

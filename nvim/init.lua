@@ -1,96 +1,121 @@
----@ Package management
 
-local packages = {
-  "https://github.com/EdenEast/nightfox.nvim",
-  "https://github.com/NvChad/nvim-colorizer.lua",
+---@ Dependencies
 
-  "https://github.com/nvim-tree/nvim-web-devicons",
-  "https://github.com/nvim-lua/plenary.nvim",
-  "https://github.com/nvim-tree/nvim-tree.lua",
-  "https://github.com/ibhagwan/fzf-lua",
-  "https://github.com/simrat39/symbols-outline.nvim",
-  'https://github.com/RRethy/vim-illuminate',
-
-  "https://github.com/nvim-treesitter/nvim-treesitter",
-  "https://github.com/nvim-treesitter/nvim-treesitter-textobjects",
-  "https://github.com/nvim-treesitter/nvim-treesitter-context",
-  "https://github.com/numToStr/Comment.nvim",
-  "https://github.com/JoosepAlviste/nvim-ts-context-commentstring",
-  "https://github.com/lukas-reineke/indent-blankline.nvim",
-  "https://github.com/kylechui/nvim-surround",
-  "https://github.com/danieiff/nvim-ts-autotag",
-  "https://github.com/windwp/nvim-autopairs",
-  "https://github.com/ggandor/leap.nvim",
-  "https://github.com/mbbill/undotree",
-
-  "https://github.com/hrsh7th/nvim-cmp",
-  "https://github.com/hrsh7th/cmp-nvim-lsp",
-  "https://github.com/hrsh7th/cmp-buffer",
-  "https://github.com/lukas-reineke/cmp-rg",
-  "https://github.com/saadparwaiz1/cmp_luasnip",
-  "https://github.com/L3MON4D3/LuaSnip",
-  "https://github.com/danieiff/friendly-snippets",
-  "https://github.com/jcdickinson/codeium.nvim",
-  "https://github.com/jackMort/ChatGPT.nvim",
-
-  "https://github.com/lewis6991/gitsigns.nvim",
-  "https://github.com/sindrets/diffview.nvim",
-  "https://github.com/pwntester/octo.nvim",
-  "https://github.com/nvim-telescope/telescope.nvim",
-
-  "https://github.com/neovim/nvim-lspconfig",
-  "https://github.com/glepnir/lspsaga.nvim",
-  "https://github.com/ray-x/lsp_signature.nvim",
-  "https://github.com/VidocqH/lsp-lens.nvim",
-  "https://github.com/lvimuser/lsp-inlayhints.nvim",
-
-  "https://github.com/danieiff/nvim-dap",
-  "https://github.com/rcarriga/nvim-dap-ui",
-  "https://github.com/theHamsta/nvim-dap-virtual-text",
-  "https://github.com/nvim-neotest/neotest",
-  "https://github.com/nvim-neotest/neotest-jest",
+DEPS_DIR           = {
+  pack = vim.fn.stdpath 'config' .. '/pack/my/start',
+  bin = vim.fn.stdpath 'config'
 }
-vim.g.packdir = vim.fn.stdpath 'config' .. '/pack/tett/start'
+DEPS_CACHE         = {
+  pack = vim.split(vim.fn.system('ls ' .. DEPS_DIR.pack), '\n'),
+  npm = vim.split(vim.fn.system('npm -gp list | grep -Po "node_modules/\\K.*"'), '\n'),
+  bin = vim.split(vim.fn.system('ls ' .. DEPS_DIR.bin), '\n')
+}
 
-if vim.tbl_get(vim.loop.fs_stat(vim.g.packdir) or {}, 'type') ~= 'directory' then
-  os.execute('mkdir -p ' .. vim.g.packdir)
-end
+local packages     = {
+  'https://github.com/EdenEast/nightfox.nvim',
+  'https://github.com/NvChad/nvim-colorizer.lua',
+  'https://github.com/nvim-tree/nvim-web-devicons',
+  'https://github.com/nvim-lua/plenary.nvim',
 
-vim.fn.jobstart({ 'ls' },
-  {
-    cwd = vim.g.packdir,
-    stdout_buffered = true,
-    on_stdout = function(_, data)
-      vim.g.packages = data
-      local packages_not_downloaded = vim.tbl_filter(
-        function(p) return not vim.tbl_contains(data, vim.fn.fnamemodify(p, ':t')) end,
-        packages)
-      if #packages_not_downloaded == 0 then return end
-      local package_download_jobs = {}
-      for _, url in ipairs(packages_not_downloaded) do
-        local jobid = vim.fn.jobstart('git clone --depth 1 ' .. url, {
-          cwd = vim.g.packdir,
-          stderr_buffered = true,
-          on_stderr = function(_, log) if #log > 2 then vim.print(log) end end
-        })
-        table.insert(package_download_jobs, jobid)
-      end
-      local allSuccess = true
-      for i, status in ipairs(vim.fn.jobwait(package_download_jobs)) do
-        if status == 0 then
-          vim.print('Downloaded ' .. packages_not_downloaded[i])
+  'https://github.com/nvim-treesitter/nvim-treesitter',
+  'https://github.com/nvim-treesitter/nvim-treesitter-context',
+  'https://github.com/lukas-reineke/indent-blankline.nvim',
+  'https://github.com/RRethy/vim-illuminate',
+  'https://github.com/numToStr/Comment.nvim',
+  'https://github.com/JoosepAlviste/nvim-ts-context-commentstring',
+  'https://github.com/kylechui/nvim-surround', --
+  'https://github.com/danieiff/nvim-ts-autotag',
+  'https://github.com/windwp/nvim-autopairs',
+  'https://github.com/Wansmer/treesj',
+  'https://github.com/ziontee113/syntax-tree-surfer',
+  'https://github.com/mfussenegger/nvim-treehopper',
+  'https://github.com/ggandor/leap.nvim',
+  'https://github.com/ggandor/leap-spooky.nvim',
+  'https://github.com/folke/flash.nvim', --
+  'https://github.com/chrisgrieser/nvim-spider',
+
+  'https://github.com/mbbill/undotree',
+  'https://github.com/nvim-telescope/telescope.nvim',
+  'https://github.com/nvim-tree/nvim-tree.lua', --
+
+  'https://github.com/hrsh7th/nvim-cmp',        --
+  'https://github.com/hrsh7th/cmp-nvim-lsp',
+  'https://github.com/hrsh7th/cmp-buffer',
+  'https://github.com/lukas-reineke/cmp-rg',
+  'https://github.com/saadparwaiz1/cmp_luasnip', --
+  'https://github.com/L3MON4D3/LuaSnip',
+  'https://github.com/danieiff/friendly-snippets',
+  'https://github.com/jcdickinson/codeium.nvim',
+  'https://github.com/jackMort/ChatGPT.nvim',   --
+  'https://github.com/danymat/neogen',          --
+
+  'https://github.com/lewis6991/gitsigns.nvim', --
+  'https://github.com/sindrets/diffview.nvim',  --
+  'https://github.com/pwntester/octo.nvim',     --
+  'https://github.com/NeogitOrg/neogit',        --
+
+  'https://github.com/neovim/nvim-lspconfig',
+  'https://github.com/ray-x/lsp_signature.nvim',
+  'https://github.com/danieiff/lsp-lens.nvim',
+  'https://github.com/simrat39/symbols-outline.nvim',
+
+  'https://github.com/danieiff/nvim-dap',               --
+  'https://github.com/rcarriga/nvim-dap-ui',            --
+  'https://github.com/theHamsta/nvim-dap-virtual-text', --
+  'https://github.com/nvim-neotest/neotest',            --
+
+  'https://github.com/nvim-neotest/neotest-jest',       --
+  'https://github.com/pmizio/typescript-tools.nvim',    --
+  'https://github.com/bennypowers/nvim-regexplainer',
+  'https://github.com/MunifTanjim/nui.nvim',
+  'https://github.com/tpope/vim-dadbod',                --
+  -- 'https://github.com/tpope/vim-dadbod-ui',             --
+  'https://github.com/b0o/SchemaStore.nvim',
+  'https://github.com/mfussenegger/nvim-jdtls', --
+}
+local missing_deps = vim.tbl_filter(function(p)
+  return not vim.tbl_contains(DEPS_CACHE.pack, vim.fn.fnamemodify(p, ':t'))
+end, packages)
+
+for i, url in ipairs(missing_deps) do
+  vim.fn.jobstart(
+    ('git clone --depth 1 %s %s'):format(url, DEPS_DIR.pack .. '/' .. vim.fn.fnamemodify(url, ':t')), {
+      on_exit = function(_, code)
+        if code == 0 then
+          vim.print('Installed: ' .. url)
         else
-          allSuccess = false
-          vim.print(('Failed to download %s, status: %s'):format(
-            packages_not_downloaded[i], status))
+          vim.print('Install Failed: ' .. url)
         end
       end
-      if allSuccess then vim.cmd 'source $MYVIMRC' end
-    end,
-    on_stderr = function(_, e) if #e ~= 1 or e[1] ~= '' then vim.print(e) end end
-  })
+    })
+end
 
-vim.g.npm_list = vim.fn.system('npm -g list -p')
+function REQUIRE(deps, cb)
+  local paths, allSuccess = {}, true
+
+  for _, dep in ipairs(deps) do
+    local cache_key = dep.path and dep.path:gsub('/.*', '') or dep.arg
+    if not vim.tbl_contains(DEPS_CACHE[dep.type], cache_key) then
+      vim.fn.jobstart(({
+        npm = 'npm i -g ',
+        bin = '',
+      })[dep.type] .. dep.arg, {
+        cwd = DEPS_DIR[dep.type],
+        on_exit = function(_, code)
+          if code == 0 then
+            table.insert(DEPS_CACHE[dep.type], cache_key)
+            vim.print('Installed: ' .. cache_key)
+          else
+            allSuccess = false
+            vim.print('Install Failed: ' .. cache_key)
+          end
+        end
+      })
+    end
+    table.insert(paths, dep.path and DEPS_DIR[dep.type] .. '/' .. dep.path or dep.arg)
+  end
+  if allSuccess then cb(unpack(paths)) end
+end
 
 K, HL, CMD, AUC, AUG = function(lhs, rhs, opts)
       opts = opts or {}
