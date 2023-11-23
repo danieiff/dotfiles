@@ -1,40 +1,12 @@
-eval "$(zellij setup --generate-auto-start bash)"
-
-source /etc/bash_completion.d/git-prompt
-export GIT_PS1_SHOWDIRTYSTATE=true # unstaged * staged +
-export GIT_PS1_SHOWSTASHSTATE=true # stashed $
-export GIT_PS1_SHOWUNTRACKEDFILES=true # untracked %
-export GIT_PS1_SHOWUPSTREAM=auto # local behind < ,ahead > ,diverged <> ,same =
-export PS1='\[\e[0;100m\]\u@\h \w $(__git_ps1)\[\e[0m\] '
-
-[ -f ~/.fzf.bash ] && . ~/.fzf.bash
-shopt -s expand_aliases # Enable alias, function in login shell
-
-alias nvim="/usr/bin/nvim --server \$NVIM --remote-silent"
-alias v="/usr/bin/nvim --server \$NVIM --remote-silent"
-alias shrc='nvim ~/.bashrc'
-alias .shrc='source ~/.bashrc'
-alias trash='gio trash'
-alias trash-empty='rm -rf ~/.local/share/Trash'
-alias ll='ls -alF --color'
-alias la='ls -A --color'
-
-alias co='git checkout'
-alias br='git branch'
-alias s='git status -s'
-alias l='git log'
-alias df='git diff'
-alias chp='git cherry-pick'
-alias rst='git reset'
-alias pl='git pull'
+shopt -s expand_aliases # Enable alias and function in login shell
+export EDITOR="/usr/bin/nvim --server \$NVIM --remote-silent"
+alias v="$EDITOR"
+alias rc='nvim ~/.bashrc'
+alias .rc='. ~/.bashrc'
+alias l='ls -alF --color'
 alias skip='git update-index --skip-worktree'
 alias noskip='git update-index --no-skip-worktree'
 alias ls-skip='git ls-files -v | grep ^S'
-
-export PATH=$PATH:/usr/local/go/bin:~/go/bin
-export PATH=$PATH:~/.cargo/bin
-alias python=python3
-alias sail="vendor/bin/sail"
 
 ghinstall() {
   curl "https://api.github.com/repos/$1/releases/latest" \
@@ -43,11 +15,9 @@ ghinstall() {
 }
 
 gistget() {
-  local temp
-  temp=$(curl "https://api.github.com/gists/$1")
+  local temp=$(curl "https://api.github.com/gists/$1")
   for filename in $(echo "$temp" | yq -r ".files|.[]?|.filename")
-  do
-    echo "$temp" | yq -r ".files|.[\"$filename\"]|.content" > "$filename"
+  do echo "$temp" | yq -r ".files|.[\"$filename\"]|.content" > "$filename"
   done
 }
 
@@ -67,8 +37,11 @@ dev-ssh() {
   ssh -L "${1:-3000}:localhost:${1:-3000} ${3:-user@host}"
 }
 
+eval "$(zellij setup --generate-auto-start bash)"
+[ -f ~/.fzf.bash ] && . ~/.fzf.bash
+
 if [ "$WSLENV" ]; then
-## Android
+## ReactNative Android
 # mkdir ~/Android && ln -s /mnt/c/Users/Hirohisa/AppData/Local/Android/Sdk ~/Android/sdk
 # ln -s ~/Android/Sdk/platform-tools/adb.exe ~/Android/Sdk/platform-tools/adb
 # ln -s ~/Android/Sdk/platform-tools/emulator/emulator.exe ~/Android/Sdk/emulator/emulator
@@ -82,9 +55,16 @@ alias emu-list='$ANDROID_HOME/emulator/emulator -list-avds'
 alias rn-expo='REACT_NATIVE_PACKAGER_HOSTNAME=$(/mnt/c/Windows/system32/ipconfig.exe | grep -m 1 "IPv4 Address" | sed "s/.*: //") npx expo start'
 
 eval "$(echo "$PASS" | gnome-keyring-daemon --unlock --replace 2> /dev/null | sed 's/^/export /g')"
-
 fi
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
+
+export PATH=$PATH:/usr/local/go/bin:~/go/bin
+export PATH=$PATH:~/.cargo/bin
+alias python=python3
+alias sail="vendor/bin/sail"
+
+# Load Angular CLI autocompletion.
+source <(ng completion script)
