@@ -2,184 +2,140 @@
 -- https://github.com/yoheimuta/protolint
 -- https://github.com/rhysd/actionlint
 
-local efm_ls_dir = vim.fn.getenv 'HOME' .. '/.config/efm-langserver'
-local efm_ls = efm_ls_dir .. '/efm-langserver'
-if vim.fn.executable(efm_ls) == 0 then
-  vim.schedule(function()
-    vim.cmd(
-      'tabnew | term mkdir -p ' ..
-      efm_ls_dir ..
-      [[ && cd $_ &&  curl "https://api.github.com/repos/mattn/efm-langserver/releases/latest" | grep -Po "(?<=browser_download_url\": \")https://[^\"]*" | fzf --reverse --bind "enter:execute( curl -L {} | tar xvz --strip-components=1 )+abort" ]]
-    )
-  end)
-end
-local languages = {
-  go = {
+REQUIRE({
     {
-      prefix = 'golangci-lint',
-      lintCommand = 'golangci-lint run --color never --out-format tab ${INPUT}',
-      lintStdin = false,
-      lintFormats = { '%.%#:%l:%c %m' },
-      rootMarkers = {},
-    }
+      type = 'bin',
+      arg =
+      [[ VERSION=$(curl -s https://api.github.com/repos/mattn/efm-langserver/releases/latest | grep -Po '"tag_name": "\K[^"]*') && curl -fsSL https://github.com/mattn/efm-langserver/releases/latest/download/efm-langserver_${VERSION}_linux_amd64.tar.gz | tar xz --strip-components=1 ]],
+      executable = 'efm-langserver'
+    },
+    { type = 'npm', arg = '@fsouza/prettierd' },
   },
-  gitcommit = {
-    {
-      lintCommand = 'gitlint --contrib contrib-title-conventional-commits',
-      lintStdin = true,
-      lintFormats = { '%l: %m: "%r"', '%l: %m', }
-    }
-  },
-  php = {
-    {
-      -- https://github.com/phpstan/phpstan https://github.com/nunomaduro/larastan
-      prefix = 'phpstan',
-      lintSource = 'phpstan',
-      lintCommand =
-      './vendor/bin/phpstan analyse --no-progress --no-ansi --error-format=raw "${INPUT}"',
-      lintStdin = false,
-      lintFormats = { '%.%#:%l:%m' },
-      rootMarkers = { 'phpstan.neon', 'phpstan.neon.dist', 'composer.json' },
-    }
-  }
-}
-local prettier = {
-  formatCanRange = true,
-  formatCommand =
-  "prettierd '${INPUT}' ${--tab-width=tabSize} ${--use-tabs=!insertSpaces} ${--range-start=charStart} ${--range-end=charEnd}",
-  -- "./node_modules/.bin/prettier --stdin --stdin-filepath '${INPUT}' ${--range-start:charStart} ${--range-end:charEnd} ${--tab-width:tabSize} ${--use-tabs:!insertSpaces}",
-  formatStdin = true,
-  rootMarkers = {
-    '.prettierrc',
-    '.prettierrc.json',
-    '.prettierrc.js',
-    '.prettierrc.yml',
-    '.prettierrc.yaml',
-    '.prettierrc.json5',
-    '.prettierrc.mjs',
-    '.prettierrc.cjs',
-    '.prettierrc.toml',
-    'package.json',
-  },
-}
-local eslint = {
-  prefix = 'eslint',
-  lintCommand = './node_modules/.bin/eslint --no-color --format visualstudio --stdin-filename ${INPUT} --stdin',
-  lintStdin = true,
-  lintFormats = { '%f(%l,%c): %trror %m', '%f(%l,%c): %tarning %m' },
-  lintIgnoreExitCode = true,
-  rootMarkers = {
-    '.eslintrc',
-    '.eslintrc.cjs',
-    '.eslintrc.js',
-    '.eslintrc.json',
-    '.eslintrc.yaml',
-    '.eslintrc.yml',
-    'package.json',
-  },
-}
-local stylelint = {
-  prefix = 'stylelint',
-  lintCommand = './node_modules/.bin/stylelint --no-color --formatter compact --stdin --stdin-filename ${INPUT}',
-  lintStdin = true,
-  lintFormats = { '%.%#: line %l, col %c, %trror - %m', '%.%#: line %l, col %c, %tarning - %m' },
-  -- rootMarkers = { '.stylelintrc' },
-}
-local exts_js = { 'typescript', 'javascript', 'typescriptreact', 'javascriptreact', 'vue', 'svelte', 'astro' }
-for _, ext in ipairs(exts_js) do languages[ext] = { prettier, eslint } end
-local exts_prettier = { 'html', 'json', 'jsonc', 'yaml', 'markdown' }
-for _, ext in ipairs(exts_prettier) do languages[ext] = { prettier } end
-local exts_css = { "css", "scss", "less", "sass" }
-for _, ext in ipairs(exts_css) do languages[ext] = { prettier, stylelint } end
-
-
-require 'lspconfig'.efm.setup {
-  init_options = {
-    documentFormatting = true,
-    documentRangeFormatting = true,
-    hover = true,
-    -- documentSymbol = true,
-    codeAction = true,
-    completion = true
-  },
-  settings = {
-    rootMarkers = { ".git/" },
-    languages = languages,
-  },
-  filetypes = vim.tbl_keys(languages)
-}
-
-AUC('FileType', {
-  pattern = 'markdown',
-  once = true,
-  callback = function()
-    require 'util'.ensure_npm_deps { 'grammarly-languageserver' }
-    require 'lspconfig'.grammarly.setup { cmd = { "n", "run", "16",
-      "/usr/local/bin/grammarly-languageserver",
-      "--stdio" }, }
-    vim.schedule(vim.cmd.edit)
-  end
-})
-
-local lua_ls_dir = vim.fn.getenv 'HOME' .. "/.config/lua-language-server"
-local lua_ls = lua_ls_dir .. "/bin/lua-language-server"
-AUC('FileType', {
-  pattern = 'lua',
-  once = true,
-  callback = function()
-    if vim.fn.executable(lua_ls) == 0 then
-      vim.schedule(function()
-        vim.cmd('tabnew | term mkdir -p ' ..
-          lua_ls_dir .. ' && cd $_ && ghinstall LuaLS/lua-language-server')
-      end)
-    end
-
-    require 'lspconfig'.lua_ls.setup { cmd = { lua_ls } }
-
-    vim.schedule(vim.cmd.edit)
-
-    --[[ ---@ Dap
-install local-lua-debugger-vscode, either via:
-
-Your package manager
-From source:
-git clone https://github.com/tomblind/local-lua-debugger-vscode
-cd local-lua-debugger-vscode
-npm install
-npm run build
-
- require 'dap'.adapters["local-lua"] = {
-      type = "executable",
-      command = "node",
-      args = {
-        "/absolute/path/to/local-lua-debugger-vscode/extension/debugAdapter.js"
+  function(ls)
+    local languages = {
+      go = {
+        {
+          prefix = 'golangci-lint',
+          lintCommand = 'golangci-lint run --color never --out-format tab ${INPUT}',
+          lintStdin = false,
+          lintFormats = { '%.%#:%l:%c %m' },
+          rootMarkers = {},
+        }
       },
-      enrich_config = function(config, on_config)
-        if not config["extensionPath"] then
-          local c = vim.deepcopy(config)
-          -- 💀 If this is missing or wrong you'll see
-          -- "module 'lldebugger' not found" errors in the dap-repl when trying to launch a debug session
-          c.extensionPath = "/absolute/path/to/local-lua-debugger-vscode/"
-          on_config(c)
-        else
-          on_config(config)
-        end
-      end,
+      gitcommit = {
+        {
+          lintCommand = 'gitlint --contrib contrib-title-conventional-commits',
+          lintStdin = true,
+          lintFormats = { '%l: %m: "%r"', '%l: %m', }
+        }
+      },
+      php = {
+        {
+          -- https://github.com/phpstan/phpstan https://github.com/nunomaduro/larastan
+          prefix = 'phpstan',
+          lintSource = 'phpstan',
+          lintCommand =
+          './vendor/bin/phpstan analyse --no-progress --no-ansi --error-format=raw "${INPUT}"',
+          lintStdin = false,
+          lintFormats = { '%.%#:%l:%m' },
+          rootMarkers = { 'phpstan.neon', 'phpstan.neon.dist', 'composer.json' },
+        }
+      }
     }
-    ]]
+    local prettier = {
+      formatCanRange = true,
+      formatCommand =
+      "prettierd '${INPUT}' ${--tab-width=tabSize} ${--use-tabs=!insertSpaces} ${--range-start=charStart} ${--range-end=charEnd}",
+      -- "./node_modules/.bin/prettier --stdin --stdin-filepath '${INPUT}' ${--range-start:charStart} ${--range-end:charEnd} ${--tab-width:tabSize} ${--use-tabs:!insertSpaces}",
+      formatStdin = true,
+      rootMarkers = {
+        '.prettierrc',
+        '.prettierrc.json',
+        '.prettierrc.js',
+        '.prettierrc.yml',
+        '.prettierrc.yaml',
+        '.prettierrc.json5',
+        '.prettierrc.mjs',
+        '.prettierrc.cjs',
+        '.prettierrc.toml',
+        'package.json',
+      },
+    }
+    local eslint = {
+      prefix = 'eslint',
+      lintCommand = './node_modules/.bin/eslint --no-color --format visualstudio --stdin-filename ${INPUT} --stdin',
+      lintStdin = true,
+      lintFormats = { '%f(%l,%c): %trror %m', '%f(%l,%c): %tarning %m' },
+      lintIgnoreExitCode = true,
+      rootMarkers = {
+        '.eslintrc',
+        '.eslintrc.cjs',
+        '.eslintrc.js',
+        '.eslintrc.yaml',
+        '.eslintrc.json',
+        '.eslintrc.yml',
+        'package.json',
+      },
+    }
+    local stylelint = {
+      prefix = 'stylelint',
+      lintCommand = './node_modules/.bin/stylelint --no-color --formatter compact --stdin --stdin-filename ${INPUT}',
+      lintStdin = true,
+      lintFormats = { '%.%#: line %l, col %c, %trror - %m', '%.%#: line %l, col %c, %tarning - %m' },
+      -- rootMarkers = { '.stylelintrc' },
+    }
+    local exts_js = { 'typescript', 'javascript', 'typescriptreact', 'javascriptreact', 'vue', 'svelte', 'astro' }
+    for _, ext in ipairs(exts_js) do languages[ext] = { prettier, eslint } end
+    local exts_prettier = { 'html', 'json', 'jsonc', 'yaml', 'markdown' }
+    for _, ext in ipairs(exts_prettier) do languages[ext] = { prettier } end
+    local exts_css = { "css", "scss", "less", "sass" }
+    for _, ext in ipairs(exts_css) do languages[ext] = { prettier, stylelint } end
+
+
+    require 'lspconfig'.efm.setup {
+      cmd = { ls },
+      init_options = {
+        documentFormatting = true,
+        documentRangeFormatting = true,
+        hover = true,
+        -- documentSymbol = true,
+        codeAction = true,
+        completion = true
+      },
+      settings = {
+        rootMarkers = { ".git/" },
+        languages = languages,
+      },
+      filetypes = vim.tbl_keys(languages)
+    }
   end
+)
 
-})
+REQUIRE({ { type = 'npm', arg = 'grammarly-languageserver' } },
+  function()
+    require 'lspconfig'.grammarly.setup { cmd = { "nvm", "run", "16", "/usr/local/bin/grammarly-languageserver",
+      "--stdio" }, }
+  end
+)
 
-local json_yaml_au = vim.api.nvim_create_augroup('JsonYamlAUG', {})
-AUC('FileType', {
-  pattern = { 'json', 'jsonc', 'yaml' },
-  group = json_yaml_au,
-  callback = function()
-    vim.api.nvim_clear_autocmds({ group = json_yaml_au })
+REQUIRE({ {
+  type = 'bin',
+  arg =
+  [[mkdir lua-language-server && cd $_ && VERSION=$(curl -s https://api.github.com/repos/LuaLS/lua-language-server/releases/latest | grep -Po '"tag_name": "\K[^"]*') && curl -fsSL https://github.com/LuaLS/lua-language-server/releases/download/${VERSION}/lua-language-server-${VERSION}-linux-x64.tar.gz | tar xvz]],
+  executable = 'lua-language-server/bin/lua-language-server'
+} }, function(ls)
+  local capa = vim.lsp.protocol.make_client_capabilities()
+  capa.textDocument.formatting = true
+  capa.textDocument.rangeFormatting = true
 
-    -- require 'util'.ensure_pack_installed { { url = "https://github.com/b0o/SchemaStore.nvim" } }
+  AUC('FileType', {
+    pattern = 'lua',
+    callback = function() vim.lsp.start { cmd = { ls }, capabilities = capa, root_dir = vim.fn.getcwd() } end
+  })
+end)
 
+REQUIRE({ { type = 'npm', arg = 'vscode-langservers-extracted' } },
+  function()
     local jsonls_capabilities = vim.lsp.protocol.make_client_capabilities()
     jsonls_capabilities.textDocument.completion.completionItem.snippetSupport = true
     -- print(vim.inspect(jsonls_capabilities.textDocument.completion))
@@ -194,13 +150,15 @@ AUC('FileType', {
         }
       }
     }
+  end
+)
 
-    local yaml_ls = 'yaml-language-server'
-    require 'util'.ensure_npm_deps { yaml_ls }
+REQUIRE({ { type = 'npm', arg = 'yaml-language-server' } },
+  function()
     require 'lspconfig'.yamlls.setup {
       on_attach = function(client)
-        client.resolved_capabilities.document_formatting = false
-        client.resolved_capabilities.document_range_formatting = false
+        client.server_capabilities.documentFormattingProvider = false
+        client.server_capabilities.documentRangeFormattingProvider = false
       end,
       settings = {
         yaml = {
@@ -218,46 +176,30 @@ AUC('FileType', {
         },
       },
     }
-
-    vim.schedule(vim.cmd.edit)
   end
-})
+)
 
 AUC('FileType', {
   pattern = 'dockerfile',
   once = true,
   callback = function()
     -- https://github.com/rcjsuen/dockerfile-language-server-nodejs
-    require 'util'.ensure_npm_deps { 'dockerfile-language-server-nodejs' }
+    --require 'util'.ensure_npm_deps { 'dockerfile-language-server-nodejs' }
     require 'lspconfig'.dockerls.setup {}
     vim.schedule(vim.cmd.edit)
   end
 })
 
-AUC('FileType', {
-  pattern = 'graphsql',
-  once = true,
-  callback = function()
-    -- https://github.com/graphql/graphiql/tree/main/packages/graphql-language-service-cli rquire 'util'.ensure_npm_deps { 'graphql-language-service-cli' }
-    require 'lspconfig'.graphql.setup {}
-  end
-})
-
-AUC('FileType', {
-  pattern = { 'sql', 'mysql' },
-  once = true,
-  callback = function()
-    require 'util'.ensure_npm_deps { 'sql-language-server' }
+REQUIRE({ { type = 'npm', arg = 'sql-language-server' } },
+  function()
     require 'lspconfig'.sqlls.setup {}
-    vim.schedule(vim.cmd.edit)
   end
-})
+)
 
 AUC('FileType', {
   pattern = 'java',
   once = true,
   callback = function()
-    require 'util'.ensure_pack_installed { { url = 'https://github.com/mfussenegger/nvim-jdtls' } }
     require 'nvim-jdtls'.setup {}
 
     -- git clone -- depth 1 https://github.com/microsoft/vscode-gradle
@@ -273,7 +215,7 @@ AUC('FileType', {
     -- https://github.com/fwcd/kotlin-language-server
     require 'lspconfig'.kotlin_language_server.setup {
       on_attach = on_attach,
-      flags = lsp_flags,
+      -- flags = lsp_flags,
       capabilities = capabilities,
     }
   end
@@ -462,7 +404,7 @@ AUC('FileType', {
   pattern = 'php',
   once = true,
   callback = function()
-    require 'util'.ensure_npm_deps { 'intelephense' }
+    --require 'util'.ensure_npm_deps { 'intelephense' }
     require 'lspconfig'.intelephense.setup {}
 
     -- git clone https://github.com/xdebug/vscode-php-debug.git
@@ -538,7 +480,7 @@ AUC('FileType', {
   once = true,
   callback = function()
     -- https://github.com/NomicFoundation/hardhat-vscode/blob/development/server/README.md
-    require 'util'.ensure_npm_deps { '@ignored/solidity-language-server' }
+    --require 'util'.ensure_npm_deps { '@ignored/solidity-language-server' }
     require 'lspconfig'.solidity_ls_nomicfoundation.setup {}
     vim.cmd.edit()
   end
@@ -571,3 +513,49 @@ dap.configurations.gdscript = {
   }
 }
 ]]
+
+REQUIRE({ {
+  type = 'bin',
+  arg =
+  'curl -fsSL https://github.com/koalaman/shellcheck/releases/download/latest/shellcheck-latest.linux.x86_64.tar.xz | tar xJv',
+  executable = 'shellcheck-latest/shellcheck'
+}, {
+  type = 'npm',
+  arg = 'bash-language-server'
+}, {
+  type = 'bin',
+  arg =
+  'curl -fsSL https://github.com/rogalmic/vscode-bash-debug/releases/download/untagged-438733f35feb8659d939/bash-debug-0.3.9.vsix -o bash-debug.zip && unzip $_ -d bash-debug',
+  executable = 'bash-debug/extension/out/bashDebug.js'
+} }, function(_, ls, db)
+  local dap = require 'dap'
+
+  dap.adapters.bashdb = {
+    type = 'executable',
+    name = 'bashdb',
+    command = 'node',
+    args = { db }
+  }
+  dap.configurations.sh = {
+    {
+      type = 'bashdb',
+      request = 'launch',
+      name = "Launch file",
+      showDebugOutput = true,
+      pathBashdb = DEPS_DIR.bin .. '/bash-debug/extension/bashdb_dir/bashdb',
+      pathBashdbLib = DEPS_DIR.bin .. '/bash-debug/extension/bashdb_dir',
+      trace = true,
+      file = "${file}",
+      program = "${file}",
+      cwd = '${workspaceFolder}',
+      pathCat = "cat",
+      pathBash = "/bin/bash",
+      pathMkfifo = "mkfifo",
+      pathPkill = "pkill",
+      args = {},
+      env = {},
+      terminalKind = "integrated",
+    }
+  }
+  return { name = ls, cmd = { ls, 'start' } }
+end, { lsp_mode = true, ft = 'sh' })
