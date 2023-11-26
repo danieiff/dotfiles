@@ -1,21 +1,30 @@
+--TODO: gitcommit in lazygit in VimEnter,
+--reproduce harpoon.nvim
+--ls and create keymaps to move/delete buffers programatically
+--quickfix :older newer cfilter
+--:cdo s// | update cfdo
 
 ---@ Dependencies
 
-DEPS_DIR           = {
+DEPS_DIR = {
   pack = vim.fn.stdpath 'config' .. '/pack/my/start',
   bin = vim.fn.stdpath 'config'
 }
-DEPS_CACHE         = {
+DEPS_CACHE = {
   pack = vim.split(vim.fn.system('ls ' .. DEPS_DIR.pack), '\n'),
   npm = vim.split(vim.fn.system('npm -gp list | grep -Po "node_modules/\\K.*"'), '\n'),
   bin = vim.split(vim.fn.system('ls ' .. DEPS_DIR.bin), '\n')
 }
 
-local packages     = {
+local packages = {
   'https://github.com/EdenEast/nightfox.nvim',
   'https://github.com/NvChad/nvim-colorizer.lua',
   'https://github.com/nvim-tree/nvim-web-devicons',
+  'https://github.com/MunifTanjim/nui.nvim',
   'https://github.com/nvim-lua/plenary.nvim',
+  'https://github.com/mbbill/undotree',
+  'https://github.com/nvim-telescope/telescope.nvim',
+  'https://github.com/nvim-tree/nvim-tree.lua',
 
   'https://github.com/nvim-treesitter/nvim-treesitter',
   'https://github.com/nvim-treesitter/nvim-treesitter-context',
@@ -23,99 +32,128 @@ local packages     = {
   'https://github.com/RRethy/vim-illuminate',
   'https://github.com/numToStr/Comment.nvim',
   'https://github.com/JoosepAlviste/nvim-ts-context-commentstring',
-  'https://github.com/kylechui/nvim-surround', --
+  'https://github.com/kylechui/nvim-surround',
   'https://github.com/danieiff/nvim-ts-autotag',
   'https://github.com/windwp/nvim-autopairs',
   'https://github.com/Wansmer/treesj',
   'https://github.com/ziontee113/syntax-tree-surfer',
-  'https://github.com/mfussenegger/nvim-treehopper',
-  'https://github.com/ggandor/leap.nvim',
-  'https://github.com/ggandor/leap-spooky.nvim',
-  'https://github.com/folke/flash.nvim', --
+  'https://github.com/folke/flash.nvim',
   'https://github.com/chrisgrieser/nvim-spider',
 
-  'https://github.com/mbbill/undotree',
-  'https://github.com/nvim-telescope/telescope.nvim',
-  'https://github.com/nvim-tree/nvim-tree.lua', --
-
-  'https://github.com/hrsh7th/nvim-cmp',        --
+  'https://github.com/hrsh7th/nvim-cmp',
   'https://github.com/hrsh7th/cmp-nvim-lsp',
   'https://github.com/hrsh7th/cmp-buffer',
   'https://github.com/lukas-reineke/cmp-rg',
-  'https://github.com/saadparwaiz1/cmp_luasnip', --
+  'https://github.com/saadparwaiz1/cmp_luasnip',
   'https://github.com/L3MON4D3/LuaSnip',
   'https://github.com/danieiff/friendly-snippets',
   'https://github.com/jcdickinson/codeium.nvim',
-  'https://github.com/jackMort/ChatGPT.nvim',   --
-  'https://github.com/danymat/neogen',          --
+  'https://github.com/jackMort/ChatGPT.nvim',
+  'https://github.com/danymat/neogen',
 
-  'https://github.com/lewis6991/gitsigns.nvim', --
-  'https://github.com/sindrets/diffview.nvim',  --
-  'https://github.com/pwntester/octo.nvim',     --
-  'https://github.com/NeogitOrg/neogit',        --
+  'https://github.com/lewis6991/gitsigns.nvim',
+  'https://github.com/sindrets/diffview.nvim',
+  'https://github.com/NeogitOrg/neogit',
+  'https://github.com/pwntester/octo.nvim',
 
   'https://github.com/neovim/nvim-lspconfig',
   'https://github.com/ray-x/lsp_signature.nvim',
   'https://github.com/danieiff/lsp-lens.nvim',
   'https://github.com/simrat39/symbols-outline.nvim',
 
-  'https://github.com/danieiff/nvim-dap',               --
-  'https://github.com/rcarriga/nvim-dap-ui',            --
-  'https://github.com/theHamsta/nvim-dap-virtual-text', --
-  'https://github.com/nvim-neotest/neotest',            --
+  'https://github.com/mfussenegger/nvim-dap',
+  'https://github.com/rcarriga/nvim-dap-ui',
+  'https://github.com/theHamsta/nvim-dap-virtual-text',
+  'https://github.com/nvim-neotest/neotest',
 
-  'https://github.com/nvim-neotest/neotest-jest',       --
-  'https://github.com/pmizio/typescript-tools.nvim',    --
   'https://github.com/bennypowers/nvim-regexplainer',
-  'https://github.com/MunifTanjim/nui.nvim',
-  'https://github.com/tpope/vim-dadbod',                --
-  -- 'https://github.com/tpope/vim-dadbod-ui',             --
-  'https://github.com/b0o/SchemaStore.nvim',
-  'https://github.com/mfussenegger/nvim-jdtls', --
-}
-local missing_deps = vim.tbl_filter(function(p)
-  return not vim.tbl_contains(DEPS_CACHE.pack, vim.fn.fnamemodify(p, ':t'))
-end, packages)
+  'https://github.com/pmizio/typescript-tools.nvim',
+  'https://github.com/joeveiga/ng.nvim',
+  'https://github.com/nvim-neotest/neotest-jest',
+  'https://github.com/marilari88/neotest-vitest',
 
-for i, url in ipairs(missing_deps) do
-  vim.fn.jobstart(
-    ('git clone --depth 1 %s %s'):format(url, DEPS_DIR.pack .. '/' .. vim.fn.fnamemodify(url, ':t')), {
-      on_exit = function(_, code)
-        if code == 0 then
-          vim.print('Installed: ' .. url)
-        else
-          vim.print('Install Failed: ' .. url)
+  'https://github.com/b0o/SchemaStore.nvim',
+  'https://github.com/tpope/vim-dadbod',
+  'https://github.com/kristijanhusak/vim-dadbod-ui',
+  'https://github.com/kristijanhusak/vim-dadbod-completion',
+  'https://github.com/mfussenegger/nvim-jdtls'
+}
+
+local function reload()
+  vim.cmd('set runtimepath^=' .. vim.fn.stdpath 'config' .. ' | runtime! plugin/**/*.{vim,lua}')
+  vim.cmd 'source $MYVIMRC | helptags ALL'
+end
+
+function REQUIRE(deps, cb, opt)
+  opt = vim.tbl_deep_extend('keep', opt or {}, { skip_cb_if_not_missing = false, lsp_mode = false })
+
+  local function require_internal(_cb)
+    local executables, missings, has_missing = {}, {}, false
+    for _, dep in ipairs(deps) do
+      local cache_key = dep.executable and dep.executable:gsub('/.*', '') or dep.arg
+
+      if type(dep) == 'string' then
+        dep = { type = 'pack', arg = dep }
+        cache_key = vim.fn.fnamemodify(dep.arg, ':t')
+      end
+
+      if dep.type ~= 'pack' then
+        table.insert(executables, dep.executable and DEPS_DIR[dep.type] .. '/' .. dep.executable or dep.arg)
+      end
+
+      if not vim.tbl_contains(DEPS_CACHE[dep.type], cache_key) then
+        table.insert(DEPS_CACHE[dep.type], cache_key)
+        missings[cache_key] = nil; has_missing = true
+        vim.fn.jobstart(({
+          pack = ('git clone --depth 1 %s %s/%s'):format(dep.arg, DEPS_DIR.pack, vim.fn.fnamemodify(dep.arg, ':t')),
+          npm = 'npm i -g ' .. dep.arg,
+          bin = ('cd %s && %s'):format(DEPS_DIR.bin, dep.arg) })[dep.type], {
+          on_exit = function(_, code)
+            local success = code == 0
+            vim.print((success and 'Installed ' or 'Install Failed ') .. cache_key)
+            missings[cache_key] = success
+          end
+        })
+      end
+    end
+
+    if not has_missing then return opt.skip_cb_if_not_missing or _cb(unpack(executables)) end
+    local timer = vim.loop.new_timer()
+    timer:start(5000, 1000, function()
+      local all_settled, all_success = true, true
+      for _, result in pairs(missings) do
+        if result == nil then
+          all_settled = false
+        elseif result == false then
+          all_success = false
         end
       end
-    })
-end
-
-function REQUIRE(deps, cb)
-  local paths, allSuccess = {}, true
-
-  for _, dep in ipairs(deps) do
-    local cache_key = dep.path and dep.path:gsub('/.*', '') or dep.arg
-    if not vim.tbl_contains(DEPS_CACHE[dep.type], cache_key) then
-      vim.fn.jobstart(({
-        npm = 'npm i -g ',
-        bin = '',
-      })[dep.type] .. dep.arg, {
-        cwd = DEPS_DIR[dep.type],
-        on_exit = function(_, code)
-          if code == 0 then
-            table.insert(DEPS_CACHE[dep.type], cache_key)
-            vim.print('Installed: ' .. cache_key)
-          else
-            allSuccess = false
-            vim.print('Install Failed: ' .. cache_key)
-          end
-        end
-      })
-    end
-    table.insert(paths, dep.path and DEPS_DIR[dep.type] .. '/' .. dep.path or dep.arg)
+      if all_settled then
+        timer:stop()
+        if all_success then vim.schedule(function() _cb(unpack(executables)) end) end
+      end
+    end)
   end
-  if allSuccess then cb(unpack(paths)) end
+
+  if opt.lsp_mode then
+    AUC('FileType', {
+      pattern = opt.ft,
+      once = true,
+      callback = function()
+        require_internal(function(...)
+          local config = cb(...)
+          AUC('FileType', { pattern = opt.ft, callback = function() vim.lsp.start(config) end })
+          vim.lsp.start(config)
+        end
+        )
+      end
+    })
+  else
+    require_internal(cb)
+  end
 end
+
+REQUIRE(packages, reload, { skip_cb_if_not_missing = true })
 
 K, HL, CMD, AUC, AUG = function(lhs, rhs, opts)
       opts = opts or {}
