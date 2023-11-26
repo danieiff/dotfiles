@@ -1,14 +1,12 @@
 [user]
 	name = danieiff
 	email = sugielff@gmail.com
-[core]
-	editor = nvim
 [pull]
 	ff = only
 [diff]
 	tool = nvimdiff
 	algorithm = histogram
-	colorMoved = dimmed-zebra
+  ;colorMoved = dimmed-zebra
   colorMoved = default
 [difftool "nvimdiff"]
 	cmd = "nvim -R -d -c \"wincmd l\" -d \"$LOCAL\" \"$REMOTE\""
@@ -23,7 +21,6 @@
 [init]
 	defaultBranch = main
 [credential "https://github.com"]
-	helper = 
 	helper = !/usr/bin/gh auth git-credential
 
 [credential "https://gist.github.com"]

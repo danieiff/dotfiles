@@ -29,9 +29,8 @@ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash 
   nvm install 18
 
 # NeoVim
-curl -L https://github.com/neovim/neovim/releases/latest/download/nvim-linux64.tar.gz | tar xz && \
-  ln -fs ~/nvim-linux64/bin/nvim /usr/bin/nvim && \
-  nvim +q && nvim +TSUpdateSync +qa
+curl -L https://github.com/neovim/neovim/releases/nightly/download/nvim-linux64.tar.gz | tar xz && \
+  ln -fs ~/nvim-linux64/bin/nvim /usr/bin/nvim && nvim --headless +'sleep 30 | LoadRequiredFileTypes' +'sleep 10 | quitall'
 
 
 if [ -z "$REMOTE_CONTAINER" ]; then

@@ -34,8 +34,7 @@ RUN git clone --depth 1 https://github.com/danieiff/dotfiles; \
   cp -fsr ~/dotfiles ~/.config && (cp -fs ~/dotfiles/.* ~  || true)
 
 RUN curl -fsSL https://github.com/neovim/neovim/releases/latest/download/nvim-linux64.tar.gz | tar xz && \
-  ln -fs ~/nvim-linux64/bin/nvim /usr/bin/ && \
-  nvim +q +'sleep 15' && nvim +TSUpdateSync +'sleep 100' +qa
+  ln -fs ~/nvim-linux64/bin/nvim /usr/bin/ && nvim --headless +'sleep 30 | LoadRequiredFileTypes' +'sleep 10 | quitall'
 
 WORKDIR $HOME/workspace
 

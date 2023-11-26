@@ -34,6 +34,11 @@ local function draw_statusline()
 
   local search = vim.fn.searchcount()
 
+  local buffer_nav = ''
+  for _, buf in pairs(OPEN_FILES) do
+    buffer_nav = buffer_nav .. ' ' .. buf.n .. buf.bufname
+  end
+
   local file_modified_hl = vim.o.modified and 'NvimTreeModifiedFile' or ''
 
   vim.o.statusline = vim.fn.join(vim.tbl_filter(function(item) return item end, {
@@ -41,6 +46,7 @@ local function draw_statusline()
     diff_status,
     diagnostic_status,
     (search.total > 0 and ('%s/%s'):format(search.current, search.total) or '') ..
+    buffer_nav,
     '%=' ..
     ('%%#%s#%s%%*'):format(file_modified_hl, vim.fn.fnamemodify(vim.fn.expand '%', ':.')),
     '%P',
@@ -49,6 +55,7 @@ local function draw_statusline()
 end
 
 HL(0, 'Statusline', { bg = 'NONE' })
+
 AUC(
   { 'WinEnter', 'BufEnter', 'SessionLoadPost', 'FileChangedShellPost', 'VimResized', 'Filetype', 'CursorMoved',
     'CursorMovedI', 'ModeChanged' },
@@ -57,60 +64,74 @@ AUC(
 vim.fn.timer_start(2000, draw_statusline, { ['repeat'] = -1 })
 
 
-local progress_token_to_title, progress_title_to_order, clients_title_progress = {}, {}, {}
-local spinner_frames, win, buf = { "⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷", index = 1 }, nil, nil
+local progress_token_to_title, progress_title_to_order, clients_title_progress, timerid_to_winbuf, spinner_frames = {},
+    {}, {}, {}, { "⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷", index = 1 }
 
 local function update_progress_notif(timer_id)
   spinner_frames.index = spinner_frames.index % #spinner_frames + 1
 
   local lines = {}
-  for client_id, title_prog_tbl in pairs(clients_title_progress) do
+  for client_id, title_to_prog_info in pairs(clients_title_progress) do
     local spinner = (next(clients_title_progress[client_id]) and spinner_frames[spinner_frames.index] or '󰄬')
     local client_name = vim.tbl_get(vim.lsp.get_client_by_id(client_id) or {}, 'name')
     if not client_name then return end
     table.insert(lines, spinner .. ' ' .. client_name)
 
-    local t = vim.tbl_values(title_prog_tbl)
+    local t = vim.tbl_values(title_to_prog_info)
     table.sort(t, function(a, b) return a.order - b.order > 0 end)
     vim.list_extend(lines, vim.tbl_map(function(v) return v.progress_info end, t))
   end
 
+  if not vim.tbl_contains(vim.api.nvim_list_wins(), timerid_to_winbuf[timer_id].win) then
+    return vim.fn.timer_stop(timer_id)
+  end
   if not next(progress_token_to_title) and #lines == 0 then
-    vim.fn.timer_stop(timer_id)
-    return vim.api.nvim_win_close(win, false)
+    return vim.api.nvim_win_close(timerid_to_winbuf[timer_id].win, false)
   end
 
-  vim.api.nvim_win_set_height(win, #lines)
-  vim.api.nvim_buf_set_lines(buf, 0, -1, false, lines)
+  vim.api.nvim_win_set_height(timerid_to_winbuf[timer_id].win, #lines)
+  vim.api.nvim_buf_set_lines(timerid_to_winbuf[timer_id].buf, 0, -1, false, lines)
 end
 
 local _progress_handler = vim.lsp.handlers['$/progress']
 vim.lsp.handlers['$/progress'] = function(_, result, ctx)
   _progress_handler(_, result, ctx)
-  local client_id, token, val = ctx.client_id, result.token, result.value
-  local title                 = val.title or vim.tbl_get(progress_token_to_title, client_id, token, 'title')
+  local token, val, client_id = result.token, result.value, ctx.client_id
+  local title                 = val.title or vim.tbl_get(progress_token_to_title, client_id, token)
   local message_maybe_prev    = val.message or vim.tbl_get(clients_title_progress, client_id, title, 'message') or ''
   local percentage            = val.kind == 'end' and 'Complete' or val.percentage and val.percentage .. '%' or ''
 
   if val.kind == "begin" then
     progress_token_to_title[client_id] = vim.tbl_deep_extend('error', progress_token_to_title[client_id] or {},
-      { [token] = { title = title } })
+      { [token] = title })
     progress_title_to_order[client_id] = vim.tbl_deep_extend('keep', progress_title_to_order[client_id] or {},
       { [title] = #vim.tbl_keys(progress_title_to_order[client_id] or {}) + 1 })
 
     if not next(clients_title_progress) then
-      buf = vim.api.nvim_create_buf(false, true)
-      win = vim.api.nvim_open_win(buf, false,
-        { relative = 'win', anchor = 'NE', width = 45, height = 1, row = 0, col = vim.fn.winwidth(0), style = 'minimal' })
-      vim.fn.timer_start(100, update_progress_notif, { ['repeat'] = -1 })
+      local timer_id = vim.fn.timer_start(100, update_progress_notif, { ['repeat'] = -1 })
+      local buf = vim.api.nvim_create_buf(false, true)
+      timerid_to_winbuf[timer_id] = {
+        buf = buf,
+        win = vim.api.nvim_open_win(buf, false,
+          {
+            relative = 'win',
+            anchor = 'NE',
+            width = 45,
+            height = 1,
+            row = 0,
+            col = vim.fn.winwidth(0),
+            style = 'minimal',
+            focusable = false
+          })
+      }
     end
   elseif val.kind == "end" then
     progress_token_to_title[client_id][token] = nil
     if not next(progress_token_to_title[client_id]) then progress_token_to_title[client_id] = nil end
 
     vim.defer_fn(function()
-      clients_title_progress[client_id][title] = nil
-      if not next(vim.tbl_get(clients_title_progress, client_id) or {}) then clients_title_progress[client_id] = nil end
+      (clients_title_progress[client_id] or {})[title] = nil
+      if not next(clients_title_progress[client_id] or {}) then clients_title_progress[client_id] = nil end
     end, 1000)
   end
 
