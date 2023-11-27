@@ -5,28 +5,31 @@ set -e
 apt update &&  apt install -y curl git tar unzip fzf ripgrep clang
 
 [ ! -d "dotfiles" ] && git clone --depth 1 https://github.com/danieiff/dotfiles
-mkdir -p ~/.config && cp -fsr /dotfiles ~/.config && (cp -fs /dotfiles/.* ~  || true)
+SCRIPT_DIR=$( cd -- "$( dirname -- "${BASH_SOURCE[0]}" )" &> /dev/null && pwd ) && \
+  cp -fsr "$SCRIPT_DIR" ~/.config && (cp -fs "$SCRIPT_DIR"/.* ~  || true)
 
 curl -L https://github.com/zellij-org/zellij/releases/download/v0.38.2/zellij-x86_64-unknown-linux-musl.tar.gz | tar -C /usr/local/bin -xz
 
 GH_VERSION=$(curl -s https://api.github.com/repos/cli/cli/releases/latest | grep -Po '"tag_name": "v\K[^"]*') && \
   curl -L "https://github.com/cli/cli/releases/latest/download/gh_${GH_VERSION}_linux_amd64.tar.gz" | tar xvz && \
-   cp gh_"$GH_VERSION"_linux_amd64/bin/gh /bin
+  cp gh_"$GH_VERSION"_linux_amd64/bin/gh /bin
 
 LAZYGIT_VERSION=$(curl -s https://api.github.com/repos/jesseduffield/lazygit/releases/latest | grep -Po '"tag_name": "v\K[^"]*') && \
   curl -L "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz" | tar xvz && \
-   install lazygit /bin
+  install lazygit /bin
 
 curl -L -o /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 && chmod +x /usr/local/bin/yq
 
 curl -L -o /usr/local/bin/viu https://github.com/atanunq/viu/releases/latest/download/viu && chmod +x /usr/local/bin/viu
 
 # Node.js
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash && source ~/.bashrc && nvm install 18
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash && \
+  export NVM_DIR=~/.nvm && "$NVM_DIR/nvm.sh" && nvm install 18
 
 # NeoVim
 curl -L https://github.com/neovim/neovim/releases/download/nightly/nvim-linux64.tar.gz | tar xz && \
-  ln -fs ~/nvim-linux64/bin/nvim /usr/bin/nvim && nvim --headless +'sleep 30 | LoadRequiredFileTypes' +'sleep 10 | quitall'
+  ln -fs "$(pwd)"/nvim-linux64/bin/nvim /usr/bin/nvim && nvim --headless +'sleep 30 | LoadRequiredFileTypes' +'sleep 10 | quitall' && \
+
 
 
 # if [ -z "$REMOTE_CONTAINER" ]; then
@@ -78,3 +81,5 @@ if [ "$WSLENV" ]; then
   fc-cache -fv
 
 fi
+
+source ~/.bashrc
