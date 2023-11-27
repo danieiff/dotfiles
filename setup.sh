@@ -4,8 +4,8 @@ set -e
 
 apt update &&  apt install -y curl git tar unzip fzf ripgrep clang
 
-git clone --depth 1 https://github.com/danieiff/dotfiles && \
-  cp -fsr /dotfiles ~/.config && (cp -fs /dotfiles/.* ~  || true)
+[ ! -d "dotfiles" ] && git clone --depth 1 https://github.com/danieiff/dotfiles
+mkdir -p ~/.config && cp -fsr /dotfiles ~/.config && (cp -fs /dotfiles/.* ~  || true)
 
 curl -L https://github.com/zellij-org/zellij/releases/download/v0.38.2/zellij-x86_64-unknown-linux-musl.tar.gz | tar -C /usr/local/bin -xz
 
@@ -22,28 +22,24 @@ curl -L -o /usr/local/bin/yq https://github.com/mikefarah/yq/releases/latest/dow
 curl -L -o /usr/local/bin/viu https://github.com/atanunq/viu/releases/latest/download/viu && chmod +x /usr/local/bin/viu
 
 # Node.js
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash && \
-  NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")" && \
-  [ -s "$NVM_DIR/nvm.sh" ] && \
-  /bin/bash "$NVM_DIR/nvm.sh" && \
-  nvm install 18
+curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash && source ~/.bashrc && nvm install 18
 
 # NeoVim
-curl -L https://github.com/neovim/neovim/releases/nightly/download/nvim-linux64.tar.gz | tar xz && \
+curl -L https://github.com/neovim/neovim/releases/download/nightly/nvim-linux64.tar.gz | tar xz && \
   ln -fs ~/nvim-linux64/bin/nvim /usr/bin/nvim && nvim --headless +'sleep 30 | LoadRequiredFileTypes' +'sleep 10 | quitall'
 
 
-if [ -z "$REMOTE_CONTAINER" ]; then
-
-curl -fsSL https://get.docker.com |  sh
-
-curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash
-
-curl -L -o devpod "https://github.com/loft-sh/devpod/releases/latest/download/devpod-linux-amd64" &&  install -c -m 0755 devpod /usr/local/bin && rm -f devpod
-
-npm i -g devcontainer
-
-fi
+# if [ -z "$REMOTE_CONTAINER" ]; then
+#
+# curl -fsSL https://get.docker.com |  sh
+#
+# curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash
+#
+# curl -L -o devpod "https://github.com/loft-sh/devpod/releases/latest/download/devpod-linux-amd64" &&  install -c -m 0755 devpod /usr/local/bin && rm -f devpod
+#
+# npm i -g devcontainer
+#
+# fi
 
 
 if [ "$WSLENV" ]; then
