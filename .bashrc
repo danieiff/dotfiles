@@ -1,8 +1,8 @@
 shopt -s expand_aliases # Enable alias and function in login shell
-export EDITOR="/usr/bin/nvim --server \$NVIM --remote-silent"
-alias v="$EDITOR"
+export EDITOR="/usr/bin/nvim"
+alias v="/usr/bin/nvim --server \$NVIM --remote-silent"
 alias rc='nvim ~/.bashrc'
-alias .rc='. ~/.bashrc'
+alias .rc='source ~/.bashrc'
 alias l='ls -alF --color'
 alias skip='git update-index --skip-worktree'
 alias noskip='git update-index --no-skip-worktree'

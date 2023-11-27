@@ -25,7 +25,7 @@ keybinds clear-defaults=true {
         bind "Alt f" { SwitchToMode "EnterSearch"; }
         bind "Alt g" { SwitchToMode "Locked"; }
         bind "Alt d" { Detach; }
-        bind "Alt q" { Quit; }
+        bind "Alt Q" { Quit; }
         bind "Alt n" { NewPane; }
         bind "Alt p" { ToggleFloatingPanes; }
         bind "Alt o" { ToggleFocusFullscreen; SwitchToMode "Normal"; }
