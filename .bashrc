@@ -57,10 +57,6 @@ alias rn-expo='REACT_NATIVE_PACKAGER_HOSTNAME=$(/mnt/c/Windows/system32/ipconfig
 eval "$(echo "$PASS" | gnome-keyring-daemon --unlock --replace 2> /dev/null | sed 's/^/export /g')"
 fi
 
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
-
 export PATH=$PATH:/usr/local/go/bin:~/go/bin
 export PATH=$PATH:~/.cargo/bin
 alias python=python3

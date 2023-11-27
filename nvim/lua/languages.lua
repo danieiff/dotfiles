@@ -128,7 +128,7 @@ REQUIRE({ { type = 'npm', arg = 'grammarly-languageserver' } },
 REQUIRE({ {
   type = 'bin',
   arg =
-  [[mkdir lua-language-server && cd $_ && VERSION=$(curl -s https://api.github.com/repos/LuaLS/lua-language-server/releases/latest | grep -Po '"tag_name": "\K[^"]*') && curl -fsSL https://github.com/LuaLS/lua-language-server/releases/download/${VERSION}/lua-language-server-${VERSION}-linux-x64.tar.gz | tar xvz]],
+  [[mkdir -p lua-language-server && cd $_ && VERSION=$(curl -s https://api.github.com/repos/LuaLS/lua-language-server/releases/latest | grep -Po '"tag_name": "\K[^"]*') && curl -fsSL https://github.com/LuaLS/lua-language-server/releases/download/${VERSION}/lua-language-server-${VERSION}-linux-x64.tar.gz | tar xvz]],
   executable = 'lua-language-server/bin/lua-language-server'
 } }, function(ls)
   local capa = vim.lsp.protocol.make_client_capabilities()

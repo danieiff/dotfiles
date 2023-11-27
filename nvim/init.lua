@@ -85,14 +85,9 @@ local packages = {
 }
 
 local required_filetypes = {}
-CMD('LoadRequiredFileTypes',
-  function()
-    for _, ft in ipairs(required_filetypes) do
-      vim.bo.ft = ft
-      -- vim.defer_fn(function() vim.cmd('set filetype=' .. ft) end, 1000)
-    end
-  end,
-  { desc = 'Install deps required in loaded filetypes' })
+CMD('LoadRequiredFileTypes', function()
+  for _, ft in ipairs(required_filetypes) do vim.bo.ft = ft end
+end, { desc = 'Install deps required in loaded filetypes' })
 
 function REQUIRE(deps, cb, opt)
   opt = vim.tbl_deep_extend('keep', opt or {}, { skip_cb_if_not_missing = false, lsp_mode = false })
@@ -515,10 +510,10 @@ require 'nvim-autopairs'.setup { disable_in_visualblock = true, fast_wrap = { ma
 require 'treesj'.setup { use_default_keymaps = false }
 K('<C-n>', require 'treesj'.toggle, { mode = { 'i', 'n' } })
 
-K("w", "<cmd>lua require('spider').motion('w')<cr>", { mode = { "n", "o", "x" } })
-K("e", "<cmd>lua require('spider').motion('e')<cr>", { mode = { "n", "o", "x" } })
-K("b", "<cmd>lua require('spider').motion('b')<cr>", { mode = { "n", "o", "x" } })
-K("ge", "<cmd>lua require('spider').motion('ge')<cr>", { mode = { "n", "o", "x" } })
+K("w", "<cmd>lua require 'spider' .motion 'w' <cr>", { mode = { "n", "o", "x" } })
+K("e", "<cmd>lua require 'spider' .motion 'e' <cr>", { mode = { "n", "o", "x" } })
+K("b", "<cmd>lua require 'spider' .motion 'b' <cr>", { mode = { "n", "o", "x" } })
+K("ge", "<cmd>lua require 'spider' .motion 'ge' <cr>", { mode = { "n", "o", "x" } })
 
 require 'flash'.setup { label = { uppercase = false }, modes = { search = { enabled = false } } }
 K('s', require 'flash'.jump, { mode = { "n", "x", "o" } })

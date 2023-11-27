@@ -45,7 +45,7 @@ local function draw_statusline()
     githead_vimmode,
     diff_status,
     diagnostic_status,
-    (search.total > 0 and ('%s/%s'):format(search.current, search.total) or ''),
+    ((search.total or 0) > 0 and ('%s/%s'):format(search.current, search.total) or ''),
     buffer_nav,
     '%=',
     ('%%#%s#%s%%*'):format(file_modified_hl, vim.fn.fnamemodify(vim.fn.expand '%', ':.')),
