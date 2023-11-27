@@ -36,7 +36,7 @@ local function draw_statusline()
 
   local buffer_nav = ''
   for _, buf in pairs(OPEN_FILES) do
-    buffer_nav = buffer_nav .. ' ' .. buf.n .. buf.bufname
+    buffer_nav = buf.n .. buf.bufname .. ' ' .. buffer_nav
   end
 
   local file_modified_hl = vim.o.modified and 'NvimTreeModifiedFile' or ''
@@ -45,9 +45,9 @@ local function draw_statusline()
     githead_vimmode,
     diff_status,
     diagnostic_status,
-    (search.total > 0 and ('%s/%s'):format(search.current, search.total) or '') ..
+    (search.total > 0 and ('%s/%s'):format(search.current, search.total) or ''),
     buffer_nav,
-    '%=' ..
+    '%=',
     ('%%#%s#%s%%*'):format(file_modified_hl, vim.fn.fnamemodify(vim.fn.expand '%', ':.')),
     '%P',
     os.date '%H:%M'

@@ -113,9 +113,16 @@ REQUIRE({
 
 REQUIRE({ { type = 'npm', arg = 'grammarly-languageserver' } },
   function()
-    require 'lspconfig'.grammarly.setup { cmd = { "nvm", "run", "16", "/usr/local/bin/grammarly-languageserver",
-      "--stdio" }, }
-  end
+    return {
+      name = 'grammarly-languageserver',
+      cmd = { 'n', 'run', '16', '/usr/local/bin/grammarly-languageserver', '--stdio' },
+      root_dir = vim.fn.getcwd(),
+      handlers = {
+        ['$/updateDocumentState'] = function() return '' end,
+      },
+      init_options = { clientId = 'client_BaDkMgx4X19X9UxxYRCXZo' }, -- public client id
+    }
+  end, { lsp_mode = true, ft = 'markdown' }
 )
 
 REQUIRE({ {
@@ -128,11 +135,21 @@ REQUIRE({ {
   capa.textDocument.formatting = true
   capa.textDocument.rangeFormatting = true
 
-  AUC('FileType', {
-    pattern = 'lua',
-    callback = function() vim.lsp.start { cmd = { ls }, capabilities = capa, root_dir = vim.fn.getcwd() } end
-  })
-end)
+  return {
+    cmd = { ls },
+    capabilities = capa,
+    root_dir = vim.fn.getcwd(),
+    settings = {
+      Lua = {
+        runtime = { version = 'LuaJIT' },
+        workspace = {
+          checkThirdParty = false,
+          library = { vim.env.VIMRUNTIME, "${3rd}/luv/library" }
+        }
+      }
+    }
+  }
+end, { lsp_mode = true, ft = 'lua' })
 
 REQUIRE({ { type = 'npm', arg = 'vscode-langservers-extracted' } },
   function()
@@ -213,11 +230,7 @@ AUC('FileType', {
   once = true,
   callback = function()
     -- https://github.com/fwcd/kotlin-language-server
-    require 'lspconfig'.kotlin_language_server.setup {
-      on_attach = on_attach,
-      -- flags = lsp_flags,
-      capabilities = capabilities,
-    }
+    require 'lspconfig'.kotlin_language_server.setup {}
   end
 })
 
