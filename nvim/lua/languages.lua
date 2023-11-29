@@ -10,6 +10,7 @@ REQUIRE({
       executable = 'efm-langserver'
     },
     { type = 'npm', arg = '@fsouza/prettierd' },
+    { type = 'npm', arg = 'cspell' },
   },
   function(ls)
     local languages = {
@@ -39,6 +40,16 @@ REQUIRE({
           lintStdin = false,
           lintFormats = { '%.%#:%l:%m' },
           rootMarkers = { 'phpstan.neon', 'phpstan.neon.dist', 'composer.json' },
+        }
+      },
+      ['='] = {
+        {
+          lintSource = 'cspell',
+          lintCommand = 'cspell --no-color --no-progress --no-summary "${INPUT}"',
+          lintIgnoreExitCode = true,
+          lintStdin = false,
+          lintFormats = { '%f:%l:%c - Unknown word (%m)', '%f:%l:%c %m' },
+          lintSeverity = vim.diagnostic.severity.INFO,
         }
       }
     }
@@ -91,7 +102,6 @@ REQUIRE({
     local exts_css = { "css", "scss", "less", "sass" }
     for _, ext in ipairs(exts_css) do languages[ext] = { prettier, stylelint } end
 
-
     require 'lspconfig'.efm.setup {
       cmd = { ls },
       init_options = {
@@ -106,21 +116,21 @@ REQUIRE({
         rootMarkers = { ".git/" },
         languages = languages,
       },
-      filetypes = vim.tbl_keys(languages)
+      filetypes = { '*' }
     }
   end
 )
 
 REQUIRE({ { type = 'npm', arg = 'grammarly-languageserver' } },
   function()
+    local nvm_node_16 = ('%s/.nvm/versions/node/%s/bin/'):format(os.getenv 'HOME', 'v16.20.2')
     return {
       name = 'grammarly-languageserver',
-      cmd = { 'n', 'run', '16', '/usr/local/bin/grammarly-languageserver', '--stdio' },
+      -- cmd = { 'n', 'exec', '16', 'grammarly-languageserver', '--stdio' },
+      cmd = { nvm_node_16 .. 'node', nvm_node_16 .. 'grammarly-languageserver', '--stdio' },
       root_dir = vim.fn.getcwd(),
-      handlers = {
-        ['$/updateDocumentState'] = function() return '' end,
-      },
-      init_options = { clientId = 'client_BaDkMgx4X19X9UxxYRCXZo' }, -- public client id
+      handlers = { ['$/updateDocumentState'] = function() return '' end },
+      init_options = { clientId = 'client_BaDkMgx4X19X9UxxYRCXZo' }, -- public clientId
     }
   end, { lsp_mode = true, ft = 'markdown' }
 )

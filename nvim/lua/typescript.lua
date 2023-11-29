@@ -185,7 +185,7 @@ REQUIRE({ { type = 'npm', arg = '@vue/language-server' } },
 )
 
 REQUIRE({
-    { type = 'npm', arg = '@angular/language-server@16.1.4' }, -- for typescript >=4.8. @latest requires >=5.
+    { type = 'npm', arg = '@angular/language-server@16.1.4', cache_key = '@angular/language-server' }, -- for typescript >=4.8. @latest requires >=5.
     { type = 'npm', arg = '@angular/cli' }
   },
   function()

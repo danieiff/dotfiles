@@ -4,8 +4,9 @@ set -e
 
 sudo apt update && sudo apt install -y curl git tar unzip fzf ripgrep clang
 
-[ ! -d "dotfiles" ] && git clone --depth 1 https://github.com/danieiff/dotfiles
-cp -fsr "$(pwd)/dotfiles" ~/.config && (cp -fs "$(pwd)"/dotfiles/.* ~ || true)
+DOTFILES_DIR="$(pwd)/dotfiles"
+[ ! -d "$DOTFILES_DIR" ] && git clone --depth 1 https://github.com/danieiff/dotfiles "$DOTFILES_DIR"
+cp -fsr "$DOTFILES_DIR" ~/.config && (cp -fs "$DOTFILES_DIR"/.* ~ || true)
 
 curl -L https://github.com/zellij-org/zellij/releases/latest/download/zellij-x86_64-unknown-linux-musl.tar.gz | sudo tar -C /bin -xz
 
@@ -26,8 +27,7 @@ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash 
 
 # NeoVim
 curl -L https://github.com/neovim/neovim/releases/download/nightly/nvim-linux64.tar.gz | tar xz && \
-  sudo ln -fs "$(pwd)"/nvim-linux64/bin/nvim /bin/nvim && nvim --headless +'sleep 10 | LoadRequiredFileTypes' +'sleep 50 | quitall'
-
+  sudo ln -fs "$(pwd)"/nvim-linux64/bin/nvim /bin/nvim && nvim --headless +'sleep 30 | LoadRequiredFileTypes' +'sleep 60 | quitall'
 
 # if [ -z "$REMOTE_CONTAINER" ]; then
 #
@@ -43,8 +43,11 @@ curl -L https://github.com/neovim/neovim/releases/download/nightly/nvim-linux64.
 
 
 if [ "$WSLENV" ]; then
+
   WslLocalAppData="$(wslpath "$(powershell.exe \$Env:LocalAppData)" | tr -d "\r")"
-  ln -fs ~/dotfiles/windows-terminal-settings.json "$WslLocalAppData/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState/settings.json"
+  powershell.exe "(New-Object System.Net.WebClient).DownloadString(\"https://raw.githubusercontent.com/webinstall/webi-installers/main/nerdfont/install.ps1\") | powershell -command -"
+  cp "$DOTFILES_DIR/windows-terminal-settings.json" "$WslLocalAppData/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState/settings.json"
+  ln -fs "$WslLocalAppData/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState/settings.json" "$DOTFILES_DIR/_windows-terminal-settings.json"
 
   ## SSH https://futurismo.biz/archives/6862/#-nat-
   # sudo apt install -y openssh-server

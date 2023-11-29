@@ -9,7 +9,7 @@ K, HL, CMD, AUC, AUG = function(lhs, rhs, opts)
     vim.api.nvim_create_autocmd,
     vim.api.nvim_create_augroup
 
----@ Dependencies Managemnt
+---@ Dependencies Management
 
 DEPS_DIR = {
   pack = vim.fn.stdpath 'config' .. '/pack/my/start',
@@ -27,9 +27,14 @@ local packages = {
   'https://github.com/nvim-tree/nvim-web-devicons',
   'https://github.com/MunifTanjim/nui.nvim',
   'https://github.com/nvim-lua/plenary.nvim',
+
   'https://github.com/mbbill/undotree',
   'https://github.com/nvim-telescope/telescope.nvim',
   'https://github.com/nvim-tree/nvim-tree.lua',
+
+  'https://github.com/lewis6991/gitsigns.nvim',
+  'https://github.com/sindrets/diffview.nvim',
+  'https://github.com/pwntester/octo.nvim',
 
   'https://github.com/nvim-treesitter/nvim-treesitter',
   'https://github.com/nvim-treesitter/nvim-treesitter-context',
@@ -55,11 +60,6 @@ local packages = {
   'https://github.com/jcdickinson/codeium.nvim',
   'https://github.com/jackMort/ChatGPT.nvim',
   'https://github.com/danymat/neogen',
-
-  'https://github.com/lewis6991/gitsigns.nvim',
-  'https://github.com/sindrets/diffview.nvim',
-  'https://github.com/NeogitOrg/neogit',
-  'https://github.com/pwntester/octo.nvim',
 
   'https://github.com/neovim/nvim-lspconfig',
   'https://github.com/ray-x/lsp_signature.nvim',
@@ -87,34 +87,43 @@ local packages = {
 local required_filetypes = {}
 CMD('LoadRequiredFileTypes', function()
   for _, ft in ipairs(required_filetypes) do vim.bo.ft = ft end
-end, { desc = 'Install deps required in loaded filetypes' })
+end, { desc = "Install deps for each filetypes loaded in 'REQUIRE'" })
 
 function REQUIRE(deps, cb, opt)
   opt = vim.tbl_deep_extend('keep', opt or {}, { skip_cb_if_not_missing = false, lsp_mode = false })
 
   local function require_internal(_cb)
     local executables, missings, has_missing = {}, {}, false
-    for _, dep in ipairs(deps) do
-      local cache_key = dep.executable and dep.executable:gsub('/.*', '') or dep.arg
 
-      if type(dep) == 'string' then
-        dep = { type = 'pack', arg = dep }
+    for _, dep in ipairs(deps) do
+      if type(dep) == 'string' then dep = { type = 'pack', arg = dep } end
+
+      local cache_key, cmd = dep.cache_key, nil
+      if dep.type == 'pack' then
+        local destination = DEPS_DIR.pack .. '/' .. vim.fn.fnamemodify(dep.arg, ':t')
         cache_key = vim.fn.fnamemodify(dep.arg, ':t')
+        cmd = dep.tag and
+            ('git clone %s %s && cd %s && git checkout %s'):format(dep.arg, destination, destination, dep.tag)
+            or ('git clone --depth 1 %s %s'):format(dep.arg, destination)
+      elseif dep.type == 'npm' then
+        cache_key = dep.arg
+        cmd = ('npm i -g %s%s'):format(dep.arg, dep.tag and ('@' .. dep.tag) or '')
+      elseif dep.type == 'bin' then
+        cache_key = dep.executable:gsub('/.*', '')
+        cmd = ('cd %s && %s'):format(DEPS_DIR.bin, dep.arg)
       end
+      cache_key = dep.cache_key or cache_key
 
       if dep.type ~= 'pack' then
         table.insert(executables, dep.executable and DEPS_DIR[dep.type] .. '/' .. dep.executable or dep.arg)
       end
 
       if not vim.tbl_contains(DEPS_CACHE[dep.type], cache_key) then
-        table.insert(DEPS_CACHE[dep.type], cache_key)
         missings[cache_key] = nil; has_missing = true
-        vim.fn.jobstart(({
-          pack = ('git clone --depth 1 %s %s/%s'):format(dep.arg, DEPS_DIR.pack, vim.fn.fnamemodify(dep.arg, ':t')),
-          npm = 'npm i -g ' .. dep.arg,
-          bin = ('cd %s && %s'):format(DEPS_DIR.bin, dep.arg) })[dep.type], {
+        vim.fn.jobstart(cmd, {
           on_exit = function(_, code)
             local success = code == 0
+            if success then table.insert(DEPS_CACHE[dep.type], cache_key) end
             vim.print((success and 'Installed ' or 'Install Failed ') .. cache_key)
             missings[cache_key] = success
           end
@@ -124,7 +133,7 @@ function REQUIRE(deps, cb, opt)
 
     if not has_missing then return opt.skip_cb_if_not_missing or _cb(unpack(executables)) end
     local timer = vim.loop.new_timer()
-    timer:start(5000, 1000, function()
+    timer:start(1000, 500, function()
       local all_settled, all_success = true, true
       for _, result in pairs(missings) do
         if result == nil then
@@ -454,8 +463,6 @@ require 'gitsigns'.setup {
   end
 }
 
-require 'neogit'.setup {}
-
 require 'diffview'.setup {}
 
 require 'octo'.setup {}
@@ -508,7 +515,7 @@ require 'nvim-ts-autotag'.setup { enable_close_on_slash = false, }
 require 'nvim-autopairs'.setup { disable_in_visualblock = true, fast_wrap = { map = '<C-]>' } } -- <C-h> to delete only '('
 
 require 'treesj'.setup { use_default_keymaps = false }
-K('<C-n>', require 'treesj'.toggle, { mode = { 'i', 'n' } })
+K('<leader>[', require 'treesj'.toggle)
 
 K("w", "<cmd>lua require 'spider' .motion 'w' <cr>", { mode = { "n", "o", "x" } })
 K("e", "<cmd>lua require 'spider' .motion 'e' <cr>", { mode = { "n", "o", "x" } })
@@ -640,7 +647,7 @@ cmp.setup.filetype({ 'sql', 'mysql', 'plsql' }, { sources = cmp.config.sources {
 ---@ LSP
 
 -- vim.lsp.set_log_level 'DEBUG' -- :LspLog
-CMD('LspRestart', 'lua vim.lsp.stop_client(vim.lsp.get_active_clients()) | edit', {})
+CMD('LspRestart', 'lua vim.lsp.stop_client(vim.lsp.get_active_clients()); vim.cmd.edit()', {})
 CMD('LspConfigReference', function(ev)
   local bufnr = vim.api.nvim_create_buf(false, true)
   vim.api.nvim_open_win(bufnr, true, {
@@ -718,7 +725,15 @@ AUC('LspAttach', {
     K('<Leader>ci', vim.lsp.buf.incoming_calls)
     K('<Leader>co', vim.lsp.buf.outgoing_calls)
     K('gk', vim.lsp.buf.hover)
-    K('cv', vim.lsp.buf.rename)
+    K('cv', function()
+      vim.lsp.buf.rename(nil, {
+        filter = function(client)
+          local deprioritised = { 'typescript-tools' }
+          return not vim.tbl_contains(deprioritised, client.name) or
+              #vim.lsp.get_clients { method = 'textDocument/rename' } < 1
+        end
+      })
+    end)
     K('<space>rf', vim.lsp.util.rename)
     K('<space>ca', vim.lsp.buf.code_action)
     K('<space>wa', vim.lsp.buf.add_workspace_folder)

@@ -1,7 +1,7 @@
 shopt -s expand_aliases # Enable alias and function in login shell
-export EDITOR="/usr/bin/nvim"
-alias v="/usr/bin/nvim --server \$NVIM --remote-silent"
-alias rc='nvim ~/.bashrc'
+export EDITOR="nvim"
+alias v="$EDITOR --server \$NVIM --remote-silent"
+alias rc="$EDITOR ~/.bashrc"
 alias .rc='source ~/.bashrc'
 alias l='ls -alF --color'
 alias skip='git update-index --skip-worktree'
@@ -64,3 +64,7 @@ alias sail="vendor/bin/sail"
 
 # Load Angular CLI autocompletion.
 source <(ng completion script)
+export OPENAI_API_KEY=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
+
+# Generated for envman. Do not edit.
+[ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"

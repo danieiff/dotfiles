@@ -4,44 +4,14 @@
     "actions": [
         {
             "command": {
-                "action": "adjustFontSize",
-                "delta": -1
-            },
-            "keys": "alt+minus"
-        },
-        {
-            "command": {
-                "action": "movePane",
-                "index": 4
-            }
-        },
-        {
-            "command": {
-                "action": "splitPane",
-                "split": "right"
-            }
-        },
-        {
-            "command": {
-                "action": "moveFocus",
-                "direction": "down"
-            }
-        },
-        {
-            "command": {
                 "action": "copy",
                 "singleLine": false
             },
             "keys": "ctrl+shift+c"
         },
         {
-            "command": "paste"
-        },
-        {
-            "command": {
-                "action": "newTab",
-                "index": 1
-            }
+            "command": "paste",
+            "keys": "ctrl+shift+v"
         },
         {
             "command": {
@@ -51,35 +21,12 @@
             "keys": "alt+left"
         },
         {
-            "command": "find",
+            "command": "unbound",
             "keys": "alt+f"
-        },
-        {
-            "command": {
-                "action": "swapPane",
-                "direction": "previousInOrder"
-            }
-        },
-        {
-            "command": {
-                "action": "newTab",
-                "index": 2
-            }
-        },
-        {
-            "command": {
-                "action": "splitPane",
-                "split": "auto",
-                "splitMode": "duplicate"
-            }
         },
         {
             "command": "unbound",
             "keys": "ctrl+c"
-        },
-        {
-            "command": "unbound",
-            "keys": "ctrl+insert"
         },
         {
             "command": "unbound",
@@ -88,10 +35,6 @@
         {
             "command": "unbound",
             "keys": "ctrl+v"
-        },
-        {
-            "command": "unbound",
-            "keys": "shift+insert"
         },
         {
             "command": "unbound",
@@ -183,27 +126,7 @@
         },
         {
             "command": "unbound",
-            "keys": "ctrl+alt+w"
-        },
-        {
-            "command": "unbound",
-            "keys": "alt+f4"
-        },
-        {
-            "command": "unbound",
             "keys": "ctrl+shift+minus"
-        },
-        {
-            "command": "unbound",
-            "keys": "ctrl+alt+plus"
-        },
-        {
-            "command": "unbound",
-            "keys": "ctrl+alt+left"
-        },
-        {
-            "command": "unbound",
-            "keys": "ctrl+alt+t"
         },
         {
             "command": "unbound",
@@ -371,23 +294,11 @@
         },
         {
             "command": "unbound",
-            "keys": "alt+shift+\\"
-        },
-        {
-            "command": "unbound",
             "keys": "alt+d"
         },
         {
             "command": "unbound",
             "keys": "ctrl+shift+f"
-        },
-        {
-            "command": "unbound",
-            "keys": "alt+\\"
-        },
-        {
-            "command": "unbound",
-            "keys": "f12"
         },
         {
             "command": "unbound",
@@ -449,10 +360,6 @@
     "copyFormatting": "none",
     "copyOnSelect": false,
     "defaultProfile": "{2c4de342-38b7-51cf-b940-2309a097f518}",
-    "experimental.rendering.forceFullRepaint": true,
-    "experimental.rendering.software": false,
-    "firstWindowPreference": "persistedWindowLayout",
-    "launchMode": "maximized",
     "newTabMenu": [
         {
             "type": "remainingProfiles"
@@ -460,12 +367,9 @@
     ],
     "profiles": {
         "defaults": {
-            "closeOnExit": "graceful",
-            "colorScheme": "One Half Dark",
-            "cursorShape": "vintage",
             "font": {
-                "face": "Hack NF",
-                "size": 14.0
+                "face": "DroidSansMono NF",
+                "size": 14
             },
             "opacity": 80
         },
@@ -493,6 +397,12 @@
                 "hidden": false,
                 "name": "Azure Cloud Shell",
                 "source": "Windows.Terminal.Azure"
+            },
+            {
+                "guid": "{51855cb2-8cce-5362-8f54-464b92b32386}",
+                "hidden": false,
+                "name": "Ubuntu",
+                "source": "CanonicalGroupLimited.Ubuntu_79rhkp1fndgsc"
             }
         ]
     },
@@ -726,71 +636,7 @@
             "selectionBackground": "#FFFFFF",
             "white": "#C0C0C0",
             "yellow": "#808000"
-        },
-        {
-            "background": "#000000",
-            "black": "#000000",
-            "blue": "#000080",
-            "brightBlack": "#808080",
-            "brightBlue": "#0000FF",
-            "brightCyan": "#00FFFF",
-            "brightGreen": "#00FF00",
-            "brightPurple": "#FF00FF",
-            "brightRed": "#FF0000",
-            "brightWhite": "#FFFFFF",
-            "brightYellow": "#FFFF00",
-            "cursorColor": "#FFFFFF",
-            "cyan": "#008080",
-            "foreground": "#C0C0C0",
-            "green": "#008000",
-            "name": "Vintage",
-            "purple": "#800080",
-            "red": "#800000",
-            "selectionBackground": "#FFFFFF",
-            "white": "#C0C0C0",
-            "yellow": "#808000"
         }
     ],
-    "showTabsInTitlebar": true,
-    "startOnUserLogin": true,
-    "tabWidthMode": "compact",
-    "themes": [
-        {
-            "name": "legacyDark",
-            "tab": {
-                "background": null,
-                "showCloseButton": "always",
-                "unfocusedBackground": null
-            },
-            "window": {
-                "applicationTheme": "dark",
-                "useMica": false
-            }
-        },
-        {
-            "name": "legacyLight",
-            "tab": {
-                "background": null,
-                "showCloseButton": "always",
-                "unfocusedBackground": null
-            },
-            "window": {
-                "applicationTheme": "light",
-                "useMica": false
-            }
-        },
-        {
-            "name": "legacySystem",
-            "tab": {
-                "background": null,
-                "showCloseButton": "always",
-                "unfocusedBackground": null
-            },
-            "window": {
-                "applicationTheme": "system",
-                "useMica": false
-            }
-        }
-    ],
-    "useAcrylicInTabRow": false
+    "themes": []
 }
