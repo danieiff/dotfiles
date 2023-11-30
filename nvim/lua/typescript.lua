@@ -14,7 +14,7 @@ local function get_typescript_server_path(root_dir)
   return util.search_ancestors(root_dir, check_dir) and found_ts or global_ts
 end
 
-local cwd, global_node_modules = vim.loop.cwd(), vim.fn.system 'which npm':gsub('/bin/npm\n', '') .. '/lib/node_modules'
+local cwd, global_node_modules = vim.loop.cwd(), vim.fn.system 'which npm':gsub('/bin/npm\n', '/lib/node_modules')
 local function found(module_specific_path)
   return util.search_ancestors(cwd,
     function(path) return vim.loop.fs_stat(vim.fs.joinpath(path, module_specific_path)) end)

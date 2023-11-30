@@ -34,11 +34,6 @@ local function draw_statusline()
 
   local search = vim.fn.searchcount()
 
-  local buffer_nav = ''
-  for _, buf in pairs(OPEN_FILES) do
-    buffer_nav = buf.n .. buf.bufname .. ' ' .. buffer_nav
-  end
-
   local file_modified_hl = vim.o.modified and 'NvimTreeModifiedFile' or ''
 
   vim.o.statusline = vim.fn.join(vim.tbl_filter(function(item) return item end, {
@@ -46,7 +41,6 @@ local function draw_statusline()
     diff_status,
     diagnostic_status,
     ((search.total or 0) > 0 and ('%s/%s'):format(search.current, search.total) or ''),
-    buffer_nav,
     '%=',
     ('%%#%s#%s%%*'):format(file_modified_hl, vim.fn.fnamemodify(vim.fn.expand '%', ':.')),
     '%P',

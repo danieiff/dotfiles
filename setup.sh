@@ -25,7 +25,7 @@ sudo curl -Lo /bin/viu https://github.com/atanunq/viu/releases/latest/download/v
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash && . ~/.nvm/nvm.sh && nvm install 18
 
 curl -L https://github.com/neovim/neovim/releases/download/nightly/nvim-linux64.tar.gz | tar xz && \
-  sudo ln -fs "$(pwd)"/nvim-linux64/bin/nvim /bin/nvim && nvim --headless +'sleep 20 | LoadRequiredFileTypes' +'sleep 80 | quitall'
+  sudo ln -fs "$(pwd)"/nvim-linux64/bin/nvim /bin/nvim && nvim --headless +'sleep 30 | LoadRequiredFileTypes' +'sleep 80 | quitall'
 
 # if [ -z "$REMOTE_CONTAINER" ]; then
 #

@@ -392,7 +392,7 @@ CMD('NpmRun', function()
   start_interactive_shell_job { { cmd = [[yq -r '.scripts | keys | join("\n")' package.json | npm run `fzf`]] } }
 end, {})
 
-require "nvim-tree".setup { view = { side = 'right' } }
+require "nvim-tree".setup { view = { width = 60, side = 'right' } }
 K("<C-q>", function() require 'nvim-tree.api'.tree.toggle({ find_file = true }) end)
 
 K('<leader>u', '<cmd>UndotreeToggle<cr>')
@@ -515,7 +515,7 @@ require 'nvim-ts-autotag'.setup { enable_close_on_slash = false, }
 require 'nvim-autopairs'.setup { disable_in_visualblock = true, fast_wrap = { map = '<C-]>' } } -- <C-h> to delete only '('
 
 require 'treesj'.setup { use_default_keymaps = false }
-K('<leader>[', require 'treesj'.toggle)
+K('L', require 'treesj'.toggle)
 
 K("w", "<cmd>lua require 'spider' .motion 'w' <cr>", { mode = { "n", "o", "x" } })
 K("e", "<cmd>lua require 'spider' .motion 'e' <cr>", { mode = { "n", "o", "x" } })
