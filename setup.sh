@@ -22,12 +22,10 @@ sudo curl -Lo /bin/yq https://github.com/mikefarah/yq/releases/latest/download/y
 
 sudo curl -Lo /bin/viu https://github.com/atanunq/viu/releases/latest/download/viu-x86_64-unknown-linux-musl && sudo chmod +x /bin/viu
 
-# Node.js
 curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash && . ~/.nvm/nvm.sh && nvm install 18
 
-# NeoVim
 curl -L https://github.com/neovim/neovim/releases/download/nightly/nvim-linux64.tar.gz | tar xz && \
-  sudo ln -fs "$(pwd)"/nvim-linux64/bin/nvim /bin/nvim && nvim --headless +'sleep 30 | LoadRequiredFileTypes' +'sleep 60 | quitall'
+  sudo ln -fs "$(pwd)"/nvim-linux64/bin/nvim /bin/nvim && nvim --headless +'sleep 20 | LoadRequiredFileTypes' +'sleep 80 | quitall'
 
 # if [ -z "$REMOTE_CONTAINER" ]; then
 #
@@ -36,8 +34,6 @@ curl -L https://github.com/neovim/neovim/releases/download/nightly/nvim-linux64.
 # curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash
 #
 # curl -Lo devpod "https://github.com/loft-sh/devpod/releases/latest/download/devpod-linux-amd64" && install -c -m 0755 devpod /bin && rm -f devpod
-#
-# npm i -g devcontainer
 #
 # fi
 

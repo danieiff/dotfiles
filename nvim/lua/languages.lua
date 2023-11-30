@@ -124,6 +124,7 @@ REQUIRE({
 REQUIRE({ { type = 'npm', arg = 'grammarly-languageserver' } },
   function()
     local nvm_node_16 = ('%s/.nvm/versions/node/%s/bin/'):format(os.getenv 'HOME', 'v16.20.2')
+    if not vim.loop.fs_stat(nvm_node_16) then return end
     return {
       name = 'grammarly-languageserver',
       -- cmd = { 'n', 'exec', '16', 'grammarly-languageserver', '--stdio' },
@@ -393,13 +394,11 @@ AUC('FileType', {
   end
 })
 
-local c_aug = vim.api.nvim_create_augroup('CLspAUG', {})
 AUC('FileType', {
-  pattern = { 'c', 'cpp', 'objc', 'objcpp', 'cmake' },
+  pattern = { 'c', 'cmake' },
+  once = true,
   group = c_aug,
   callback = function()
-    vim.api.nvim_clear_autocmds { group = c_aug }
-
     require 'lspconfig'.ccls.setup {
       init_options = {
         -- https://github.com/MaskRay/ccls/wiki/Customization#initialization-options
@@ -412,7 +411,6 @@ AUC('FileType', {
         },
       }
     }
-
 
     if vim.fn.executable 'neocmakelsp' == 0 then
       vim.fn.jobstart 'cargo install neocmakelsp'

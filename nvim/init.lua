@@ -496,7 +496,7 @@ require 'nvim-treesitter.configs'.setup {
   ensure_installed = {
     'javascript', 'typescript', 'tsx', 'html', 'css', 'vue', 'svelte', 'astro',
     'python', 'php', 'ruby', 'lua', 'bash',
-    'c', 'cpp', 'c_sharp', 'java', 'kotlin', 'go', 'rust',
+    'c', 'c_sharp', 'java', 'kotlin', 'go', 'rust',
     'yaml', 'toml', 'json', 'jsonc', 'comment', 'markdown', 'markdown_inline',
     'gitcommit', 'git_config', 'git_rebase',
     'dockerfile', 'sql', 'prisma', 'graphql', 'regex'
