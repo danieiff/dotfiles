@@ -1,8 +1,8 @@
--- https://github.com/fatih/gomodifytags
--- https://github.com/yoheimuta/protolint
--- https://github.com/rhysd/actionlint
-
-REQUIRE({
+REQUIRE {
+  deps = {
+    -- https://github.com/fatih/gomodifytags
+    -- https://github.com/yoheimuta/protolint
+    -- https://github.com/rhysd/actionlint
     {
       type = 'bin',
       arg =
@@ -12,7 +12,7 @@ REQUIRE({
     { type = 'npm', arg = '@fsouza/prettierd' },
     { type = 'npm', arg = 'cspell' },
   },
-  function(ls)
+  cb = function(ls)
     local languages = {
       go = {
         {
@@ -48,7 +48,7 @@ REQUIRE({
           lintCommand = 'cspell --no-color --no-progress --no-summary "${INPUT}"',
           lintIgnoreExitCode = true,
           lintStdin = false,
-          lintFormats = { '%f:%l:%c - Unknown word (%m)', '%f:%l:%c %m' },
+          lintFormats = { '%f:%l:%c - Unknown word (%m)' --[[ , '%f:%l:%c %m' ]] },
           lintSeverity = vim.diagnostic.severity.INFO,
         }
       }
@@ -119,12 +119,15 @@ REQUIRE({
       filetypes = { '*' }
     }
   end
-)
+}
 
-local nvm_node_16 = ('%s/.nvm/versions/node/%s/bin/'):format(os.getenv 'HOME', 'v16.20.2')
-if vim.loop.fs_stat(nvm_node_16) then
-  REQUIRE({ { type = 'npm', arg = 'grammarly-languageserver' } },
-    function()
+REQUIRE {
+  ft = 'markdown',
+  lsp_mode = true,
+  deps = { { type = 'npm', arg = 'grammarly-languageserver' } },
+  cb = function()
+    local nvm_node_16 = ('%s/.nvm/versions/node/%s/bin/'):format(os.getenv 'HOME', 'v16.20.2')
+    if vim.loop.fs_stat(nvm_node_16) then
       return {
         name = 'grammarly-languageserver',
         -- cmd = { 'n', 'exec', '16', 'grammarly-languageserver', '--stdio' },
@@ -133,38 +136,44 @@ if vim.loop.fs_stat(nvm_node_16) then
         handlers = { ['$/updateDocumentState'] = function() return '' end },
         init_options = { clientId = 'client_BaDkMgx4X19X9UxxYRCXZo' }, -- public clientId
       }
-    end, { lsp_mode = true, ft = 'markdown' }
-  )
-end
+    end
+  end
+}
 
-REQUIRE({ {
-  type = 'bin',
-  arg =
-  [[mkdir -p lua-language-server && cd $_ && VERSION=$(curl -s https://api.github.com/repos/LuaLS/lua-language-server/releases/latest | grep -Po '"tag_name": "\K[^"]*') && curl -fsSL https://github.com/LuaLS/lua-language-server/releases/download/${VERSION}/lua-language-server-${VERSION}-linux-x64.tar.gz | tar xvz]],
-  executable = 'lua-language-server/bin/lua-language-server'
-} }, function(ls)
-  local capa = vim.lsp.protocol.make_client_capabilities()
-  capa.textDocument.formatting = true
-  capa.textDocument.rangeFormatting = true
-
-  return {
-    cmd = { ls },
-    capabilities = capa,
-    root_dir = vim.fn.getcwd(),
-    settings = {
-      Lua = {
-        runtime = { version = 'LuaJIT' },
-        workspace = {
-          checkThirdParty = false,
-          library = { vim.env.VIMRUNTIME, "${3rd}/luv/library" }
+REQUIRE {
+  ft = 'lua',
+  lsp_mode = true,
+  deps = {
+    {
+      type = 'bin',
+      arg =
+      [[mkdir lua-language-server && cd $_ && VERSION=$(curl -s https://api.github.com/repos/LuaLS/lua-language-server/releases/latest | grep -Po '"tag_name": "\K[^"]*') && curl -fsSL https://github.com/LuaLS/lua-language-server/releases/download/${VERSION}/lua-language-server-${VERSION}-linux-x64.tar.gz | tar xz]],
+      executable = 'lua-language-server/bin/lua-language-server'
+    } },
+  cb = function(ls)
+    local capa = vim.lsp.protocol.make_client_capabilities()
+    capa.textDocument.formatting = true
+    capa.textDocument.rangeFormatting = true
+    return {
+      cmd = { ls },
+      capabilities = capa,
+      root_dir = vim.fn.getcwd(),
+      settings = {
+        Lua = {
+          runtime = { version = 'LuaJIT' },
+          workspace = {
+            checkThirdParty = false,
+            library = { vim.env.VIMRUNTIME, "${3rd}/luv/library" }
+          }
         }
       }
     }
-  }
-end, { lsp_mode = true, ft = 'lua' })
+  end
+}
 
-REQUIRE({ { type = 'npm', arg = 'vscode-langservers-extracted' } },
-  function()
+REQUIRE {
+  deps = { { type = 'npm', arg = 'vscode-langservers-extracted' } },
+  cb = function()
     local jsonls_capabilities = vim.lsp.protocol.make_client_capabilities()
     jsonls_capabilities.textDocument.completion.completionItem.snippetSupport = true
     -- print(vim.inspect(jsonls_capabilities.textDocument.completion))
@@ -180,10 +189,11 @@ REQUIRE({ { type = 'npm', arg = 'vscode-langservers-extracted' } },
       }
     }
   end
-)
+}
 
-REQUIRE({ { type = 'npm', arg = 'yaml-language-server' } },
-  function()
+REQUIRE {
+  deps = { { type = 'npm', arg = 'yaml-language-server' } },
+  cb = function()
     require 'lspconfig'.yamlls.setup {
       on_attach = function(client)
         client.server_capabilities.documentFormattingProvider = false
@@ -206,98 +216,91 @@ REQUIRE({ { type = 'npm', arg = 'yaml-language-server' } },
       },
     }
   end
-)
+}
 
-AUC('FileType', {
-  pattern = 'dockerfile',
-  once = true,
-  callback = function()
-    -- https://github.com/rcjsuen/dockerfile-language-server-nodejs
-    --require 'util'.ensure_npm_deps { 'dockerfile-language-server-nodejs' }
-    require 'lspconfig'.dockerls.setup {}
-    vim.schedule(vim.cmd.edit)
+REQUIRE {
+  ft = 'dockerfile',
+  lsp_mode = true,
+  deps = { { type = 'npm', arg = 'dockerfile-language-server-nodejs' } },
+  cb = function()
+    return {
+      cmd = { 'docker-langserver', '--stdio' },
+      root_dir = vim.fs.dirname(vim.fs.find('Dockerfile', { upward = true })[1])
+    }
   end
-})
+}
 
-REQUIRE({ { type = 'npm', arg = 'sql-language-server' } },
-  function()
-    require 'lspconfig'.sqlls.setup {}
+REQUIRE {
+  ft = { 'sql', 'mysql' },
+  lsp_mode = true,
+  deps = { { type = 'npm', arg = 'sql-language-server' } },
+  cb = function()
+    return {
+      cmd = { 'sql-language-server', 'up', '--method', 'stdio' },
+      root_dir = vim.fs.dirname(vim.fs.find('.sqllsrc.json', { upward = true })[1])
+    }
   end
-)
+}
 
-AUC('FileType', {
-  pattern = 'java',
-  once = true,
-  callback = function()
-    require 'nvim-jdtls'.setup {}
-
-    -- git clone -- depth 1 https://github.com/microsoft/vscode-gradle
-    --`./gradlew installDist` and point `cmd` to the `gradle-language-server`
-    require 'lspconfig'.gradle_ls.setup { cmd = 'gradle-language-server' }
+REQUIRE {
+  ft = 'php',
+  deps = {
+    { type = 'bin',
+      arg = [[REPO=xdebug/vscode-php-debug && VERSION=$(curl -s https://api.github.com/repos/$REPO/releases/latest | grep -Po '"tag_name": "v\K[^"]*') && curl -L https://github.com/$REPO/releases/download/v$VERSION/php-debug-$VERSION.vsix -o php-debug.zip && unzip $_ -d php-debug]],
+      executable = 'php-debug/extension/out/phpDebug.js'
+    },
+    { type = 'npm', arg = 'intelephense' }
+  },
+  cb = function()
+    require 'dap'.adapters.php = {
+      type = 'executable',
+      command = 'node',
+      args = { vim.fn.stdpath 'config' .. '/vscode-php-debug/out/phpDebug.js' }
+    }
+    require 'dap'.configurations.php = {
+      {
+        type = 'php',
+        request = 'launch',
+        name = 'Listen for Xdebug',
+        port = 9003,
+        pathMappings = {
+          ["/var/www/html"] = vim.fn.getcwd()
+        }
+      }
+    }
+    return {
+      cmd = { 'intelephense', '--stdio' },
+      root_dir = vim.fs.dirname(vim.fs.find({ 'composer.json', '.git' }, { upward = true })[1])
+    }
   end
-})
+}
 
-AUC('FileType', {
-  pattern = 'kotlin',
-  once = true,
-  callback = function()
-    -- https://github.com/fwcd/kotlin-language-server
-    require 'lspconfig'.kotlin_language_server.setup {}
+REQUIRE {
+  ft = { 'java', 'groovy' },
+  deps = {
+    -- sudo apt install openjdk-17-jdk
+    -- sudo update-alternatives --config java
+    -- mkdir ~/.config/nvim/jdtls && cd $_ && curl -L https://www.eclipse.org/downloads/download.php?file=/jdtls/snapshots/jdt-language-server-latest.tar.gz | tar xz
+    'https://github.com/mfussenegger/nvim-jdtls'
+    -- cd ~/.config/nvim && git clone --depth 1 https://github.com/microsoft/vscode-gradle && cd vscode-gradle && ./gradlew installDist
+  },
+  cb = function()
+    require 'jdtls'.start_or_attach({
+      cmd = { DEPS_DIR.bin .. '/jdtls/bin/jdtls' },
+      root_dir = vim.fs.dirname(vim.fs.find({ 'gradlew', '.git', 'mvnw' }, { upward = true })[1])
+    })
+    vim.lsp.start {
+      filetypes = { 'groovy' },
+      root_dir = vim.fs.dirname(vim.fs.find({ 'settings.gradle', 'build.gradle' }, { upward = true })[1]),
+      cmd = { DEPS_DIR.bin .. '/vscode-gradle/gradle-language-server/build/install/gradle-language-server/bin/gradle-language-server' },
+      init_options = {
+        settings = {
+          gradleWrapperEnabled = true,
+        }
+      }
+    }
   end
-})
-
-AUC('FileType', {
-  pattern = 'cs',
-  once = true,
-  callback = function()
-    -- Install netcoredbg, either via:
-    -- Your package manager
-    -- Downloading it from the release page and extracting it to a folder
-    -- Building from source by following the instructions in the netcoredbg repo.
-    --  require 'dap'.adapters.coreclr = {
-    --   type = 'executable',
-    --   command = '/path/to/dotnet/netcoredbg/netcoredbg',
-    --   args = {'--interpreter=vscode'}
-    -- }
-    -- require'dap'.configurations.cs = {
-    --   {
-    --     type = "coreclr",
-    --     name = "launch - netcoredbg",
-    --     request = "launch",
-    --     program = function()
-    --         return vim.fn.input('Path to dll', vim.fn.getcwd() .. '/bin/Debug/', 'file')
-    --     end,
-    --   },
-    -- }
-
-    -- https://github.com/razzmatazz/csharp-language-server
-    -- https://dotnet.microsoft.com/download
-    -- require'lspconfig'.csharp_ls.setup{}
-
-    -- unity
-
-    -- Install vscode-unity-debug
-    -- Install mono dependency if doesn't exist
-    --
-    -- require 'dap'.adapters.unity = {
-    --   type = 'executable',
-    --   command = '<path-to-mono-directory>/Commands/mono',
-    --   args = {'<path-to-unity-debug-directory>/unity.unity-debug-x.x.x/bin/UnityDebug.exe'}
-    -- }
-    -- require 'dap'.configurations.cs = {
-    --   {
-    --   type = 'unity',
-    --   request = 'attach',
-    --   name = 'Unity Editor',
-    --   }
-    -- }
-
-    -- https://github.com/Domeee/com.cloudedmountain.ide.neovim
-    -- https://spaceandtim.es/code/nvim_unity_setup/
-    -- https://dzfrias.dev/blog/neovim-unity-setup
-    -- https://github.com/walcht/neovim-unity
-  end
-})
+}
 
 AUC('FileType', {
   pattern = 'go',
@@ -398,7 +401,6 @@ AUC('FileType', {
 AUC('FileType', {
   pattern = { 'c', 'cmake' },
   once = true,
-  group = c_aug,
   callback = function()
     require 'lspconfig'.ccls.setup {
       init_options = {
@@ -419,38 +421,6 @@ AUC('FileType', {
     require 'lspconfig'.neocmake.setup {}
 
     vim.cmd.edit()
-  end
-})
-
-AUC('FileType', {
-  pattern = 'php',
-  once = true,
-  callback = function()
-    --require 'util'.ensure_npm_deps { 'intelephense' }
-    require 'lspconfig'.intelephense.setup {}
-
-    -- git clone https://github.com/xdebug/vscode-php-debug.git
-    -- cd vscode-php-debug
-    -- npm install && npm run build
-    require 'dap'.adapters.php = {
-      type = 'executable',
-      command = 'node',
-      args = { vim.fn.stdpath 'config' .. '/vscode-php-debug/out/phpDebug.js' }
-    }
-
-    require 'dap'.configurations.php = {
-      {
-        type = 'php',
-        request = 'launch',
-        name = 'Listen for Xdebug',
-        port = 9003,
-        pathMappings = {
-          ["/var/www/html"] = vim.fn.getcwd()
-        }
-      }
-    }
-
-    vim.schedule(vim.cmd.edit)
   end
 })
 
@@ -536,48 +506,53 @@ dap.configurations.gdscript = {
 }
 ]]
 
-REQUIRE({ {
-  type = 'bin',
-  arg =
-  'curl -fsSL https://github.com/koalaman/shellcheck/releases/download/latest/shellcheck-latest.linux.x86_64.tar.xz | tar xJv',
-  executable = 'shellcheck-latest/shellcheck'
-}, {
-  type = 'npm',
-  arg = 'bash-language-server'
-}, {
-  type = 'bin',
-  arg =
-  'curl -fsSL https://github.com/rogalmic/vscode-bash-debug/releases/download/untagged-438733f35feb8659d939/bash-debug-0.3.9.vsix -o bash-debug.zip && unzip $_ -d bash-debug',
-  executable = 'bash-debug/extension/out/bashDebug.js'
-} }, function(_, ls, db)
-  local dap = require 'dap'
+REQUIRE {
+  ft = 'sh',
+  lsp_mode = true,
+  deps = { {
+    type = 'bin',
+    arg =
+    'curl -fsSL https://github.com/koalaman/shellcheck/releases/download/latest/shellcheck-latest.linux.x86_64.tar.xz | tar xJv',
+    executable = 'shellcheck-latest/shellcheck'
+  }, {
+    type = 'npm',
+    arg = 'bash-language-server'
+  }, {
+    type = 'bin',
+    arg =
+    'curl -L https://github.com/rogalmic/vscode-bash-debug/releases/download/untagged-438733f35feb8659d939/bash-debug-0.3.9.vsix -o bash-debug.zip && unzip $_ -d bash-debug',
+    executable = 'bash-debug/extension/out/bashDebug.js'
+  } },
+  cb = function(_, ls, db)
+    local dap = require 'dap'
 
-  dap.adapters.bashdb = {
-    type = 'executable',
-    name = 'bashdb',
-    command = 'node',
-    args = { db }
-  }
-  dap.configurations.sh = {
-    {
-      type = 'bashdb',
-      request = 'launch',
-      name = "Launch file",
-      showDebugOutput = true,
-      pathBashdb = DEPS_DIR.bin .. '/bash-debug/extension/bashdb_dir/bashdb',
-      pathBashdbLib = DEPS_DIR.bin .. '/bash-debug/extension/bashdb_dir',
-      trace = true,
-      file = "${file}",
-      program = "${file}",
-      cwd = '${workspaceFolder}',
-      pathCat = "cat",
-      pathBash = "/bin/bash",
-      pathMkfifo = "mkfifo",
-      pathPkill = "pkill",
-      args = {},
-      env = {},
-      terminalKind = "integrated",
+    dap.adapters.bashdb = {
+      type = 'executable',
+      name = 'bashdb',
+      command = 'node',
+      args = { db }
     }
-  }
-  return { name = ls, cmd = { ls, 'start' } }
-end, { lsp_mode = true, ft = 'sh' })
+    dap.configurations.sh = {
+      {
+        type = 'bashdb',
+        request = 'launch',
+        name = "Launch file",
+        showDebugOutput = true,
+        pathBashdb = DEPS_DIR.bin .. '/bash-debug/extension/bashdb_dir/bashdb',
+        pathBashdbLib = DEPS_DIR.bin .. '/bash-debug/extension/bashdb_dir',
+        trace = true,
+        file = "${file}",
+        program = "${file}",
+        cwd = '${workspaceFolder}',
+        pathCat = "cat",
+        pathBash = "/bin/bash",
+        pathMkfifo = "mkfifo",
+        pathPkill = "pkill",
+        args = {},
+        env = {},
+        terminalKind = "integrated",
+      }
+    }
+    return { name = ls, cmd = { ls, 'start' } }
+  end
+}

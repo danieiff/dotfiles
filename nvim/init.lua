@@ -57,7 +57,7 @@ local packages = {
   'https://github.com/saadparwaiz1/cmp_luasnip',
   'https://github.com/L3MON4D3/LuaSnip',
   'https://github.com/danieiff/friendly-snippets',
-  'https://github.com/jcdickinson/codeium.nvim',
+  -- 'https://github.com/jcdickinson/codeium.nvim',
   'https://github.com/jackMort/ChatGPT.nvim',
   'https://github.com/danymat/neogen',
 
@@ -81,51 +81,51 @@ local packages = {
   'https://github.com/tpope/vim-dadbod',
   'https://github.com/kristijanhusak/vim-dadbod-ui',
   'https://github.com/kristijanhusak/vim-dadbod-completion',
-  'https://github.com/mfussenegger/nvim-jdtls'
 }
 
-local required_filetypes = {}
+required_filetypes = {}
 CMD('LoadRequiredFileTypes', function()
   for _, ft in ipairs(required_filetypes) do vim.bo.ft = ft end
 end, { desc = "Install deps for each filetypes loaded in 'REQUIRE'" })
 
-function REQUIRE(deps, cb, opt)
-  opt = vim.tbl_deep_extend('keep', opt or {}, { skip_cb_if_not_missing = false, lsp_mode = false })
-
+function REQUIRE(opt)
   local function require_internal(_cb)
-    local executables, missings, has_missing = {}, {}, false
+    local executables, results, has_missing, reload_pack_required = {}, {}, false, false
 
-    for _, dep in ipairs(deps) do
+    for _, dep in ipairs(opt.deps) do
       if type(dep) == 'string' then dep = { type = 'pack', arg = dep } end
 
       local cache_key, cmd = dep.cache_key, nil
       if dep.type == 'pack' then
         local destination = DEPS_DIR.pack .. '/' .. vim.fn.fnamemodify(dep.arg, ':t')
-        cache_key = vim.fn.fnamemodify(dep.arg, ':t')
+        cache_key = cache_key or vim.fn.fnamemodify(dep.arg, ':t')
         cmd = dep.tag and
             ('git clone %s %s && cd %s && git checkout %s'):format(dep.arg, destination, destination, dep.tag)
             or ('git clone --depth 1 %s %s'):format(dep.arg, destination)
-      elseif dep.type == 'npm' then
-        cache_key = dep.arg
-        cmd = ('npm i -g %s%s'):format(dep.arg, dep.tag and ('@' .. dep.tag) or '')
-      elseif dep.type == 'bin' then
-        cache_key = dep.executable:gsub('/.*', '')
-        cmd = ('cd %s && %s'):format(DEPS_DIR.bin, dep.arg)
-      end
-      cache_key = dep.cache_key or cache_key
 
-      if dep.type ~= 'pack' then
+        reload_pack_required = true
+      elseif dep.type == 'npm' then
+        cache_key = cache_key or dep.arg
+        cmd = ('npm i -g %s%s'):format(dep.arg, dep.tag and ('@' .. dep.tag) or '')
+
+        table.insert(executables, dep.executable and DEPS_DIR[dep.type] .. '/' .. dep.executable or dep.arg)
+      elseif dep.type == 'bin' then
+        cache_key = cache_key or dep.executable:gsub('/.*', '')
+        cmd = ('cd %s && %s'):format(DEPS_DIR.bin, dep.arg)
+
         table.insert(executables, dep.executable and DEPS_DIR[dep.type] .. '/' .. dep.executable or dep.arg)
       end
 
-      if not vim.tbl_contains(DEPS_CACHE[dep.type], cache_key) then
-        missings[cache_key] = nil; has_missing = true
+      if vim.tbl_contains(DEPS_CACHE[dep.type], cache_key) then
+        table.insert(results, true)
+      else
+        has_missing = true
         vim.fn.jobstart(cmd, {
           on_exit = function(_, code)
             local success = code == 0
             if success then table.insert(DEPS_CACHE[dep.type], cache_key) end
             vim.print((success and 'Installed ' or 'Install Failed ') .. cache_key)
-            missings[cache_key] = success
+            table.insert(results, success)
           end
         })
       end
@@ -134,47 +134,53 @@ function REQUIRE(deps, cb, opt)
     if not has_missing then return opt.skip_cb_if_not_missing or _cb(unpack(executables)) end
     local timer = vim.loop.new_timer()
     timer:start(1000, 500, function()
-      local all_settled, all_success = true, true
-      for _, result in pairs(missings) do
-        if result == nil then
-          all_settled = false
-        elseif result == false then
-          all_success = false
-        end
-      end
-      if all_settled then
+      if #opt.deps == #results then
         timer:stop()
-        if all_success then vim.schedule(function() _cb(unpack(executables)) end) end
+        if not vim.tbl_contains(results, false) then
+          vim.schedule(function()
+            if reload_pack_required then
+              vim.cmd('set runtimepath^=' .. vim.fn.stdpath 'config' .. ' | runtime! plugin/**/*.{vim,lua}')
+              vim.cmd('helptags ALL')
+            end
+            _cb(unpack(executables))
+          end)
+        end
       end
     end)
   end
 
-  if opt.lsp_mode then
-    table.insert(required_filetypes, opt.ft)
+  if opt.ft then
+    vim.list_extend(required_filetypes, type(opt.ft) == 'table' and opt.ft or { opt.ft })
+    local aug_id = AUG(required_filetypes[#required_filetypes], {})
     AUC('FileType', {
       pattern = opt.ft,
-      once = true,
+      group = aug_id,
       callback = function()
+        vim.api.nvim_del_augroup_by_id(aug_id)
         require_internal(function(...)
-          local config = cb(...)
-          AUC('FileType', { pattern = opt.ft, callback = function() vim.lsp.start(config) end })
-          vim.lsp.start(config)
+          local config = opt.cb(...)
+          if opt.lsp_mode and config then
+            AUC('FileType', { pattern = opt.ft, callback = function() vim.lsp.start(config) end })
+            vim.lsp.start(config)
+          else
+            AUC('FileType', { pattern = opt.ft, callback = opt.cb })
+          end
         end
         )
       end
     })
   else
-    require_internal(cb)
+    require_internal(opt.cb)
   end
 end
 
-local function reload_editor()
-  vim.cmd('set runtimepath^=' .. vim.fn.stdpath 'config' .. ' | runtime! plugin/**/*.{vim,lua}')
-  vim.cmd 'source $MYVIMRC | helptags ALL'
-end
+REQUIRE { deps = packages, cb = function() vim.cmd 'source $MYVIMRC | silent! tabdo windo edit' end, skip_cb_if_not_missing = true }
 
-REQUIRE(packages, reload_editor, { skip_cb_if_not_missing = true })
-
+AUC('FileType', {
+  pattern = { 'sh', 'lua' },
+  once = true,
+  callback = function() KJ = (KJ or 0) + 1 end
+})
 ---@ Editor Config
 
 for k, v in pairs {
@@ -208,7 +214,10 @@ K('<leader>w', vim.cmd.write)
 K('<Leader>z', '<cmd>qa<cr>')
 K('<Leader>Z', '<cmd>noautocmd qa<cr>')
 K('<Leader>,', '<cmd>tabnew $MYVIMRC<cr>')
-K('<Leader>.,', reload_editor)
+K('<Leader>.,', function()
+  vim.cmd('set runtimepath^=' .. vim.fn.stdpath 'config' .. ' | runtime! plugin/**/*.{vim,lua}')
+  vim.cmd 'source $MYVIMRC | helptags ALL'
+end)
 K('<Leader>s', ':%s///g' .. ('<Left>'):rep(3))
 K('<Leader>s', ':s///g' .. ('<Left>'):rep(3), { mode = 'v' })
 K('<leader>S', [[:%s/<C-r><C-w>/<C-r><C-w>/gI<Left><Left><Left>]])
@@ -356,6 +365,7 @@ end
 AUC('VimEnter', {
   callback = function()
     local vim_argv = vim.fn.argv()
+    if not vim.tbl_contains(vim.v.argv, '--server') then return end
     if #vim_argv > 0 and vim_argv[1]:find '.git/COMMIT_EDITMSG' then return end
     if load_session_if_exists(vim.fn.getcwd()) then for _, path in ipairs(vim_argv) do vim.cmd.tabedit(path) end end
   end
@@ -496,7 +506,7 @@ require 'nvim-treesitter.configs'.setup {
   ensure_installed = {
     'javascript', 'typescript', 'tsx', 'html', 'css', 'vue', 'svelte', 'astro',
     'python', 'php', 'ruby', 'lua', 'bash',
-    'c', 'c_sharp', 'java', 'kotlin', 'go', 'rust',
+    'c', 'java', 'go', 'rust',
     'yaml', 'toml', 'json', 'jsonc', 'comment', 'markdown', 'markdown_inline',
     'gitcommit', 'git_config', 'git_rebase',
     'dockerfile', 'sql', 'prisma', 'graphql', 'regex'
@@ -553,7 +563,7 @@ K("vp", function()
   vim.opt.opfunc = "v:lua.STSSwapCurrentNodePrevNormal_Dot"; return "g@l"
 end, { expr = true, silent = true })
 
-K('vi',
+K('vI',
   function()
     require "syntax-tree-surfer".go_to_top_node_and_execute_commands(false, { "normal! O", "normal! O", "startinsert" })
   end
@@ -565,7 +575,7 @@ require 'regexplainer'.setup()
 
 require 'chatgpt'.setup {}
 
-require 'codeium'.setup {}
+-- require 'codeium'.setup {}
 
 require 'neogen'.setup { snippet_engine = "luasnip" }
 K('<leader>doc', ':Neogen ', { desc = 'arg: func|class|type' })
@@ -789,8 +799,7 @@ require 'nvim-dap-virtual-text'.setup {}
 AUC('FileType', {
   pattern = 'dap-repl',
   callback = function()
-    cmp.setup.buffer { enabled = false };
-    require "dap.ext.autocompl".attach()
+    cmp.setup.buffer { enabled = false }; require "dap.ext.autocompl".attach()
   end
 })
 
