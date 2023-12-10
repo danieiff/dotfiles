@@ -162,31 +162,31 @@ REQUIRE {
   end
 }
 
-REQUIRE {
-  deps = { { type = 'npm', arg = 'svelte-language-server' } },
-  cb = function() require 'lspconfig'.svelte.setup {} end
-}
-
-REQUIRE {
-  deps = { { type = 'npm', arg = '@astrojs/language-server' } },
-  cb = function()
-    require 'lspconfig'.astro.setup {}
-  end
-}
-
-REQUIRE {
-  deps = { { type = 'npm', arg = '@vue/language-server' } },
-  cb = function()
-    if not found 'node_modules/vue' then return end
-
-    require 'lspconfig'.volar.setup {
-      filetypes = { 'typescript', 'javascript', 'javascriptreact', 'typescriptreact', 'vue', 'json' },
-      on_new_config = function(new_config, new_root_dir)
-        new_config.init_options.typescript.serverPath = get_typescript_server_path(new_root_dir)
-      end,
-    }
-  end
-}
+-- REQUIRE {
+--   deps = { { type = 'npm', arg = 'svelte-language-server' } },
+--   cb = function() require 'lspconfig'.svelte.setup {} end
+-- }
+--
+-- REQUIRE {
+--   deps = { { type = 'npm', arg = '@astrojs/language-server' } },
+--   cb = function()
+--     require 'lspconfig'.astro.setup {}
+--   end
+-- }
+--
+-- REQUIRE {
+--   deps = { { type = 'npm', arg = '@vue/language-server' } },
+--   cb = function()
+--     if not found 'node_modules/vue' then return end
+--
+--     require 'lspconfig'.volar.setup {
+--       filetypes = { 'typescript', 'javascript', 'javascriptreact', 'typescriptreact', 'vue', 'json' },
+--       on_new_config = function(new_config, new_root_dir)
+--         new_config.init_options.typescript.serverPath = get_typescript_server_path(new_root_dir)
+--       end,
+--     }
+--   end
+-- }
 
 REQUIRE {
   deps = {
@@ -210,81 +210,81 @@ REQUIRE {
   end
 }
 
-REQUIRE {
-  deps = { { type = 'npm', arg = 'cssmodules-language-server' } },
-  cb = function()
-    require 'lspconfig'.cssmodules_ls.setup {
-      on_attach = function(client)
-        -- Disabling so not to conflict with other lsp's goToDef
-        client.server_capabilities.definitionProvider = false
-      end,
-    }
-  end
-}
+-- REQUIRE {
+--   deps = { { type = 'npm', arg = 'cssmodules-language-server' } },
+--   cb = function()
+--     require 'lspconfig'.cssmodules_ls.setup {
+--       on_attach = function(client)
+--         -- Disabling so not to conflict with other lsp's goToDef
+--         client.server_capabilities.definitionProvider = false
+--       end,
+--     }
+--   end
+-- }
 
-REQUIRE {
-  deps = { { type = 'npm', arg = '@tailwindcss/language-server' } },
-  cb = function()
-    if not found 'node_modules/tailwindcss' then return end
-    require 'lspconfig'.tailwindcss.setup {
-      on_attach = function(client --[[ , bufnr ]])
-        client.server_capabilities.documentFormattingProvider = false
-        client.server_capabilities.documentRangeFormattingProvider = false
-        --[[ require('tailwindcss-colors').buf_attach(_bufnr)  ]]
-      end,
+-- REQUIRE {
+--   deps = { { type = 'npm', arg = '@tailwindcss/language-server' } },
+--   cb = function()
+--     if not found 'node_modules/tailwindcss' then return end
+--     require 'lspconfig'.tailwindcss.setup {
+--       on_attach = function(client --[[ , bufnr ]])
+--         client.server_capabilities.documentFormattingProvider = false
+--         client.server_capabilities.documentRangeFormattingProvider = false
+--         --[[ require('tailwindcss-colors').buf_attach(_bufnr)  ]]
+--       end,
+--
+--       handlers = {
+--         ['tailwindcss/getConfiguration'] = function(_, _, params, _, bufnr, _)
+--           -- tailwindcss lang server wai swap = {
+--           vim.lsp.buf_notify(bufnr, 'tailwindcss/getConfigurationResponse', { _id = params._id })
+--         end
+--       },
+--       settings = {
+--         tailwindCSS = {
+--           experimental = {
+--             classRegex = {
+--               { "tv\\(([^)]*)\\)",  "[\"'`]([^\"'`]*).*?[\"'`]" },  -- for tailwind-variants
+--               { "cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]" },  -- for cva
+--               { "cx\\(([^)]*)\\)",  "(?:'|\"|`)([^']*)(?:'|\"|`)" } -- for cva
+--             },
+--           },
+--         },
+--       }
+--     }
+--   end
+-- }
 
-      handlers = {
-        ['tailwindcss/getConfiguration'] = function(_, _, params, _, bufnr, _)
-          -- tailwindcss lang server wai swap = {
-          vim.lsp.buf_notify(bufnr, 'tailwindcss/getConfigurationResponse', { _id = params._id })
-        end
-      },
-      settings = {
-        tailwindCSS = {
-          experimental = {
-            classRegex = {
-              { "tv\\(([^)]*)\\)",  "[\"'`]([^\"'`]*).*?[\"'`]" },  -- for tailwind-variants
-              { "cva\\(([^)]*)\\)", "[\"'`]([^\"'`]*).*?[\"'`]" },  -- for cva
-              { "cx\\(([^)]*)\\)",  "(?:'|\"|`)([^']*)(?:'|\"|`)" } -- for cva
-            },
-          },
-        },
-      }
-    }
-  end
-}
+-- REQUIRE {
+--   deps = { { type = 'npm', arg = '@prisma/language-server' } },
+--   cb = function()
+--     require 'lspconfig'.prismals.setup {}
+--   end
+-- }
 
-REQUIRE {
-  deps = { { type = 'npm', arg = '@prisma/language-server' } },
-  cb = function()
-    require 'lspconfig'.prismals.setup {}
-  end
-}
-
-REQUIRE {
-  ft = { "graphql", "typescriptreact", "javascriptreact" },
-  deps = { { type = 'npm', arg = 'graphql-language-service-cli' } },
-  cb = function()
-    if found 'node_modules/.bin/relay-compiler' then
-      require 'lspconfig'.relay_lsp.setup {
-        -- (default: false) Whether or not we should automatically start
-        -- the Relay Compiler in watch mode when you open a project
-        auto_start_compiler = false,
-
-        -- (default: null) Path to a relay config relative to the
-        -- `root_dir`. Without this, the compiler will search for your
-        -- config. This is helpful if your relay project is in a nested directory.
-        path_to_config = nil,
-      }
-    else
-      return {
-        cmd = { "graphql-lsp", "server", "-m", "stream" },
-        root_dir = vim.fs.dirname(vim.fs.find({ '.git', '.graphqlrc*', '.graphql.config.*', 'graphql.config.*' },
-          { upward = true })[1])
-      }
-    end
-  end
-}
+-- REQUIRE {
+--   ft = { "graphql", "typescriptreact", "javascriptreact" },
+--   deps = { { type = 'npm', arg = 'graphql-language-service-cli' } },
+--   cb = function()
+--     if found 'node_modules/.bin/relay-compiler' then
+--       require 'lspconfig'.relay_lsp.setup {
+--         -- (default: false) Whether or not we should automatically start
+--         -- the Relay Compiler in watch mode when you open a project
+--         auto_start_compiler = false,
+--
+--         -- (default: null) Path to a relay config relative to the
+--         -- `root_dir`. Without this, the compiler will search for your
+--         -- config. This is helpful if your relay project is in a nested directory.
+--         path_to_config = nil,
+--       }
+--     else
+--       return {
+--         cmd = { "graphql-lsp", "server", "-m", "stream" },
+--         root_dir = vim.fs.dirname(vim.fs.find({ '.git', '.graphqlrc*', '.graphql.config.*', 'graphql.config.*' },
+--           { upward = true })[1])
+--       }
+--     end
+--   end
+-- }
 
 REQUIRE {
   deps = { { type = 'npm', arg = 'vscode-langservers-extracted' } },

@@ -121,24 +121,24 @@ REQUIRE {
   end
 }
 
-REQUIRE {
-  ft = 'markdown',
-  lsp_mode = true,
-  deps = { { type = 'npm', arg = 'grammarly-languageserver' } },
-  cb = function()
-    local nvm_node_16 = ('%s/.nvm/versions/node/%s/bin/'):format(os.getenv 'HOME', 'v16.20.2')
-    if vim.loop.fs_stat(nvm_node_16) then
-      return {
-        name = 'grammarly-languageserver',
-        -- cmd = { 'n', 'exec', '16', 'grammarly-languageserver', '--stdio' },
-        cmd = { nvm_node_16 .. 'node', nvm_node_16 .. 'grammarly-languageserver', '--stdio' },
-        root_dir = vim.fn.getcwd(),
-        handlers = { ['$/updateDocumentState'] = function() return '' end },
-        init_options = { clientId = 'client_BaDkMgx4X19X9UxxYRCXZo' }, -- public clientId
-      }
-    end
-  end
-}
+-- REQUIRE {
+--   ft = 'markdown',
+--   lsp_mode = true,
+--   deps = { { type = 'npm', arg = 'grammarly-languageserver' } },
+--   cb = function()
+--     local nvm_node_16 = ('%s/.nvm/versions/node/%s/bin/'):format(os.getenv 'HOME', 'v16.20.2')
+--     if vim.loop.fs_stat(nvm_node_16) then
+--       return {
+--         name = 'grammarly-languageserver',
+--         -- cmd = { 'n', 'exec', '16', 'grammarly-languageserver', '--stdio' },
+--         cmd = { nvm_node_16 .. 'node', nvm_node_16 .. 'grammarly-languageserver', '--stdio' },
+--         root_dir = vim.fn.getcwd(),
+--         handlers = { ['$/updateDocumentState'] = function() return '' end },
+--         init_options = { clientId = 'client_BaDkMgx4X19X9UxxYRCXZo' }, -- public clientId
+--       }
+--     end
+--   end
+-- }
 
 REQUIRE {
   ft = 'lua',
