@@ -504,12 +504,8 @@ AUC('FileType', {
 
 require 'nvim-treesitter.configs'.setup {
   ensure_installed = {
-    'javascript', 'typescript', 'tsx', 'html', 'css', 'vue', 'svelte', 'astro',
-    'python', 'php', 'ruby', 'lua', 'bash',
-    'c', 'java', 'go', 'rust',
-    'yaml', 'toml', 'json', 'jsonc', 'comment', 'markdown', 'markdown_inline',
-    'gitcommit', 'git_config', 'git_rebase',
-    'dockerfile', 'sql', 'prisma', 'graphql', 'regex'
+    'javascript', 'typescript', 'html', 'css', 'scss', 'python', 'php', 'lua', 'bash', 'java',
+    'json', 'jsonc', 'comment', 'markdown', 'markdown_inline', 'gitcommit', 'git_config', 'git_rebase', 'sql', 'regex'
   },
   highlight = { enable = true }
 }
