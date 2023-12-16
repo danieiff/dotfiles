@@ -176,11 +176,6 @@ end
 
 REQUIRE { deps = packages, cb = function() vim.cmd 'source $MYVIMRC | silent! tabdo windo edit' end, skip_cb_if_not_missing = true }
 
-AUC('FileType', {
-  pattern = { 'sh', 'lua' },
-  once = true,
-  callback = function() KJ = (KJ or 0) + 1 end
-})
 ---@ Editor Config
 
 for k, v in pairs {
@@ -402,7 +397,17 @@ CMD('NpmRun', function()
   start_interactive_shell_job { { cmd = [[yq -r '.scripts | keys | join("\n")' package.json | npm run `fzf`]] } }
 end, {})
 
-require "nvim-tree".setup { view = { width = 60, side = 'right' } }
+require "nvim-tree".setup {
+  view = { width = 60, side = 'right' },
+  on_attach = function(bufnr)
+    local api = require 'nvim-tree.api'
+    api.config.mappings.default_on_attach(bufnr)
+    K('t', function()
+      local node = api.tree.get_node_under_cursor()
+      vim.cmd 'wincmd h'
+      api.node.open.tab(node)
+    end, { buffer = bufnr })
+  end }
 K("<C-q>", function() require 'nvim-tree.api'.tree.toggle({ find_file = true }) end)
 
 K('<leader>u', '<cmd>UndotreeToggle<cr>')
@@ -742,9 +747,9 @@ AUC('LspAttach', {
     end)
     K('<space>rf', vim.lsp.util.rename)
     K('<space>ca', vim.lsp.buf.code_action)
-    K('<space>wa', vim.lsp.buf.add_workspace_folder)
-    K('<space>wr', vim.lsp.buf.remove_workspace_folder)
-    K('<space>wl', function() vim.print(vim.lsp.buf.list_workspace_folders()) end)
+    K('<space>pa', vim.lsp.buf.add_workspace_folder)
+    K('<space>pr', vim.lsp.buf.remove_workspace_folder)
+    K('<space>pl', function() vim.print(vim.lsp.buf.list_workspace_folders()) end)
   end
 })
 

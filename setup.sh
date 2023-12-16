@@ -27,6 +27,8 @@ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash 
 curl -L https://github.com/neovim/neovim/releases/download/nightly/nvim-linux64.tar.gz | tar xz && \
   sudo ln -fs "$(pwd)"/nvim-linux64/bin/nvim /bin/nvim && nvim --headless +'sleep 15 | LoadRequiredFileTypes' +'sleep 60 | quitall'
 
+ulimit -n 10240
+
 # if [ -z "$REMOTE_CONTAINER" ]; then
 #
 # curl -fsSL https://get.docker.com | sh
