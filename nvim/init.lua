@@ -28,13 +28,12 @@ local packages = {
   'https://github.com/MunifTanjim/nui.nvim',
   'https://github.com/nvim-lua/plenary.nvim',
 
-  'https://github.com/mbbill/undotree',
   'https://github.com/nvim-telescope/telescope.nvim',
   'https://github.com/nvim-tree/nvim-tree.lua',
+  'https://github.com/mbbill/undotree',
 
   'https://github.com/lewis6991/gitsigns.nvim',
   'https://github.com/sindrets/diffview.nvim',
-  'https://github.com/pwntester/octo.nvim',
 
   'https://github.com/nvim-treesitter/nvim-treesitter',
   'https://github.com/nvim-treesitter/nvim-treesitter-context',
@@ -57,7 +56,6 @@ local packages = {
   'https://github.com/saadparwaiz1/cmp_luasnip',
   'https://github.com/L3MON4D3/LuaSnip',
   'https://github.com/danieiff/friendly-snippets',
-  -- 'https://github.com/jcdickinson/codeium.nvim',
   'https://github.com/jackMort/ChatGPT.nvim',
   'https://github.com/danymat/neogen',
 
@@ -80,13 +78,8 @@ local packages = {
   'https://github.com/b0o/SchemaStore.nvim',
   'https://github.com/tpope/vim-dadbod',
   'https://github.com/kristijanhusak/vim-dadbod-ui',
-  'https://github.com/kristijanhusak/vim-dadbod-completion',
+  'https://github.com/kristijanhusak/vim-dadbod-completion'
 }
-
-required_filetypes = {}
-CMD('LoadRequiredFileTypes', function()
-  for _, ft in ipairs(required_filetypes) do vim.bo.ft = ft end
-end, { desc = "Install deps for each filetypes loaded in 'REQUIRE'" })
 
 function REQUIRE(opt)
   local function require_internal(_cb)
@@ -150,8 +143,6 @@ function REQUIRE(opt)
   end
 
   if opt.ft then
-    vim.list_extend(required_filetypes, type(opt.ft) == 'table' and opt.ft or { opt.ft })
-    local aug_id = AUG(required_filetypes[#required_filetypes], {})
     AUC('FileType', {
       pattern = opt.ft,
       group = aug_id,
@@ -480,8 +471,6 @@ require 'gitsigns'.setup {
 
 require 'diffview'.setup {}
 
-require 'octo'.setup {}
-
 AUC('FileType', {
   pattern = 'gitcommit',
   callback = function(ev)
@@ -576,8 +565,6 @@ require 'regexplainer'.setup()
 
 require 'chatgpt'.setup {}
 
--- require 'codeium'.setup {}
-
 require 'neogen'.setup { snippet_engine = "luasnip" }
 K('<leader>doc', ':Neogen ', { desc = 'arg: func|class|type' })
 
@@ -640,7 +627,6 @@ cmp.setup {
     { name = 'nvim_lsp' },
     { name = 'luasnip' },
     { name = 'rg',      keyword_length = 3 },
-    { name = 'codeium' },
     {
       name = 'buffer',
       option = {
