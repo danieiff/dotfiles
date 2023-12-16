@@ -28,13 +28,12 @@ local packages = {
   'https://github.com/MunifTanjim/nui.nvim',
   'https://github.com/nvim-lua/plenary.nvim',
 
-  'https://github.com/mbbill/undotree',
   'https://github.com/nvim-telescope/telescope.nvim',
   'https://github.com/nvim-tree/nvim-tree.lua',
+  'https://github.com/mbbill/undotree',
 
   'https://github.com/lewis6991/gitsigns.nvim',
   'https://github.com/sindrets/diffview.nvim',
-  'https://github.com/pwntester/octo.nvim',
 
   'https://github.com/nvim-treesitter/nvim-treesitter',
   'https://github.com/nvim-treesitter/nvim-treesitter-context',
@@ -57,7 +56,6 @@ local packages = {
   'https://github.com/saadparwaiz1/cmp_luasnip',
   'https://github.com/L3MON4D3/LuaSnip',
   'https://github.com/danieiff/friendly-snippets',
-  -- 'https://github.com/jcdickinson/codeium.nvim',
   'https://github.com/jackMort/ChatGPT.nvim',
   'https://github.com/danymat/neogen',
 
@@ -80,13 +78,8 @@ local packages = {
   'https://github.com/b0o/SchemaStore.nvim',
   'https://github.com/tpope/vim-dadbod',
   'https://github.com/kristijanhusak/vim-dadbod-ui',
-  'https://github.com/kristijanhusak/vim-dadbod-completion',
+  'https://github.com/kristijanhusak/vim-dadbod-completion'
 }
-
-required_filetypes = {}
-CMD('LoadRequiredFileTypes', function()
-  for _, ft in ipairs(required_filetypes) do vim.bo.ft = ft end
-end, { desc = "Install deps for each filetypes loaded in 'REQUIRE'" })
 
 function REQUIRE(opt)
   local function require_internal(_cb)
@@ -150,8 +143,6 @@ function REQUIRE(opt)
   end
 
   if opt.ft then
-    vim.list_extend(required_filetypes, type(opt.ft) == 'table' and opt.ft or { opt.ft })
-    local aug_id = AUG(required_filetypes[#required_filetypes], {})
     AUC('FileType', {
       pattern = opt.ft,
       group = aug_id,
@@ -372,7 +363,41 @@ AUC('DirChangedPre', {
 })
 AUC('DirChanged', { callback = function(ev) load_session_if_exists(ev.file) end })
 
-require "nvim-tree".setup { view = { width = 60, side = 'right' } }
+---@ Terminal
+
+K('<Leader>t', function()
+  local cmd = vim.fn.input { prompt = 'Start term: ', default = ' ', completion = 'shellcmd', cancelreturn = '' }
+  vim.cmd('tabnew | term ' .. cmd); vim.cmd 'setlocal nonumber | startinsert'
+end)
+K('<C-n>', '<C-\\><C-n>', { mode = 't' })
+AUC('TermClose', { callback = function(ev) vim.cmd('silent! bwipe!' .. ev.buf) end })
+
+local function start_interactive_shell_job(cmds_params)
+  for i, params in pairs(cmds_params) do
+    local buf = vim.api.nvim_create_buf(true, false)
+    vim.api.nvim_buf_call(buf, function() vim.fn.termopen(params.cmd) end)
+    local win = vim.api.nvim_open_win(buf, true,
+      { relative = 'editor', width = 80, height = 20, row = (i - 1) * 20, col = 0, border = 'single' })
+    vim.defer_fn(function() vim.api.nvim_win_close(win, false) end, 5000)
+  end
+end
+CMD('RNExpo', function() start_interactive_shell_job { { cmd = 'emu' }, { cmd = 'rn-expo --android' } } end, {})
+--
+CMD('NpmRun', function()
+  start_interactive_shell_job { { cmd = [[yq -r '.scripts | keys | join("\n")' package.json | npm run `fzf`]] } }
+end, {})
+
+require "nvim-tree".setup {
+  view = { width = 60, side = 'right' },
+  on_attach = function(bufnr)
+    local api = require 'nvim-tree.api'
+    api.config.mappings.default_on_attach(bufnr)
+    K('t', function()
+      local node = api.tree.get_node_under_cursor()
+      vim.cmd 'wincmd h'
+      api.node.open.tab(node)
+    end, { buffer = bufnr })
+  end }
 K("<C-q>", function() require 'nvim-tree.api'.tree.toggle({ find_file = true }) end)
 
 K('<leader>u', '<cmd>UndotreeToggle<cr>')
@@ -446,8 +471,6 @@ require 'gitsigns'.setup {
 
 require 'diffview'.setup {}
 
-require 'octo'.setup {}
-
 AUC('FileType', {
   pattern = 'gitcommit',
   callback = function(ev)
@@ -475,12 +498,8 @@ AUC('FileType', {
 
 require 'nvim-treesitter.configs'.setup {
   ensure_installed = {
-    'javascript', 'typescript', 'tsx', 'html', 'css', 'vue', 'svelte', 'astro',
-    'python', 'php', 'ruby', 'lua', 'bash',
-    'c', 'java', 'go', 'rust',
-    'yaml', 'toml', 'json', 'jsonc', 'comment', 'markdown', 'markdown_inline',
-    'gitcommit', 'git_config', 'git_rebase',
-    'dockerfile', 'sql', 'prisma', 'graphql', 'regex'
+    'javascript', 'typescript', 'html', 'css', 'scss', 'python', 'php', 'lua', 'bash', 'java',
+    'json', 'jsonc', 'comment', 'markdown', 'markdown_inline', 'gitcommit', 'git_config', 'git_rebase', 'sql', 'regex'
   },
   highlight = { enable = true }
 }
@@ -546,8 +565,6 @@ require 'regexplainer'.setup()
 
 require 'chatgpt'.setup {}
 
--- require 'codeium'.setup {}
-
 require 'neogen'.setup { snippet_engine = "luasnip" }
 K('<leader>doc', ':Neogen ', { desc = 'arg: func|class|type' })
 
@@ -610,7 +627,6 @@ cmp.setup {
     { name = 'nvim_lsp' },
     { name = 'luasnip' },
     { name = 'rg',      keyword_length = 3 },
-    { name = 'codeium' },
     {
       name = 'buffer',
       option = {
@@ -717,9 +733,9 @@ AUC('LspAttach', {
     end)
     K('<space>rf', vim.lsp.util.rename)
     K('<space>ca', vim.lsp.buf.code_action)
-    K('<space>wa', vim.lsp.buf.add_workspace_folder)
-    K('<space>wr', vim.lsp.buf.remove_workspace_folder)
-    K('<space>wl', function() vim.print(vim.lsp.buf.list_workspace_folders()) end)
+    K('<space>pa', vim.lsp.buf.add_workspace_folder)
+    K('<space>pr', vim.lsp.buf.remove_workspace_folder)
+    K('<space>pl', function() vim.print(vim.lsp.buf.list_workspace_folders()) end)
   end
 })
 
