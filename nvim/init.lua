@@ -176,16 +176,10 @@ end
 
 REQUIRE { deps = packages, cb = function() vim.cmd 'source $MYVIMRC | silent! tabdo windo edit' end, skip_cb_if_not_missing = true }
 
-AUC('FileType', {
-  pattern = { 'sh', 'lua' },
-  once = true,
-  callback = function() KJ = (KJ or 0) + 1 end
-})
 ---@ Editor Config
-
 for k, v in pairs {
   autowriteall = true, undofile = true,
-  shell = (os.getenv 'SHELL' or 'bash') .. ' -l',
+  shell = 'powershell.exe',
   ignorecase = true, smartcase = true,
   tabstop = 2, shiftwidth = 0, expandtab = true,
   pumblend = 30, winblend = 30, fillchars = 'eob: ',
@@ -310,7 +304,7 @@ vim.fn.digraph_setlist {
 }
 K('<C-k>e?', '⏪️', { mode = { 'i' } })
 
-AUC('FileType', { pattern = { 'json', 'jsonc', 'yaml', 'python', 'c', 'c++', 'go' }, command = 'set tabstop=4' })
+AUC('FileType', { pattern = { 'json', 'jsonc', 'yaml', 'python', 'go' }, command = 'set tabstop=4' })
 
 AUC('InsertLeave', {
   callback = function(ev)
@@ -378,30 +372,6 @@ AUC('DirChangedPre', {
 })
 AUC('DirChanged', { callback = function(ev) load_session_if_exists(ev.file) end })
 
----@ Terminal
-
-K('<Leader>t', function()
-  local cmd = vim.fn.input { prompt = 'Start term: ', default = ' ', completion = 'shellcmd', cancelreturn = '' }
-  vim.cmd('tabnew | term ' .. cmd); vim.cmd 'setlocal nonumber | startinsert'
-end)
-K('<C-n>', '<C-\\><C-n>', { mode = 't' })
-AUC('TermClose', { callback = function(ev) vim.cmd('silent! bwipe!' .. ev.buf) end })
-
-local function start_interactive_shell_job(cmds_params)
-  for i, params in pairs(cmds_params) do
-    local buf = vim.api.nvim_create_buf(true, false)
-    vim.api.nvim_buf_call(buf, function() vim.fn.termopen(params.cmd) end)
-    local win = vim.api.nvim_open_win(buf, true,
-      { relative = 'editor', width = 80, height = 20, row = (i - 1) * 20, col = 0, border = 'single' })
-    vim.defer_fn(function() vim.api.nvim_win_close(win, false) end, 5000)
-  end
-end
-CMD('RNExpo', function() start_interactive_shell_job { { cmd = 'emu' }, { cmd = 'rn-expo --android' } } end, {})
---
-CMD('NpmRun', function()
-  start_interactive_shell_job { { cmd = [[yq -r '.scripts | keys | join("\n")' package.json | npm run `fzf`]] } }
-end, {})
-
 require "nvim-tree".setup { view = { width = 60, side = 'right' } }
 K("<C-q>", function() require 'nvim-tree.api'.tree.toggle({ find_file = true }) end)
 
@@ -441,12 +411,13 @@ K('<leader>gc', require 'telescope.builtin'.git_bcommits_range, { mode = { 'x' }
 K('<leader>gb', require 'telescope.builtin'.git_branches)
 K('<leader>gs', require 'telescope.builtin'.git_stash)
 
-K('<C-g>', '<cmd>tabnew | term lazygit<cr><cmd>set nonumber<cr><cmd>startinsert<cr>')
+K('<C-g>', '<cmd>tab term lazygit<cr><cmd>set nonumber<cr><cmd>startinsert<cr>')
 
 require 'gitsigns'.setup {
   signcolumn = false,
   numhl = true,
   word_diff = true,
+  current_line_blame = true,
   on_attach = function()
     local gs = package.loaded.gitsigns
 
@@ -845,3 +816,9 @@ require 'languages'
 require 'typescript'
 
 require 'ui'
+
+
+if os.getenv 'os':find'Windows' then
+  vim.fn.setenv('LANG', 'en')
+  vim.opt.shell = 'cmd.exe'
+end
