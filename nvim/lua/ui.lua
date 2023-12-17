@@ -43,6 +43,7 @@ local function draw_statusline()
     ((search.total or 0) > 0 and ('%s/%s'):format(search.current, search.total) or ''),
     '%=',
     ('%%#%s#%s%%*'):format(file_modified_hl, vim.fn.fnamemodify(vim.fn.expand '%', ':.')),
+    vim.o.fileencoding,
     '%P',
     os.date '%H:%M'
   }), '  ')

@@ -1,3 +1,24 @@
+--[[
+
+# winget install --id Git.Git -e --source winget
+
+# curl https://github.com/neovim/neovim/releases/download/nightly/nvim-win64.zip -O nvim-win64.zip
+# Expand-Archive .\nvim-win64.zip
+
+# git clone --depth 1 https://github.com/danieiff/dotfiles \
+# New-Item -Path $ENV:LOCALAPPDATA/nvim -ItemType SymbolicLink -Value dotfiles/nvim
+
+# npm install -g tree-sitter-cli
+
+# curl https://github.com/jesseduffield/lazygit/releases/download/v0.40.2/lazygit_0.40.2_Windows_x86_64.zip -O lazygit.zip
+# Expand-Archive .\lazygit.zip
+
+# curl https://github.com/BurntSushi/ripgrep/releases/download/14.0.3/ripgrep-14.0.3-x86_64-pc-windows-gnu.zip -O ripgrep.zip
+# Expand-Archive ripgrep.zip
+
+]]
+
+
 K, HL, CMD, AUC, AUG = function(lhs, rhs, opts)
       opts = opts or {}
       local mode = opts.mode or 'n'
@@ -16,9 +37,9 @@ DEPS_DIR = {
   bin = vim.fn.stdpath 'config'
 }
 DEPS_CACHE = {
-  pack = vim.split(vim.fn.system('ls ' .. DEPS_DIR.pack), '\n'),
+  pack = vim.split(vim.fn.system('dir /B ' .. DEPS_DIR.pack), '\n'),
   npm = vim.split(vim.fn.system('npm -gp list | grep -Po "node_modules/\\K.*"'), '\n'),
-  bin = vim.split(vim.fn.system('ls ' .. DEPS_DIR.bin), '\n')
+  bin = vim.split(vim.fn.system('dir /B ' .. DEPS_DIR.bin), '\n')
 }
 
 local packages = {
@@ -143,6 +164,7 @@ function REQUIRE(opt)
   end
 
   if opt.ft then
+    local aug_id = vim.api.nvim_create_augroup(type(opt.ft) == 'table' and opt.ft[1] or opt.ft ,{})
     AUC('FileType', {
       pattern = opt.ft,
       group = aug_id,
@@ -168,9 +190,11 @@ end
 REQUIRE { deps = packages, cb = function() vim.cmd 'source $MYVIMRC | silent! tabdo windo edit' end, skip_cb_if_not_missing = true }
 
 ---@ Editor Config
+
+vim.fn.setenv('LANG', 'en')
+
 for k, v in pairs {
   autowriteall = true, undofile = true,
-  shell = 'powershell.exe',
   ignorecase = true, smartcase = true,
   tabstop = 2, shiftwidth = 0, expandtab = true,
   pumblend = 30, winblend = 30, fillchars = 'eob: ',
@@ -233,12 +257,12 @@ K(']l', '<cmd>lnext<cr>')
 K('[L', '<cmd>lfirst<cr>')
 K(']L', '<cmd>llast<cr>')
 
-K('<leader>ou', function()
+K('<leader>op', function()
   local text = table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), '\n')
   local urls = {}
   for url in text:gmatch('(%a+://[%w-_%.%?%.:/%+=&]+)') do table.insert(urls, url) end
   if #urls > 1 then
-    vim.ui.select(urls, {}, function(url) if url then vim.fn.jobstart('open ' .. vim.fn.escape(url, '#')) end end)
+    vim.ui.select(urls, {}, function(url) if url then vim.fn.jobstart('Start-Process ' .. vim.fn.escape(url, '#')) end end)
   end
 end)
 
@@ -335,17 +359,17 @@ AUC('BufEnter', {
 
 vim.cmd 'set sessionoptions-=curdir'
 local function normalize_session_path(dir)
-  return vim.fn.stdpath 'data' .. vim.fn.fnamemodify(dir, ':p:h'):gsub('/', '%%')
+  return vim.fn.stdpath 'data' .. '\\' .. vim.fn.fnamemodify(dir, ':p:h'):gsub('[:\\]', '-')
 end
 local function load_session_if_exists(dir)
   if vim.loop.fs_stat(normalize_session_path(dir)) then
-    vim.cmd('silent! source ' .. vim.fn.fnameescape(normalize_session_path(dir)))
+    vim.cmd('silent! source ' .. enormalize_session_path(dir))
     vim.schedule(function() vim.cmd 'silent! tabdo windo edit' end)
     return true
   end
 end
 local function mksession(dir)
-  vim.cmd('silent! tabdo NvimTreeClose | mksession! ' .. vim.fn.fnameescape(normalize_session_path(dir)))
+  vim.cmd('silent! tabdo NvimTreeClose | mksession! ' .. normalize_session_path(dir))
 end
 AUC('VimEnter', {
   callback = function()
@@ -357,37 +381,11 @@ AUC('VimEnter', {
 })
 AUC('VimLeave', { callback = function() mksession(vim.fn.getcwd()) end })
 AUC('DirChangedPre', {
-  callback = function()
-    mksession(vim.g.prev_cwd); vim.cmd '%bwipe! | clearjumps'
-  end
+  callback = function() mksession(vim.g.prev_cwd); vim.cmd '%bwipe! | clearjumps' end
 })
 AUC('DirChanged', { callback = function(ev) load_session_if_exists(ev.file) end })
 
----@ Terminal
-
-K('<Leader>t', function()
-  local cmd = vim.fn.input { prompt = 'Start term: ', default = ' ', completion = 'shellcmd', cancelreturn = '' }
-  vim.cmd('tabnew | term ' .. cmd); vim.cmd 'setlocal nonumber | startinsert'
-end)
-K('<C-n>', '<C-\\><C-n>', { mode = 't' })
-AUC('TermClose', { callback = function(ev) vim.cmd('silent! bwipe!' .. ev.buf) end })
-
-local function start_interactive_shell_job(cmds_params)
-  for i, params in pairs(cmds_params) do
-    local buf = vim.api.nvim_create_buf(true, false)
-    vim.api.nvim_buf_call(buf, function() vim.fn.termopen(params.cmd) end)
-    local win = vim.api.nvim_open_win(buf, true,
-      { relative = 'editor', width = 80, height = 20, row = (i - 1) * 20, col = 0, border = 'single' })
-    vim.defer_fn(function() vim.api.nvim_win_close(win, false) end, 5000)
-  end
-end
-CMD('RNExpo', function() start_interactive_shell_job { { cmd = 'emu' }, { cmd = 'rn-expo --android' } } end, {})
---
-CMD('NpmRun', function()
-  start_interactive_shell_job { { cmd = [[yq -r '.scripts | keys | join("\n")' package.json | npm run `fzf`]] } }
-end, {})
-
-require "nvim-tree".setup {
+require 'nvim-tree'.setup {
   view = { width = 60, side = 'right' },
   on_attach = function(bufnr)
     local api = require 'nvim-tree.api'
@@ -559,11 +557,11 @@ K('vI',
   end
 )
 
----@ Coding Support
+---@ Editing Support
 
 require 'regexplainer'.setup()
 
-require 'chatgpt'.setup {}
+require 'chatgpt'.setup { api_key_cmd = 'powershell -C "echo %OPENAI_API_KEY%"' }
 
 require 'neogen'.setup { snippet_engine = "luasnip" }
 K('<leader>doc', ':Neogen ', { desc = 'arg: func|class|type' })
@@ -829,12 +827,4 @@ K('<leader>ts', neotest.run.stop)
 K('<leader>ta', neotest.run.attach)
 
 require 'languages'
-require 'typescript'
-
 require 'ui'
-
-
-if os.getenv 'os':find'Windows' then
-  vim.fn.setenv('LANG', 'en')
-  vim.opt.shell = 'cmd.exe'
-end

@@ -1,35 +1,15 @@
 REQUIRE {
   deps = {
-    -- https://github.com/fatih/gomodifytags
-    -- https://github.com/yoheimuta/protolint
-    -- https://github.com/rhysd/actionlint
     {
       type = 'bin',
       arg =
       [[ VERSION=$(curl -s https://api.github.com/repos/mattn/efm-langserver/releases/latest | grep -Po '"tag_name": "\K[^"]*') && curl -fsSL https://github.com/mattn/efm-langserver/releases/latest/download/efm-langserver_${VERSION}_linux_amd64.tar.gz | tar xz --strip-components=1 ]],
       executable = 'efm-langserver'
     },
-    { type = 'npm', arg = '@fsouza/prettierd' },
     { type = 'npm', arg = 'cspell' },
   },
   cb = function(ls)
     local languages = {
-      go = {
-        {
-          prefix = 'golangci-lint',
-          lintCommand = 'golangci-lint run --color never --out-format tab ${INPUT}',
-          lintStdin = false,
-          lintFormats = { '%.%#:%l:%c %m' },
-          rootMarkers = {},
-        }
-      },
-      gitcommit = {
-        {
-          lintCommand = 'gitlint --contrib contrib-title-conventional-commits',
-          lintStdin = true,
-          lintFormats = { '%l: %m: "%r"', '%l: %m', }
-        }
-      },
       php = {
         {
           -- https://github.com/phpstan/phpstan https://github.com/nunomaduro/larastan
@@ -121,25 +101,6 @@ REQUIRE {
   end
 }
 
--- REQUIRE {
---   ft = 'markdown',
---   lsp_mode = true,
---   deps = { { type = 'npm', arg = 'grammarly-languageserver' } },
---   cb = function()
---     local nvm_node_16 = ('%s/.nvm/versions/node/%s/bin/'):format(os.getenv 'HOME', 'v16.20.2')
---     if vim.loop.fs_stat(nvm_node_16) then
---       return {
---         name = 'grammarly-languageserver',
---         -- cmd = { 'n', 'exec', '16', 'grammarly-languageserver', '--stdio' },
---         cmd = { nvm_node_16 .. 'node', nvm_node_16 .. 'grammarly-languageserver', '--stdio' },
---         root_dir = vim.fn.getcwd(),
---         handlers = { ['$/updateDocumentState'] = function() return '' end },
---         init_options = { clientId = 'client_BaDkMgx4X19X9UxxYRCXZo' }, -- public clientId
---       }
---     end
---   end
--- }
-
 REQUIRE {
   ft = 'lua',
   lsp_mode = true,
@@ -192,45 +153,6 @@ REQUIRE {
 }
 
 REQUIRE {
-  deps = { { type = 'npm', arg = 'yaml-language-server' } },
-  cb = function()
-    require 'lspconfig'.yamlls.setup {
-      on_attach = function(client)
-        client.server_capabilities.documentFormattingProvider = false
-        client.server_capabilities.documentRangeFormattingProvider = false
-      end,
-      settings = {
-        yaml = {
-          schemaStore = { enable = false, url = "" },
-          schemas = require 'schemastore'.yaml.schemas(),
-          -- To use a schema for validation, there are two options:
-          -- 1. Add a modeline to the file. A modeline is a comment of the form:
-          -- # yaml-language-server: $schema=<urlToTheSchema|relativeFilePath|absoluteFilePath}>
-          -- or add here:
-          -- ["https://raw.githubusercontent.com/instrumenta/kubernetes-json-schema/master/v1.18.0-standalone-strict/all.json"] = "/*.k8s.yaml",
-          -- ["https://json.schemastore.org/github-workflow.json"] = "/.github/workflows/*",
-          --   ["../path/relative/to/file.yml"] = "/.github/workflows/*",
-          --   ["/path/from/root/of/project"] = "/.github/workflows/*",
-
-        },
-      },
-    }
-  end
-}
-
-REQUIRE {
-  ft = 'dockerfile',
-  lsp_mode = true,
-  deps = { { type = 'npm', arg = 'dockerfile-language-server-nodejs' } },
-  cb = function()
-    return {
-      cmd = { 'docker-langserver', '--stdio' },
-      root_dir = vim.fs.dirname(vim.fs.find('Dockerfile', { upward = true })[1])
-    }
-  end
-}
-
-REQUIRE {
   ft = { 'sql', 'mysql' },
   lsp_mode = true,
   deps = { { type = 'npm', arg = 'sql-language-server' } },
@@ -276,7 +198,7 @@ REQUIRE {
 }
 
 REQUIRE {
-  ft = { 'java', 'groovy' },
+  ft = 'java',
   deps = {
     -- sudo apt install openjdk-17-jdk
     -- sudo update-alternatives --config java
@@ -289,140 +211,8 @@ REQUIRE {
       cmd = { DEPS_DIR.bin .. '/jdtls/bin/jdtls' },
       root_dir = vim.fs.dirname(vim.fs.find({ 'gradlew', '.git', 'mvnw' }, { upward = true })[1])
     })
-    vim.lsp.start {
-      filetypes = { 'groovy' },
-      root_dir = vim.fs.dirname(vim.fs.find({ 'settings.gradle', 'build.gradle' }, { upward = true })[1]),
-      cmd = { DEPS_DIR.bin .. '/vscode-gradle/gradle-language-server/build/install/gradle-language-server/bin/gradle-language-server' },
-      init_options = {
-        settings = {
-          gradleWrapperEnabled = true,
-        }
-      }
-    }
   end
 }
-
-AUC('FileType', {
-  pattern = 'go',
-  once = true,
-  callback = function()
-    -- https://github.com/golang/tools/blob/master/gopls/README.md
-    -- go install golang.org/x/tools/gopls@latest
-    -- require 'lspconfig'.gopls.setup { capabilities, {
-    --   hints = {
-    --     assignVariableTypes = true,
-    --     compositeLiteralFields = true,
-    --     constantValues = true,
-    --     functionTypeParameters = true,
-    --     parameterNames = true,
-    --     rangeVariableTypes = true
-    --   }
-    -- } }
-
-    -- "https://github.com/ray-x/go.nvim",
-
-    if vim.fn.executable 'golangci-lint' == 0 then
-      vim.fn.jobstart('go install github.com/golangci/golangci-lint/cmd/golangci-lint@latest')
-    end
-  end
-})
-
-AUC('FileType', {
-  pattern = 'rust',
-  once = true,
-  callback = function()
-    -- https://rust-analyzer.github.io/manual.html#installation
-    -- "https://github.com/simrat39/rust-tools.nvim",
-    -- "https://github.com/Saecki/crates.nvim",
-
-    -- require 'lspconfig'.rust_analyzer.setup {
-    --   settings = {
-    --     ['rust-analyzer'] = {
-    --       diagnostics = {
-    --         enable = false,
-    --       }
-    --     }
-    --   }
-    -- }
-
-    -- local rt = require 'rust-tools'
-    -- rt.setup({
-    --   server = {
-    --     on_attach = function(_, bufnr)
-    --       -- Hover actions
-    --       vim.keymap.set('n', '<C-space>', rt.hover_actions.hover_actions, { buffer = bufnr })
-    --       -- Code action groups
-    --       vim.keymap.set('n', '<Leader>a', rt.code_action_group.code_action_group, { buffer = bufnr })
-    --     end,
-    --   },
-    --   capabilities
-    -- })
-  end
-})
-
-AUC('FileType', {
-  pattern = 'dart',
-  once = true,
-  callback = function()
-    -- https://www.reddit.com/r/neovim/comments/14c5e6o/how_to_set_up_dartflutter_with_neovim/
-    -- require'lspconfig'.dartls.setup{}
-    -- https://github.com/akinsho/flutter-tools.nvim
-
-    -- See https://github.com/puremourning/vimspector/issues/4 for reference.
-    --
-    -- This installation might change over time as the debugger doesn't officially support being used as a standalone, but the maintainer is trying to be accomodating however the path to the executable or the variables might change in the future
-    --
-    -- ensure you have node installed
-    --
-    -- git clone Dart-Code (the debug adapter is not avaliable as a standalone)
-    -- cd into the Dart-Code directory and run npx webpack --mode production
-    -- this will create out/dist/debug.js which is the executable file
-    -- NOTE: your flutterSdkPath might not be in ~/ this can vary depending on your installation method e.g. snap
-    --
-    --   require 'dap'.adapters.dart = {
-    --     type = "executable",
-    --     command = "node",
-    --     args = {"<path-to-Dart-Code>/out/dist/debug.js", "flutter"}
-    --   }
-    --   require 'dap'.configurations.dart = {
-    --     {
-    --       type = "dart",
-    --       request = "launch",
-    --       name = "Launch flutter",
-    --       dartSdkPath = os.getenv('HOME').."/flutter/bin/cache/dart-sdk/",
-    --       flutterSdkPath = os.getenv('HOME').."/flutter",
-    --       program = "${workspaceFolder}/lib/main.dart",
-    --       cwd = "${workspaceFolder}",
-    --     }
-    --   }
-  end
-})
-
-AUC('FileType', {
-  pattern = { 'c', 'cmake' },
-  once = true,
-  callback = function()
-    require 'lspconfig'.ccls.setup {
-      init_options = {
-        -- https://github.com/MaskRay/ccls/wiki/Customization#initialization-options
-        compilationDatabaseDirectory = ".",
-        index = {
-          threads = 0,
-        },
-        clang = {
-          excludeArgs = { "-frounding-math" },
-        },
-      }
-    }
-
-    if vim.fn.executable 'neocmakelsp' == 0 then
-      vim.fn.jobstart 'cargo install neocmakelsp'
-    end
-    require 'lspconfig'.neocmake.setup {}
-
-    vim.cmd.edit()
-  end
-})
 
 AUC('FileType', {
   pattern = 'python',
@@ -467,92 +257,199 @@ AUC('FileType', {
   end
 })
 
-AUC('FileType', {
-  pattern = 'solidity',
-  once = true,
-  callback = function()
-    -- https://github.com/NomicFoundation/hardhat-vscode/blob/development/server/README.md
-    --require 'util'.ensure_npm_deps { '@ignored/solidity-language-server' }
-    require 'lspconfig'.solidity_ls_nomicfoundation.setup {}
-    vim.cmd.edit()
+local extensions = { 'typescript', 'javascript', 'angular' }
+
+local capabilities = require 'cmp_nvim_lsp'.default_capabilities()
+
+local util = require 'lspconfig.util'
+
+local function get_typescript_server_path(root_dir)
+  local global_ts, found_ts = os.getenv 'HOME' .. '/.npm/lib/node_modules/typescript/lib/tsserverlibrary.js', ''
+  local function check_dir(path)
+    found_ts = util.path.join(path, 'node_modules', 'typescript', 'lib', 'tsserverlibrary.js')
+    if util.path.exists(found_ts) then return path end
   end
-})
+  return util.search_ancestors(root_dir, check_dir) and found_ts or global_ts
+end
 
---[[
--- https://github.com/mfussenegger/nvim-dap/wiki/Debug-Adapter-installation
-
--- rust/c/c++
--- https://github.com/mfussenegger/nvim-dap/wiki/C-C---Rust-(gdb-via--vscode-cpptools)
--- https://github.com/Microsoft/vscode-cpptools
--- https://github.com/mfussenegger/nvim-dap/wiki/Debug-symbols-in-various-languages-and-build-systems
-
-
--- Godot GDScript
-
-require 'dap'.adapters.godot = {
-  type = "server",
-  host = '127.0.0.1',
-  port = 6006,
-}
--- The port must match the Godot setting. Go to Editor -> Editor Settings, then find Debug Adapter under Network:
-dap.configurations.gdscript = {
-  {
-    type = "godot",
-    request = "launch",
-    name = "Launch scene",
-    project = "${workspaceFolder}",
-    launch_scene = true,
-  }
-}
-]]
+local cwd, global_node_modules = vim.loop.cwd(), vim.fn.system 'which npm':gsub('/bin/npm\n', '/lib/node_modules')
+local function found(module_specific_path)
+  return util.search_ancestors(cwd,
+    function(path) return vim.loop.fs_stat(vim.fs.joinpath(path, module_specific_path)) end)
+end
 
 REQUIRE {
-  ft = 'sh',
-  lsp_mode = true,
-  deps = { {
-    type = 'bin',
-    arg =
-    'curl -fsSL https://github.com/koalaman/shellcheck/releases/download/latest/shellcheck-latest.linux.x86_64.tar.xz | tar xJv',
-    executable = 'shellcheck-latest/shellcheck'
-  }, {
-    type = 'npm',
-    arg = 'bash-language-server'
-  }, {
-    type = 'bin',
-    arg =
-    'curl -L https://github.com/rogalmic/vscode-bash-debug/releases/download/untagged-438733f35feb8659d939/bash-debug-0.3.9.vsix -o bash-debug.zip && unzip $_ -d bash-debug',
-    executable = 'bash-debug/extension/out/bashDebug.js'
-  } },
-  cb = function(_, ls, db)
+  deps = {
+    { type = 'npm', arg = 'typescript' },
+    { type = 'npm', arg = 'ts-node' },
+    {
+      type = 'bin',
+      arg =
+      [[ VERSION=$(curl -s https://api.github.com/repos/microsoft/vscode-js-debug/releases/latest | grep -Po '"tag_name": "\K[^"]*') && curl -fsSL https://github.com/microsoft/vscode-js-debug/releases/latest/download/js-debug-dap-${VERSION}.tar.gz | tar xz ]],
+      executable = 'js-debug/src/dapDebugServer.js'
+    }
+  },
+  cb = function(_, _, db)
+    if found 'deno.json' then
+      vim.g.markdown_fenced_languages = { "ts=typescript" }
+      require 'lspconfig'.denols.setup {}
+    else
+      if vim.api.nvim_buf_get_name(0) ~= '' then
+        require 'typescript-tools'.setup {
+          on_attach = function(client)
+            client.server_capabilities.documentFormattingProvider = false
+            client.server_capabilities.documentRangeFormattingProvider = false
+          end,
+          capabilities = capabilities,
+          settings = {
+            tsserver_file_preferences = {
+              -- includeInlayParameterNameHints = "none",
+              -- includeInlayParameterNameHintsWhenArgumentMatchesName = false,
+              -- includeInlayFunctionParameterTypeHints = false,
+              -- includeInlayVariableTypeHints = false,
+              -- includeInlayVariableTypeHintsWhenTypeMatchesName = false,
+              -- includeInlayPropertyDeclarationTypeHints = false,
+              includeInlayFunctionLikeReturnTypeHints = true,
+              includeInlayEnumMemberValueHints = true,
+              -- includeCompletionsForModuleExports = true,
+            },
+            tsserver_format_options = {
+              -- allowIncompleteCompletions = false,
+              -- allowRenameOfImportPath = false,
+            },
+            importModuleSpecifierPreference = "non-relative",
+          }
+        }
+      end
+    end
+
     local dap = require 'dap'
 
-    dap.adapters.bashdb = {
-      type = 'executable',
-      name = 'bashdb',
-      command = 'node',
-      args = { db }
-    }
-    dap.configurations.sh = {
-      {
-        type = 'bashdb',
-        request = 'launch',
-        name = "Launch file",
-        showDebugOutput = true,
-        pathBashdb = DEPS_DIR.bin .. '/bash-debug/extension/bashdb_dir/bashdb',
-        pathBashdbLib = DEPS_DIR.bin .. '/bash-debug/extension/bashdb_dir',
-        trace = true,
-        file = "${file}",
-        program = "${file}",
-        cwd = '${workspaceFolder}',
-        pathCat = "cat",
-        pathBash = "/bin/bash",
-        pathMkfifo = "mkfifo",
-        pathPkill = "pkill",
-        args = {},
-        env = {},
-        terminalKind = "integrated",
+    for _, adapter in ipairs { 'pwa-node', 'pwa-chrome' } do
+      dap.adapters[adapter] = {
+        type = "server",
+        host = "localhost",
+        port = "${port}",
+        executable = { command = "node", args = { db, "${port}" } }
       }
+    end
+    for _, ext in ipairs(extensions) do
+      dap.configurations[ext] = {
+        {
+          name = "Launch file",
+          type = "pwa-node",
+          request = "launch",
+          cwd = "${workspaceFolder}",
+          program = "${file}",
+          outFiles = { "${workspaceFolder}/dist/**/*.js", "!**/node_modules/**" },
+          resolveSourceMapLocations = { "${workspaceFolder}/**", "!**/node_modules/**" },
+          trace = true,
+        },
+        {
+          name = "Launch Current File (pwa-node with ts-node)",
+          type = "pwa-node",
+          request = "launch",
+          cwd = "${workspaceFolder}",
+          runtimeExecutable = "node",
+          runtimeArgs = { "--loader=/usr/local/lib/node_modules/ts-node/esm.mjs" },
+          args = { "${file}" },
+          skipFiles = { "<node_internals>/**", "node_modules/**" },
+          resolveSourceMapLocations = { "${workspaceFolder}/**", "!**/node_modules/**" },
+        },
+        {
+          name = "Launch Test Current File (pwa-node with deno)",
+          type = "pwa-node",
+          request = "launch",
+          runtimeExecutable = "deno",
+          runtimeArgs = { "test", "--inspect-brk", "--allow-all", "${file}" },
+          console = "integratedTerminal",
+          attachSimplePort = 9229,
+        },
+        {
+          name = "Debug Jest Tests",
+          type = "pwa-node",
+          request = "launch",
+          runtimeExecutable = "node",
+          runtimeArgs = { "./node_modules/jest/bin/jest.js" }, -- "--runInBand" },
+          console = "integratedTerminal",
+          internalConsoleOptions = "neverOpen",
+        },
+        {
+          name = "Launch Test Current File (pwa-node with vitest)",
+          type = "pwa-node",
+          request = "launch",
+          program = "${workspaceFolder}/node_modules/vitest/vitest.mjs",
+          args = { "--inspect-brk", "--threads", "false", "run", "${file}" },
+          console = "integratedTerminal",
+          skipFiles = { "<node_internals>/**", "node_modules/**" },
+        },
+        {
+          name = "Debug Mocha Tests",
+          request = "launch",
+          type = "pwa-node",
+          runtimeExecutable = "node",
+          runtimeArgs = { "./node_modules/mocha/bin/mocha.js" },
+          console = "integratedTerminal",
+          internalConsoleOptions = "neverOpen",
+        },
+        {
+          name = "Attach Program (pwa-node, select pid)",
+          type = "pwa-node",
+          request = "attach",
+          processId = require 'dap.utils'.pick_process,
+          skipFiles = { "<node_internals>/**" },
+          -- restart = true, -- https://code.visualstudio.com/docs/nodejs/nodejs-debugging#_restarting-debug-sessions-automatically-when-source-is-edited use with nodemon
+        },
+        {
+          name = 'Launch chrome',
+          type = "pwa-chrome",
+          request = "launch",
+          program = "${file}",
+          url = function() return 'http://localhost:' .. vim.fn.input("Select port: ", 8080) end,
+          port = 9222
+        },
+        {
+          name = 'Attach chrome',
+          type = "pwa-chrome",
+          request = "attach",
+          program = "${file}",
+          port = 9222
+        }
+      }
+    end
+  end
+}
+
+REQUIRE {
+  deps = {
+    { type = 'npm', arg = '@angular/language-server@16.1.4', cache_key = '@angular/language-server' }, -- for typescript >=4.8. @latest requires >=5.
+    { type = 'npm', arg = '@angular/cli' }
+  },
+  cb = function()
+    if not found 'node_modules/@angular' then return end
+
+    require 'lspconfig'.angularls.setup {
+      on_new_config = function(new_config, new_root_dir)
+        new_config.cmd = { "ngserver", "--stdio", "--tsProbeLocations", get_typescript_server_path(new_root_dir),
+          "--ngProbeLocations", global_node_modules .. "/@angular/language-server/bin" }
+      end,
     }
-    return { name = ls, cmd = { ls, 'start' } }
+
+    local ng = require "ng";
+    K("<leader>at", ng.goto_template_for_component)
+    K("<leader>ac", ng.goto_component_with_template_file)
+    K("<leader>aT", ng.get_template_tcb)
+  end
+}
+
+REQUIRE {
+  deps = { { type = 'npm', arg = 'vscode-langservers-extracted' } },
+  cb = function()
+    require 'lspconfig'.html.setup {
+      capabilities = capabilities,
+    }
+    require 'lspconfig'.cssls.setup {
+      capabilities = capabilities,
+    }
   end
 }
