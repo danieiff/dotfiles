@@ -192,6 +192,8 @@ REQUIRE { deps = packages, cb = function() vim.cmd 'source $MYVIMRC | silent! ta
 ---@ Editor Config
 
 vim.fn.setenv('LANG', 'en')
+vim.fn.setenv('PATH', vim.fn.getenv'PATH' .. ';' ..vim.fn.getenv'USERPROFILE' .. '\\ripgrep\\ripgrep-14.0.3-x86_64-pc-windows-gnu')
+vim.fn.setenv('PATH', vim.fn.getenv'PATH' .. ';' ..vim.fn.getenv'USERPROFILE' .. '\\lazygit')
 
 for k, v in pairs {
   autowriteall = true, undofile = true,
