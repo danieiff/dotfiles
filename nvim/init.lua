@@ -563,7 +563,8 @@ K('vI',
 
 require 'regexplainer'.setup()
 
-require 'chatgpt'.setup { api_key_cmd = 'powershell -C "echo %OPENAI_API_KEY%"' }
+-- Get-Credential | Export-Clixml -Path "$env:USERPROFILE\OPENAI_API_KEY"
+require 'chatgpt'.setup { api_key_cmd = 'powershell (Import-Clixml -Path "$env:USERPROFILE\\OPENAI_API_KEY").GetNetworkCredential().Password' }
 
 require 'neogen'.setup { snippet_engine = "luasnip" }
 K('<leader>doc', ':Neogen ', { desc = 'arg: func|class|type' })
