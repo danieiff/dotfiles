@@ -1,199 +1,269 @@
-// Copyright 2021 Christian Eiden, cykedev
-//
-// This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
-// the Free Software Foundation, either version 2 of the License, or
-// (at your option) any later version.
-//
-// This program is distributed in the hope that it will be useful,
-// but WITHOUT ANY WARRANTY; without even the implied warranty of
-// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
-//
-// You should have received a copy of the GNU General Public License
-// along with this program.  If not, see <http://www.gnu.org/licenses/>.
-
 #include QMK_KEYBOARD_H
 
-#define CM_SPAL  LGUI_T(KC_SPC)
-#define CM_SPAR  RGUI_T(KC_SPC)
+typedef enum {
+    _QWERTY,
+    _RAISE,
+} layer_t;
 
-#define SH_ENL  LSFT_T(KC_ENT)
-#define SH_ENR  RSFT_T(KC_ENT)
-
-#define RAISE   MO(_RAISE)
-#define LOWER   MO(_LOWER)
-
-#define QWERT   DF(_QWERTY)
-#define COLEM   DF(_COLEMAK_DH)
-
-enum layer_names {
-  _COLEMAK_DH,
-  _QWERTY,
-  _RAISE,
-  _LOWER,
-  _ADJUST
+enum custom_keycodes {
+    SFT_CLK = SAFE_RANGE,
+    CTL_CLK,
 };
 
+#define MPLY_VOLU LT(0, KC_VOLU)
+#define MUTE_VOLD LT(0, KC_VOLD)
+#define PSCR_CCLK LT(0, CTL_CLK)
+#define RCLK_SCLK LT(0, SFT_CLK)
+#define SFT_ENT LT(0, KC_ENT)
+
+#define ACTION_TAP_DANCE_CUSTOM(user_user_data) \
+    { .fn = {NULL, td_finished, td_reset}, .user_data = (td_user_data_t *)user_user_data }
+
+typedef enum {
+    TD_NONE,
+    TD_UNKNOWN,
+    TD_SINGLE_TAP,
+    TD_SINGLE_HOLD,
+    TD_DOUBLE_TAP,
+    TD_DOUBLE_HOLD,
+    TD_DOUBLE_SINGLE_TAP, // Send two single taps
+    td_state_nums
+} td_state_t;
+
+typedef struct {
+    enum {
+        KEYCODE8,
+        KEYCODE8_HOLD,
+        KEYCODE8_TWICE,
+        KEYCODE16,
+        LAYER_HOLD,
+        LAYER_TOGGLE,
+        LAYER_ONESHOT
+    } type;
+    union {
+        uint8_t keycode8;
+        uint16_t keycode16;
+        layer_t layer;
+    };
+} td_keycode_t;
+
+typedef struct {
+  td_keycode_t actions[td_state_nums];
+  td_state_t state;
+  enum {
+      TD_PERMISSIVE_HOLD = 1 << 0,
+  } options;
+} td_user_data_t;
+
+void td_finished(tap_dance_state_t *state, void *user_data);
+void td_reset(tap_dance_state_t *state, void *user_data);
+
+enum tap_dances {
+    TD_LAYER,
+    TD_EISU_GUI,
+    TD_PG,
+    // TD_BRC
+};
+
+tap_dance_action_t tap_dance_actions[] = {
+    [TD_LAYER] = ACTION_TAP_DANCE_CUSTOM( &((td_user_data_t) {
+        .actions = {
+            [TD_SINGLE_HOLD] = { LAYER_HOLD, .layer = _RAISE },
+        },
+        .options = TD_PERMISSIVE_HOLD,
+    })),
+    [TD_EISU_GUI] = ACTION_TAP_DANCE_CUSTOM( &((td_user_data_t) {
+        .actions = {
+            [TD_SINGLE_TAP] = { KEYCODE16, .keycode16 = A(KC_GRV) },
+            [TD_SINGLE_HOLD] = { KEYCODE8_HOLD, .keycode8 = KC_LGUI },
+        },
+        .options = TD_PERMISSIVE_HOLD,
+    })),
+    [TD_PG] = ACTION_TAP_DANCE_CUSTOM( &((td_user_data_t) {
+        .actions = {
+            [TD_SINGLE_TAP] = { KEYCODE8, .keycode8 = KC_PGDN },
+            [TD_SINGLE_HOLD] = { KEYCODE8, .keycode8 = KC_PGUP },
+            [TD_DOUBLE_TAP] = { KEYCODE8,  .keycode8 = KC_END },
+            [TD_DOUBLE_HOLD] = { KEYCODE8, .keycode8 = KC_HOME },
+        },
+    })),
+    // [TD_BRC] = ACTION_TAP_DANCE_CUSTOM( &((td_user_data_t) {
+    //     .actions = {
+    //         [TD_SINGLE_TAP] = { KEYCODE8, .keycode8 = KC_LBRC },
+    //         [TD_SINGLE_HOLD] = { KEYCODE16, .keycode16 = S(KC_LBRC) },
+    //         [TD_DOUBLE_TAP] = { KEYCODE8,  .keycode8 = KC_RBRC },
+    //         [TD_DOUBLE_HOLD] = { KEYCODE16, .keycode16 = S(KC_RBRC) },
+    //     },
+    // })),
+};
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
-  [_COLEMAK_DH] = LAYOUT_split_4x6_5(
-  /* COLEMAK_DH
-   * .-----------------------------------------.                                  .-----------------------------------------.
-   * | Esc  |   1  |   2  |   3  |   4  |   5  |                                  |   6  |   7  |   8  |   9  |   0  |  Bsp |
-   * |------+------+------+------+------+------|                                  |------+------+------+------+------+------|
-   * | Tab  |   Q  |   W  |   F  |   P  |   B  |                                  |   J  |   L  |   U  |   Y  |   ;  |  \   |
-   * |------+------+------+------+------+------|                                  |------+------+------+------+------+------|
-   * | Del  |   A  |   R  |   S  |   T  |   G  |                                  |   M  |   N  |   E  |   I  |   O  |  '   |
-   * |------+------+------+------+------+------|                                  |------+------+------+------+------+------|
-   * | Shft |   Z  |   X  |   C  |   D  |   V  |                                  |   K  |   H  |   ,  |   .  |   /  | Shft |
-   * '-----------------------------------------/                                  \-----------------------------------------'
-   *                                  / RAISE /---------------.    .---------------\ LOWER \
-   *                                 /       /  Cmd  / Shift /      \ Shift \  Cmd  \       \
-   *                                '-------/ Space / Enter /        \ Enter \ Space \-------'
-   *                                       /---------------/          \---------------\
-   *                                      /  Alt  / Ctrl  /            \  Ctrl \  Alt  \
-   *                                     /       /       /              \       \       \
-   *                                    '---------------'                '---------------'
-   */
-   KC_ESC , KC_1   , KC_2   , KC_3   , KC_4   , KC_5   ,                                     KC_6   , KC_7   , KC_8   , KC_9   , KC_0   , KC_BSPC,
-   KC_TAB , KC_Q   , KC_W   , KC_F   , KC_P   , KC_B   ,                                     KC_J   , KC_L   , KC_U   , KC_Y   , KC_SCLN, KC_BSLS,
-   KC_DEL , KC_A   , KC_R   , KC_S   , KC_T   , KC_G   ,                                     KC_M   , KC_N   , KC_E   , KC_I   , KC_O   , KC_QUOT,
-   KC_LSFT, KC_Z   , KC_X   , KC_C   , KC_D   , KC_V   ,                                     KC_K   , KC_H   , KC_COMM, KC_DOT , KC_SLSH, KC_RSFT,
-                                                RAISE  , CM_SPAL, SH_ENL , SH_ENR , CM_SPAR, LOWER  ,
-                                                         KC_LALT, KC_LCTL, KC_RCTL, KC_RALT
-   ),
   [_QWERTY] = LAYOUT_split_4x6_5(
-  /* QWERTY
-   * .-----------------------------------------.                                  .-----------------------------------------.
-   * | Esc  |   1  |   2  |   3  |   4  |   5  |                                  |   6  |   7  |   8  |   9  |   0  |  Bsp |
-   * |------+------+------+------+------+------|                                  |------+------+------+------+------+------|
-   * | Tab  |   Q  |   W  |   E  |   R  |   T  |                                  |   Y  |   U  |   I  |   O  |   P  |  \   |
-   * |------+------+------+------+------+------|                                  |------+------+------+------+------+------|
-   * | Del  |   A  |   S  |   D  |   F  |   G  |                                  |   H  |   J  |   K  |   L  |   ;  |  '   |
-   * |------+------+------+------+------+------|                                  |------+------+------+------+------+------|
-   * | Shft |   Z  |   X  |   C  |   V  |   B  |                                  |   N  |   M  |   ,  |   .  |   /  | Shft |
-   * '-----------------------------------------/                                  \-----------------------------------------'
-   *                                  / RAISE /---------------.    .---------------\ LOWER \
-   *                                 /       /  Cmd  / Shift /      \ Shift \  Cmd  \       \
-   *                                '-------/ Space / Enter /        \ Enter \ Space \-------'
-   *                                       /---------------/          \---------------\
-   *                                      /  Alt  / Ctrl  /            \  Ctrl \  Alt  \
-   *                                     /       /       /              \       \       \
-   *                                    '---------------'                '---------------'
-   */
-   KC_ESC , KC_1   , KC_2   , KC_3   , KC_4   , KC_5   ,                                     KC_6   , KC_7   , KC_8   , KC_9   , KC_0   , KC_BSPC,
-   KC_TAB , KC_Q   , KC_W   , KC_E   , KC_R   , KC_T   ,                                     KC_Y   , KC_U   , KC_I   , KC_O   , KC_P   , KC_BSLS,
-   KC_DEL , KC_A   , KC_S   , KC_D   , KC_F   , KC_G   ,                                     KC_H   , KC_J   , KC_K   , KC_L   , KC_SCLN, KC_QUOT,
-   KC_LSFT, KC_Z   , KC_X   , KC_C   , KC_V   , KC_B   ,                                     KC_N   , KC_M   , KC_COMM, KC_DOT , KC_SLSH, KC_LSFT,
-                                                RAISE  , CM_SPAL, SH_ENL , SH_ENR , CM_SPAR, LOWER  ,
-                                                         KC_LALT, KC_LCTL, KC_RCTL, KC_RALT
-   ),
-   [_RAISE] = LAYOUT_split_4x6_5(
-  /* RAISE
-   * .-----------------------------------------.                                  .-----------------------------------------.
-   * |      |  F1  |  F2  |  F3  |  F4  |  F5  |                                  |  F6  |  F7  |  F8  |  F9  |  F10 |  F11 |
-   * |------+------+------+------+------+------|                                  |------+------+------+------+------+------|
-   * |      |      |      |   [  |   ]  |      |                                  |   $  |   /  |  *   |  #   |   ~  |  F12 |
-   * |------+------+------+------+------+------|                                  |------+------+------+------+------+------|
-   * |  Ins |  !   |  @   |   (  |   )  |      |                                  |   %  |   -  |  +   |  =   |  ?   |      |
-   * |------+------+------+------+------+------|                                  |------+------+------+------+------+------|
-   * |      |      |      |   {  |   }  |      |                                  |   ^  |   &  |  |   |      |      |      |
-   * '-----------------------------------------/                                  \-----------------------------------------'
-   *                                  /       /---------------.    .---------------\       \
-   *                                 /       /       /       /      \       \       \       \
-   *                                '-------/       /       /        \       \       \-------'
-   *                                       /---------------/          \---------------\
-   *                                      /       /       /            \       \       \
-   *                                     /       /       /              \       \       \
-   *                                    '---------------'                '---------------'
-   */
-   XXXXXXX, KC_F1  , KC_F2  , KC_F3  , KC_F4  , KC_F5  ,                                     KC_F6  , KC_F7  , KC_F8  , KC_F9  , KC_F10 , KC_F11 ,
-   XXXXXXX, XXXXXXX, XXXXXXX, KC_LBRC, KC_RBRC, XXXXXXX,                                     KC_DLR , KC_SLSH, KC_ASTR, KC_HASH, KC_TILD, KC_F12 ,
-   KC_INS , KC_EXLM, KC_AT  , KC_LPRN, KC_RPRN, XXXXXXX,                                     KC_PERC, KC_MINS, KC_PPLS, KC_PEQL, KC_QUES, XXXXXXX,
-   XXXXXXX, XXXXXXX, XXXXXXX, KC_LCBR, KC_RCBR, XXXXXXX,                                     KC_CIRC, KC_AMPR, KC_PIPE, XXXXXXX, XXXXXXX, XXXXXXX,
-                                                _______, _______, _______, _______, _______, _______,
-                                                         _______, _______, _______, _______
-   ),
-  [_LOWER] = LAYOUT_split_4x6_5(
-  /* LOWER
-   * .-----------------------------------------.                                  .-----------------------------------------.
-   * |      |  F1  |  F2  |  F3  |  F4  |  F5  |                                  |  F6  |  F7  |  F8  |  F9  |  F10 |  F11 |
-   * |------+------+------+------+------+------|                                  |------+------+------+------+------+------|
-   * |      |      |      |   [  |   ]  |  +   |                                  |      |      |  up  |      |      |  F12 |
-   * |------+------+------+------+------+------|                                  |------+------+------+------+------+------|
-   * |  Ins |  !   |  @   |   (  |   )  |  -   |                                  |      | left | down | rght |  ?   |      |
-   * |------+------+------+------+------+------|                                  |------+------+------+------+------+------|
-   * |      |      |      |   {  |   }  |  =   |                                  |      |      |      |      |      |      |
-   * '-----------------------------------------/                                  \-----------------------------------------'
-   *                                  /       /---------------.    .---------------\       \
-   *                                 /       /       /       /      \       \       \       \
-   *                                '-------/       /       /        \       \       \-------'
-   *                                       /---------------/          \---------------\
-   *                                      /       /       /            \       \       \
-   *                                     /       /       /              \       \       \
-   *                                    '---------------'                '---------------'
-   */
-   XXXXXXX, KC_F1  , KC_F2  , KC_F3  , KC_F4  , KC_F5  ,                                     KC_F6  , KC_F7  , KC_F8  , KC_F9  , KC_F10 , KC_F11 ,
-   XXXXXXX, XXXXXXX, XXXXXXX, KC_LBRC, KC_RBRC, KC_PPLS,                                     XXXXXXX, XXXXXXX, KC_UP  , XXXXXXX, XXXXXXX, KC_F12 ,
-   KC_INS , KC_EXLM, KC_AT  , KC_LPRN, KC_RPRN, KC_MINS,                                     XXXXXXX, KC_LEFT, KC_DOWN, KC_RGHT, KC_QUES, XXXXXXX,
-   XXXXXXX, XXXXXXX, XXXXXXX, KC_LCBR, KC_RCBR, KC_PEQL,                                     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
-                                                _______, _______, _______, _______, _______, _______,
-                                                         _______, _______, _______, _______
-   ),
-  [_ADJUST] = LAYOUT_split_4x6_5(
-  /* ADJUST
-   * .-----------------------------------------.                                  .-----------------------------------------.
-   * |      |      |      |      |      | QWERT|                                  |COLEM |      |      |      |      |      |
-   * |------+------+------+------+------+------|                                  |------+------+------+------+------+------|
-   * |      |      |      |      |      |  V+  |                                  |  B + |      |      |      |      |      |
-   * |------+------+------+------+------+------|                                  |------+------+------+------+------+------|
-   * |      |      |      |      |      |  V-  |                                  |  B - |  <<  | play |  >>  |      |      |
-   * |------+------+------+------+------+------|                                  |------+------+------+------+------+------|
-   * |      |      |      |      |      | Mute |                                  |      |      |      |      |      |      |
-   * '-----------------------------------------/                                  \-----------------------------------------'
-   *                                  /       /---------------.    .---------------\       \
-   *                                 /       /       /       /      \       \       \       \
-   *                                '-------/       /       /        \       \       \-------'
-   *                                       /---------------/          \---------------\
-   *                                      /       /       /            \       \       \
-   *                                     /       /       /              \       \       \
-   *                                    '---------------'                '---------------'
-   */
-   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, QWERT  ,                                     COLEM  , XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
-   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_VOLU,                                     KC_BRIU, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
-   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_VOLD,                                     KC_BRID, KC_MRWD, KC_MPLY, KC_MFFD, XXXXXXX, XXXXXXX,
-   XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, KC_MUTE,                                     XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
-                                                XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
-                                                         XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX
-   )
+//┌────────┬────────┬────────┬────────┬────────┬────────┐        ┌────────┬────────┬────────┬────────┬────────┬────────┐
+    _______,    KC_1,    KC_2,    KC_3,    KC_4,    KC_5,             KC_6,    KC_7,    KC_8,    KC_9,    KC_0,TD(TD_PG),
+//├────────┼────────┼────────┼────────┼────────┼────────┤        ├────────┼────────┼────────┼────────┼────────┼────────┤
+     KC_GRV,    KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,             KC_Y,    KC_U,    KC_I,    KC_O,    KC_P, KC_BSLS,
+//├────────┼────────┼────────┼────────┼────────┼────────┤        ├────────┼────────┼────────┼────────┼────────┼────────┤
+     KC_TAB,    KC_A,    KC_S,    KC_D,    KC_F,    KC_G,             KC_H,    KC_J,    KC_K,    KC_L, KC_SCLN, KC_QUOT,
+//├────────┼────────┼────────┼────────┼────────┼────────┤        ├────────┼────────┼────────┼────────┼────────┼────────┤
+TD(TD_LAYER),   KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,             KC_N,    KC_M, KC_COMM,  KC_DOT, KC_SLSH, _______,
+//└────────┴────────┴────────┼────────┼────────┼────────┤        ├────────┼────────┼────────┼────────┴────────┴────────┘
+             ALT_T(KC_ESC),CTL_T(KC_SPC),TD(TD_EISU_GUI),          _______, SFT_ENT, KC_BSPC,
+//                           └────────┼────────┼────────┤        ├────────┼────────┼────────┘
+                                        KC_LBRC, KC_RBRC,          KC_MINS,  KC_EQL
+//                                    └────────┴────────┘        └────────┴────────┘
+  ),
+  [_RAISE] = LAYOUT_split_4x6_5(
+//┌────────┬────────┬────────┬────────┬────────┬────────┐        ┌────────┬────────┬────────┬────────┬────────┬────────┐
+  MPLY_VOLU, _______, _______, _______, _______, DB_TOGG,          AS_DOWN,  AS_RPT,   AS_UP, DT_DOWN, DT_PRNT,   DT_UP,
+//├────────┼────────┼────────┼────────┼────────┼────────┤        ├────────┼────────┼────────┼────────┼────────┼────────┤
+  MUTE_VOLD, KC_BRIU, KC_WH_L, KC_MS_U, KC_WH_R, KC_WH_U,            KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,
+//├────────┼────────┼────────┼────────┼────────┼────────┤        ├────────┼────────┼────────┼────────┼────────┼────────┤
+    _______, KC_BRID, KC_MS_L, KC_MS_D, KC_MS_R, KC_WH_D,          KC_LEFT, KC_DOWN,   KC_UP, KC_RGHT, _______, _______,
+//├────────┼────────┼────────┼────────┼────────┼────────┤        ├────────┼────────┼────────┼────────┼────────┼────────┤
+    _______, DM_PLY1, DM_PLY2, DM_REC1, DM_REC2, DM_RSTP,            KC_F7,   KC_F8,   KC_F9,  KC_F10,  KC_F11,  KC_F12,
+//└────────┴────────┴────────┼────────┼────────┼────────┤        ├────────┼────────┼────────┴────────┴────────┴────────┘
+                             PSCR_CCLK,RCLK_SCLK,KC_BTN1,          _______, _______,  KC_DEL,
+//                           └────────┼────────┼────────┤        ├────────┴────────┴────────┘
+                                        _______, _______,          _______, _______
+// 
+  ),
 };
 
-bool get_hold_on_other_key_press(uint16_t keycode, keyrecord_t *record) {
-  if (keycode == CM_SPAR) {
-    return false;
-  } else if (QK_MOD_TAP <= keycode && keycode <= QK_MOD_TAP_MAX) {
-    return true; 
-  } else {
-    return false;
-  }
+uint16_t get_tapping_term(uint16_t keycode, keyrecord_t *record) {
+    switch (keycode) {
+        case TD(TD_PG):
+            return TAPPING_TERM + 150;
+        case TD(TD_LAYER):
+            return TAPPING_TERM + 100;
+        case TD(TD_EISU_GUI):
+            return TAPPING_TERM + 100;
+        // case TD(TD_BRC):
+        //     return TAPPING_TERM + 100;
+        case CTL_T(KC_SPC):
+            return TAPPING_TERM + 50;
+        case KC_BSPC:
+            return TAPPING_TERM + 50;
+        default:
+            return TAPPING_TERM;
+    }
 }
 
-layer_state_t layer_state_set_user(layer_state_t state) {
-  return update_tri_layer_state(state, _LOWER, _RAISE, _ADJUST);
+bool process_record_user(uint16_t keycode, keyrecord_t *record) {
+
+# ifdef CONSOLE_ENABLE
+    uprintf("kl: kc: 0x%04x, col: %2u, row: %2u, pressed: %u, time: %5u, int: %u, count: %u\n", keycode, record->event.key.col, record->event.key.row, record->event.pressed, record->event.time, record->tap.interrupted, record->tap.count);
+# endif
+
+    bool hold_start = !record->tap.count && record->event.pressed;
+    bool hold_end = !record->tap.count && !record->event.pressed;
+    bool tap_start = record->tap.count && record->event.pressed;
+    // bool tap_end = record->tap.count && !record->event.pressed;
+    switch (keycode) {
+        case PSCR_CCLK:
+            if (tap_start) {
+                register_mods(MOD_BIT(KC_LCTL));
+                tap_code_delay(KC_BTN1, 5);
+                unregister_mods(MOD_BIT(KC_LCTL));
+                return false;
+            } else if (hold_start) {
+                tap_code(KC_PSCR);
+                return false;
+            }
+            break;
+        case RCLK_SCLK:
+            if (tap_start) {
+                register_mods(MOD_BIT(KC_LSFT));
+                wait_ms(5);
+                tap_code(KC_BTN1);
+                unregister_mods(MOD_BIT(KC_LSFT));
+                return false;
+            } else if (hold_start) {
+                register_code(KC_BTN2);
+                return false;
+            } else if (hold_end) {
+                unregister_code(KC_BTN2);
+                return false;
+            }
+            break;
+        case MPLY_VOLU:
+            if (hold_start) {
+               tap_code(KC_MPLY);
+               return false;
+            }
+            break;
+        case MUTE_VOLD:
+            if (hold_start) {
+                tap_code(KC_MUTE);
+                return false;
+            }
+            break;
+        case SFT_ENT:
+            if (hold_start) {
+                tap_code16(LSFT(KC_ENT));
+                return false;
+            }
+            break;
+    }
+
+    return true;
 }
 
-// Flexible macOS-friendly Grave Escape
-// https://docs.qmk.fm/#/feature_key_overrides?id=flexible-macos-friendly-grave-escape
+td_state_t cur_dance(tap_dance_state_t *state, bool is_permissive_hold) {
+    switch (state->count) {
+        case 1:
+            if (is_permissive_hold && state->interrupted) return TD_SINGLE_HOLD;
+            // Key has not been interrupted, but the key is still held. Means you want to send a 'HOLD'.
+            return ((state->interrupted || !state->pressed) ? TD_SINGLE_TAP : TD_SINGLE_HOLD);
+        case 2:
+            // interrupted: An another key has been hit under the tapping term.
+            // tapping ['f'(single tap dance) 'f'(single tap dance) 'b'(another key)] within the tapping term results "ffb" not the double tap dance.
+            return ((state->interrupted) ? TD_DOUBLE_SINGLE_TAP : (state->pressed) ? TD_DOUBLE_HOLD : TD_DOUBLE_TAP);
+        default: return TD_UNKNOWN;
+    }
+}
 
-const key_override_t tilde_esc_override = ko_make_basic(MOD_MASK_SHIFT, KC_ESC, S(KC_GRAVE));
-const key_override_t grave_esc_override = ko_make_basic(MOD_MASK_GUI, KC_ESC, KC_GRAVE);
-const key_override_t delete_key_override = ko_make_basic(MOD_MASK_SHIFT, KC_BSPC, KC_DELETE);
+void td_finished(tap_dance_state_t *state, void *_user_data) {
 
+    td_user_data_t *user_data = (td_user_data_t *)_user_data;
+    user_data->state = cur_dance(state, user_data->options & TD_PERMISSIVE_HOLD);
+    td_keycode_t td_keycode = user_data->actions[user_data->state];
 
-const key_override_t **key_overrides = (const key_override_t *[]){
-    &tilde_esc_override,
-    &grave_esc_override,
-    &delete_key_override,
-    NULL
-};
+# ifdef CONSOLE_ENABLE
+    uprintf("finished count: %u, interrupted: %u, pressed: %u, state: %u, keytype: %u\n", state->count, state->interrupted, state->pressed, user_data->state, td_keycode.type );
+# endif
+
+    switch(td_keycode.type) {
+        case KEYCODE8: tap_code(td_keycode.keycode8); break;
+        case KEYCODE8_HOLD: register_code(td_keycode.keycode8); break;
+        case KEYCODE8_TWICE: tap_code(td_keycode.keycode8); register_code(td_keycode.keycode8); break;
+        case KEYCODE16: tap_code16(td_keycode.keycode16); break;
+        case LAYER_HOLD: layer_on(td_keycode.layer); break;
+        case LAYER_TOGGLE: layer_invert(td_keycode.layer); break;
+        case LAYER_ONESHOT: set_oneshot_layer(td_keycode.layer, ONESHOT_START); break;
+        default: break;
+    }
+}
+
+void td_reset(tap_dance_state_t *state, void *_user_data) {
+
+    td_user_data_t *user_data = (td_user_data_t *)_user_data;
+    td_keycode_t td_keycode = user_data->actions[user_data->state];
+
+# ifdef CONSOLE_ENABLE
+    uprintf("reset count: %u,interrupted: %u, pressed: %u, state: %u, keytype: %u\n", state->count, state->interrupted, state->pressed, user_data->state, td_keycode.type );
+# endif
+
+    switch(td_keycode.type) {
+        case KEYCODE8: break;
+        case KEYCODE8_HOLD: unregister_code(td_keycode.keycode8); break;
+        case KEYCODE8_TWICE: unregister_code(td_keycode.keycode8); break;
+        case KEYCODE16: break;
+        case LAYER_HOLD: layer_off(td_keycode.layer); break;
+        case LAYER_TOGGLE: break;
+        case LAYER_ONESHOT: clear_oneshot_layer_state(ONESHOT_PRESSED); break;
+        default: break;
+    }
+
+    user_data->state = TD_NONE;
+}
