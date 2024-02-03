@@ -1,3 +1,22 @@
+--[[
+git diff COMMIT_HASH_1 COMMIT_HASH_2 | grep "your_search_term"
+Gedit git-obj:filepath
+0Gclog
+Gclog --name-only
+
+new
+r! git show branch:file
+file filename
+filetype detect
+set buftype=nowrite
+
+!git log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(auto)%d%C(reset)' --all
+
+git diff-tree --no-commit-id --name-only -r $1
+
+if | | else | | endif
+]]
+
 K, HL, CMD, AUC, AUG = function(lhs, rhs, opts)
       opts = opts or {}
       local mode = opts.mode or 'n'
@@ -28,12 +47,11 @@ local packages = {
   'https://github.com/MunifTanjim/nui.nvim',
   'https://github.com/nvim-lua/plenary.nvim',
 
+  'https://github.com/mbbill/undotree',
   'https://github.com/nvim-telescope/telescope.nvim',
   'https://github.com/nvim-tree/nvim-tree.lua',
-  'https://github.com/mbbill/undotree',
-
+  'https://github.com/tpope/vim-fugitive',
   'https://github.com/lewis6991/gitsigns.nvim',
-  'https://github.com/sindrets/diffview.nvim',
 
   'https://github.com/nvim-treesitter/nvim-treesitter',
   'https://github.com/nvim-treesitter/nvim-treesitter-context',
@@ -56,6 +74,7 @@ local packages = {
   'https://github.com/saadparwaiz1/cmp_luasnip',
   'https://github.com/L3MON4D3/LuaSnip',
   'https://github.com/danieiff/friendly-snippets',
+  -- 'https://github.com/jcdickinson/codeium.nvim',
   'https://github.com/jackMort/ChatGPT.nvim',
   'https://github.com/danymat/neogen',
 
@@ -78,8 +97,13 @@ local packages = {
   'https://github.com/b0o/SchemaStore.nvim',
   'https://github.com/tpope/vim-dadbod',
   'https://github.com/kristijanhusak/vim-dadbod-ui',
-  'https://github.com/kristijanhusak/vim-dadbod-completion'
+  'https://github.com/kristijanhusak/vim-dadbod-completion',
 }
+
+required_filetypes = {}
+CMD('LoadRequiredFileTypes', function()
+  for _, ft in ipairs(required_filetypes) do vim.bo.ft = ft end
+end, { desc = "Install deps for each filetypes loaded in 'REQUIRE'" })
 
 function REQUIRE(opt)
   local function require_internal(_cb)
@@ -143,6 +167,8 @@ function REQUIRE(opt)
   end
 
   if opt.ft then
+    vim.list_extend(required_filetypes, type(opt.ft) == 'table' and opt.ft or { opt.ft })
+    local aug_id = AUG(required_filetypes[#required_filetypes], {})
     AUC('FileType', {
       pattern = opt.ft,
       group = aug_id,
@@ -469,8 +495,6 @@ require 'gitsigns'.setup {
   end
 }
 
-require 'diffview'.setup {}
-
 AUC('FileType', {
   pattern = 'gitcommit',
   callback = function(ev)
@@ -498,8 +522,12 @@ AUC('FileType', {
 
 require 'nvim-treesitter.configs'.setup {
   ensure_installed = {
-    'javascript', 'typescript', 'html', 'css', 'scss', 'python', 'php', 'lua', 'bash', 'java',
-    'json', 'jsonc', 'comment', 'markdown', 'markdown_inline', 'gitcommit', 'git_config', 'git_rebase', 'sql', 'regex'
+    'javascript', 'typescript', 'tsx', 'html', 'css', 'vue', 'svelte', 'astro',
+    'python', 'php', 'ruby', 'lua', 'bash',
+    'c', 'java', 'go', 'rust',
+    'yaml', 'toml', 'json', 'jsonc', 'comment', 'markdown', 'markdown_inline',
+    'gitcommit', 'git_config', 'git_rebase',
+    'dockerfile', 'sql', 'prisma', 'graphql', 'regex'
   },
   highlight = { enable = true }
 }
@@ -523,7 +551,7 @@ K("b", "<cmd>lua require 'spider' .motion 'b' <cr>", { mode = { "n", "o", "x" } 
 K("ge", "<cmd>lua require 'spider' .motion 'ge' <cr>", { mode = { "n", "o", "x" } })
 
 require 'flash'.setup { label = { uppercase = false }, modes = { search = { enabled = false } } }
-K('s', require 'flash'.jump, { mode = { "n", "x", "o" } })
+K('f', require 'flash'.jump, { mode = { "n", "x", "o" } })
 K('r', require 'flash'.remote, { mode = { "o" } })
 K('v,', require 'flash'.treesitter, { mode = { "n", "x", "o" } })
 K('v;', require 'flash'.treesitter_search, { mode = { "n", "x", "o" } })
@@ -555,7 +583,8 @@ end, { expr = true, silent = true })
 
 K('vI',
   function()
-    require "syntax-tree-surfer".go_to_top_node_and_execute_commands(false, { "normal! O", "normal! O", "startinsert" })
+    require "syntax-tree-surfer".go_to_top_node_and_execute_commands(false,
+      { "normal! O", "normal! O", "startinsert" })
   end
 )
 
@@ -564,6 +593,8 @@ K('vI',
 require 'regexplainer'.setup()
 
 require 'chatgpt'.setup {}
+
+-- require 'codeium'.setup {}
 
 require 'neogen'.setup { snippet_engine = "luasnip" }
 K('<leader>doc', ':Neogen ', { desc = 'arg: func|class|type' })
@@ -627,6 +658,7 @@ cmp.setup {
     { name = 'nvim_lsp' },
     { name = 'luasnip' },
     { name = 'rg',      keyword_length = 3 },
+    { name = 'codeium' },
     {
       name = 'buffer',
       option = {
@@ -832,3 +864,14 @@ require 'languages'
 require 'typescript'
 
 require 'ui'
+
+-- :G merge origin/<branch> --no-ff --no-edit
+
+local function toggleFugitiveGit()
+  if vim.fn.buflisted(vim.fn.bufname('fugitive:///*/.git//$')) ~= 0 then
+    vim.cmd [[ execute ':bdelete' bufname('fugitive:///*/.git//$') ]]
+  else
+    vim.cmd [[G]]
+  end
+end
+vim.keymap.set('n', ';g', toggleFugitiveGit, {})
