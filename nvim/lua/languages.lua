@@ -398,31 +398,6 @@ AUC('FileType', {
   end
 })
 
-AUC('FileType', {
-  pattern = { 'c', 'cmake' },
-  once = true,
-  callback = function()
-    require 'lspconfig'.ccls.setup {
-      init_options = {
-        -- https://github.com/MaskRay/ccls/wiki/Customization#initialization-options
-        compilationDatabaseDirectory = ".",
-        index = {
-          threads = 0,
-        },
-        clang = {
-          excludeArgs = { "-frounding-math" },
-        },
-      }
-    }
-
-    if vim.fn.executable 'neocmakelsp' == 0 then
-      vim.fn.jobstart 'cargo install neocmakelsp'
-    end
-    require 'lspconfig'.neocmake.setup {}
-
-    vim.cmd.edit()
-  end
-})
 
 AUC('FileType', {
   pattern = 'python',
