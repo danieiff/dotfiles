@@ -1,9 +1,10 @@
 --[[
-# winget install --id Git.Git -e --source winget
-# git clone --depth 1 https://github.com/danieiff/dotfiles;  New-Item -Path $ENV:LOCALAPPDATA/nvim -ItemType SymbolicLink -Value dotfiles/nvim
-# curl https://github.com/neovim/neovim/releases/download/nightly/nvim-win64.zip -O nvim-win64.zip; Expand-Archive nvim-win64.zip
-# curl https://github.com/jesseduffield/lazygit/releases/download/v0.40.2/lazygit_0.40.2_Windows_x86_64.zip -O lazygit.zip; Expand-Archive lazygit.zip
-# curl https://github.com/BurntSushi/ripgrep/releases/download/14.0.3/ripgrep-14.0.3-x86_64-pc-windows-gnu.zip -O ripgrep.zip; Expand-Archive ripgrep.zip
+winget install git.git
+winget install zig.zig
+winget install Neovim.Neovim.Nightly
+winget install BurntSushi.ripgrep.MSVC
+winget install JesseDuffield.lazygit
+git clone --depth 1 https://github.com/danieiff/dotfiles;  New-Item -Path $ENV:LOCALAPPDATA/nvim -ItemType SymbolicLink -Value dotfiles/nvim
 ]]
 
 K, AUC = function(lhs, rhs, opts)
@@ -107,21 +108,17 @@ vim.fn.jobstart('dir /B ' .. plugin_dir, {
 ---@Editor
 
 vim.fn.setenv('LANG', 'en')
-vim.fn.setenv('PATH',
-  os.getenv 'PATH' .. ';' ..
-  os.getenv 'PROGRAMFILES' .. [[\Git\usr\bin;]] ..
-  os.getenv 'USERPROFILE' .. [[\ripgrep\ripgrep-14.0.3-x86_64-pc-windows-gnu;]] ..
-  os.getenv 'USERPROFILE' .. '\\lazygit;'
-)
+vim.fn.setenv('PATH', os.getenv 'PATH' .. ';' .. os.getenv 'PROGRAMFILES' .. [[\Git\usr\bin;]])
 
 for k, v in pairs {
   autowriteall = true, undofile = true,
   ignorecase = true, smartcase = true,
-  tabstop = 2, shiftwidth = 0, expandtab = true,
+  tabstop = 2, shiftwidth = 0, expandtab = true, fixeol = false,
   pumblend = 30, winblend = 30,
   laststatus = 3, cmdheight = 0, number = true, signcolumn = 'number',
   foldenable = false, foldmethod = 'expr',
-  foldexpr = 'v:lua.vim.treesitter.foldexpr()', foldtext = 'v:lua.vim.treesitter.foldtext()'
+  foldexpr = 'v:lua.vim.treesitter.foldexpr()', foldtext = 'v:lua.vim.treesitter.foldtext()',
+  grepprg='rg\\ --vimgrep'
 } do vim.opt[k] = v end
 
 vim.fn.digraph_setlist { { 'eh', '✨' }, { 'ej', '🔧' }, { 'ek', '♻' }, { 'el', '🐛' }, { 'e;', '🩹' } }
@@ -271,10 +268,11 @@ K('<leader>gc', require 'telescope.builtin'.git_bcommits_range, { mode = { 'x' }
 K('<leader>gb', require 'telescope.builtin'.git_branches)
 K('<leader>gs', require 'telescope.builtin'.git_stash)
 
-K('<C-g>', '<cmd>tab term lazygit<cr><cmd>set nonumber<cr><cmd>startinsert<cr>')
+K('g;', '<cmd>G<cr>')
+K('<leader>gl', [[<cmd>G log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(auto)%d%C(reset)' --all --max-count 30<cr>]])
 
+K('<C-g>', '<cmd>tab term lazygit<cr><cmd>set nonumber<cr><cmd>startinsert<cr>')
 require 'neogit'.setup {}
--- git branch -r | grep -v '\->' | sed "s,\x1B\[[0-9;]*[a-zA-Z],,g" | while read remote; do git branch --track "${remote#origin/}" "$remote"; done
 
 require 'gitsigns'.setup {
   signcolumn = false,
@@ -348,7 +346,7 @@ AUC('FileType', {
 
 require 'nvim-treesitter.configs'.setup {
   ensure_installed = {
-    'javascript', 'typescript', 'html', 'css', 'scss', 'python', 'php', 'lua', 'java', 'sql',
+    'javascript', 'typescript', 'html', 'css', 'scss', 'python', 'php', 'lua', 'java', 'sql', 'bash',
     'json', 'comment', 'markdown', 'markdown_inline', 'gitcommit', 'git_config', 'git_rebase', 'vimdoc'
   },
   highlight = { enable = true }
@@ -420,7 +418,12 @@ vim.fn.jobstart(openai_api_key_cmd, {
     end
   end
 })
-require 'chatgpt'.setup { api_key_cmd = openai_api_key_cmd, popup_input = { submit = '<cr>' } }
+require 'chatgpt'.setup {
+  api_key_cmd = openai_api_key_cmd,
+  popup_input = { submit = '<cr>' },
+  openai_params = { model = "gpt-3.5-turbo", max_tokens = 2048 },
+  openai_edit_params = { model = "gpt-3.5-turbo" }
+}
 K('<C-c>', '<cmd>ChatGPT<cr><cmd>startinsert!<cr>')
 
 local luasnip = require 'luasnip'
@@ -522,17 +525,18 @@ AUC('LspAttach', {
   callback = function(ev)
     local client = vim.lsp.get_client_by_id(ev.data.client_id)
 
-    if client and client.server_capabilities.documentFormattingProvider then
-      vim.api.nvim_clear_autocmds { group = augroup_lsp, buffer = ev.buf }
-      AUC('BufWritePre', {
-        group = augroup_lsp,
-        buffer = ev.buf,
-        callback = function()
-          if not PREPARING_LUASNIP_JUMP then vim.lsp.buf.format { bufnr = ev.buf } end
-          PREPARING_LUASNIP_JUMP = false
-        end
-      })
-    end
+    -- if client and client.server_capabilities.documentFormattingProvider then
+    --   vim.api.nvim_clear_autocmds { group = augroup_lsp, buffer = ev.buf }
+    --   AUC('BufWritePre', {
+    --     group = augroup_lsp,
+    --     buffer = ev.buf,
+    --     callback = function()
+    --       if not PREPARING_LUASNIP_JUMP then vim.lsp.buf.format { bufnr = ev.buf } end
+    --       PREPARING_LUASNIP_JUMP = false
+    --     end
+    --   })
+    -- end
+    K('=', vim.lsp.buf.format ) -- Try async_format?
 
     K('[d', vim.diagnostic.goto_prev)
     K(']d', vim.diagnostic.goto_next)
@@ -619,12 +623,12 @@ AUC('FileType', {
   end
 })
 
-require 'dap.ext.vscode'.load_launchjs(nil, {
-  ["pwa-node"] = { "javascript", "typescript" },
-  ["node"] = { "javascript", "typescript" },
-  ["pwa-chrome"] = { 'typescript', 'javascript' },
-  ["chrome"] = { 'typescript', 'javascript' }
-})
+-- require 'dap.ext.vscode'.load_launchjs(nil, {
+--   ["pwa-node"] = { "javascript", "typescript" },
+--   ["node"] = { "javascript", "typescript" },
+--   ["pwa-chrome"] = { 'typescript', 'javascript' },
+--   ["chrome"] = { 'typescript', 'javascript' }
+-- })
 
 local neotest = require 'neotest'
 neotest.setup {
@@ -657,7 +661,7 @@ K('<leader>ta', neotest.run.attach)
 ---@Languages
 
 local vscode_ext_path, vscode_builtin_ext_path = vim.uv.os_homedir() .. [[\.vscode\extensions\]],
-    os.getenv 'LOCALAPPDATA' .. [[\Microsoft VS Code\resources\app\extensions\]]
+    os.getenv 'LOCALAPPDATA' .. [[\Programs\Microsoft VS Code\resources\app\extensions\]]
 
 local function get_root_dir(mark)
   return vim.fs.dirname(vim.fs.find(mark, {
@@ -679,13 +683,182 @@ require 'null-ls'.setup {
   }
 }
 
+local util = require 'lspconfig.util'
+local lsp = vim.lsp
+
+local function fix_all(opts)
+  opts = opts or {}
+
+  local eslint_lsp_client = util.get_active_client_by_name(opts.bufnr, 'eslint')
+  if eslint_lsp_client == nil then
+    return
+  end
+
+  local request
+  if opts.sync then
+    request = function(bufnr, method, params)
+      eslint_lsp_client.request_sync(method, params, nil, bufnr)
+    end
+  else
+    request = function(bufnr, method, params)
+      eslint_lsp_client.request(method, params, nil, bufnr)
+    end
+  end
+
+  local bufnr = util.validate_bufnr(opts.bufnr or 0)
+  request(0, 'workspace/executeCommand', {
+    command = 'eslint.applyAllFixes',
+    arguments = {
+      {
+        uri = vim.uri_from_bufnr(bufnr),
+        version = lsp.util.buf_versions[bufnr],
+      },
+    },
+  })
+end
+
+local root_file = {
+  '.eslintrc',
+  '.eslintrc.js',
+  '.eslintrc.cjs',
+  '.eslintrc.yaml',
+  '.eslintrc.yml',
+  '.eslintrc.json',
+  'eslint.config.js',
+}
+
+AUC('FileType', { pattern = {
+        'javascript',
+      'javascriptreact',
+      'javascript.jsx',
+      'typescript',
+      'typescriptreact',
+      'typescript.tsx',
+      'vue',
+      'svelte',
+      'astro',
+    },
+    callback = function() 
+
+vim.lsp.start{
+    cmd = { 'vscode-eslint-language-server', '--stdio' },
+    -- https://eslint.org/docs/user-guide/configuring/configuration-files#configuration-file-formats
+    root_dir = function(fname)
+      root_file = util.insert_package_json(root_file, 'eslintConfig', fname)
+      return util.root_pattern(unpack(root_file))(fname)
+    end,
+    -- Refer to https://github.com/Microsoft/vscode-eslint#settings-options for documentation.
+    settings = {
+      validate = 'on',
+      packageManager = nil,
+      useESLintClass = false,
+      experimental = {
+        useFlatConfig = false,
+      },
+      codeActionOnSave = {
+        enable = false,
+        mode = 'all',
+      },
+      format = true,
+      quiet = false,
+      onIgnoredFiles = 'off',
+      rulesCustomizations = {},
+      run = 'onType',
+      problems = {
+        shortenToSingleLine = false,
+      },
+      -- nodePath configures the directory in which the eslint server should start its node_modules resolution.
+      -- This path is relative to the workspace folder (root dir) of the server instance.
+      nodePath = '',
+      -- use the workspace folder location or the file location (if no workspace folder is open) as the working directory
+      workingDirectory = { mode = 'location' },
+      codeAction = {
+        disableRuleComment = {
+          enable = true,
+          location = 'separateLine',
+        },
+        showDocumentation = {
+          enable = true,
+        },
+      },
+    },
+    on_new_config = function(config, new_root_dir)
+      -- The "workspaceFolder" is a VSCode concept. It limits how far the
+      -- server will traverse the file system when locating the ESLint config
+      -- file (e.g., .eslintrc).
+      config.settings.workspaceFolder = {
+        uri = new_root_dir,
+        name = vim.fn.fnamemodify(new_root_dir, ':t'),
+      }
+
+      -- Support flat config
+      if vim.fn.filereadable(new_root_dir .. '/eslint.config.js') == 1 then
+        config.settings.experimental.useFlatConfig = true
+      end
+
+      -- Support Yarn2 (PnP) projects
+      local pnp_cjs = util.path.join(new_root_dir, '.pnp.cjs')
+      local pnp_js = util.path.join(new_root_dir, '.pnp.js')
+      if util.path.exists(pnp_cjs) or util.path.exists(pnp_js) then
+        config.cmd = vim.list_extend({ 'yarn', 'exec' }, config.cmd)
+      end
+    end,
+    handlers = {
+      ['eslint/openDoc'] = function(_, result)
+        if not result then
+          return
+        end
+        local sysname = vim.loop.os_uname().sysname
+        if sysname:match 'Windows' then
+          os.execute(string.format('start %q', result.url))
+        elseif sysname:match 'Linux' then
+          os.execute(string.format('xdg-open %q', result.url))
+        else
+          os.execute(string.format('open %q', result.url))
+        end
+        return {}
+      end,
+      ['eslint/confirmESLintExecution'] = function(_, result)
+        if not result then
+          return
+        end
+        return 4 -- approved
+      end,
+      ['eslint/probeFailed'] = function()
+        vim.notify('[lspconfig] ESLint probe failed.', vim.log.levels.WARN)
+        return {}
+      end,
+      ['eslint/noLibrary'] = function()
+        vim.notify('[lspconfig] Unable to find ESLint library.', vim.log.levels.WARN)
+        return {}
+      end,
+    },
+  commands = {
+    EslintFixAll = {
+      function()
+        fix_all { sync = true, bufnr = 0 }
+      end,
+      description = 'Fix all eslint problems for this buffer',
+    },
+  },
+
+  on_attach = function(client, bufnr)
+    vim.api.nvim_create_autocmd("BufWritePre", {
+      buffer = bufnr,
+      command = "EslintFixAll",
+    })
+  end
+}
+end 
+})
+
 AUC('FileType', {
   pattern = 'html',
   callback = function()
     vim.lsp.start {
       name = 'html-ls',
       root_dir = get_root_dir { 'package.json', '.git' },
-      cmd = { 'node', ([["%shtml-language-features\server\dist\node\htmlServerMain.js"]]):format(vscode_builtin_ext_path) },
+      cmd = { 'node', ([["%shtml-language-features\server\dist\node\htmlServerMain.js"]]):format(vscode_builtin_ext_path), '--stdio' },
       capabilities = capabilities,
       settings = {},
       init_options = {
@@ -703,7 +876,7 @@ AUC('FileType', {
     vim.lsp.start {
       name = 'css-ls',
       root_dir = get_root_dir { 'package.json', '.git' },
-      cmd = { 'node', ([["%scss-language-features\server\dist\node\cssServerMain.js"]]):format(vscode_builtin_ext_path) },
+      cmd = { 'node', ([["%scss-language-features\server\dist\node\cssServerMain.js"]]):format(vscode_builtin_ext_path), '--stdio' },
       settings = { css = { validate = true }, scss = { validate = true } },
       capabilities = capabilities
     }
@@ -788,36 +961,36 @@ AUC('FileType', {
   end
 })
 
-AUC('FileType', {
-  pattern = exts_js,
-  callback = function()
-    require 'typescript-tools'.setup {
-      on_attach = function(client)
-        client.server_capabilities.documentFormattingProvider = false
-        client.server_capabilities.documentRangeFormattingProvider = false
-      end,
-      capabilities = capabilities,
-      settings = {
-        tsserver_file_preferences = {
-          -- includeInlayParameterNameHints = "none",
-          -- includeInlayParameterNameHintsWhenArgumentMatchesName = false,
-          -- includeInlayFunctionParameterTypeHints = false,
-          -- includeInlayVariableTypeHints = false,
-          -- includeInlayVariableTypeHintsWhenTypeMatchesName = false,
-          -- includeInlayPropertyDeclarationTypeHints = false,
-          includeInlayFunctionLikeReturnTypeHints = true,
-          includeInlayEnumMemberValueHints = true,
-          -- includeCompletionsForModuleExports = true,
-        },
-        tsserver_format_options = {
-          -- allowIncompleteCompletions = false,
-          -- allowRenameOfImportPath = false,
-        },
-        importModuleSpecifierPreference = "non-relative",
-      }
-    }
-  end
-})
+-- AUC('FileType', {
+--   pattern = exts_js,
+--   callback = function()
+require 'typescript-tools'.setup {
+  on_attach = function(client)
+    client.server_capabilities.documentFormattingProvider = false
+    client.server_capabilities.documentRangeFormattingProvider = false
+  end,
+  capabilities = capabilities,
+  settings = {
+    tsserver_file_preferences = {
+      -- includeInlayParameterNameHints = "none",
+      -- includeInlayParameterNameHintsWhenArgumentMatchesName = false,
+      -- includeInlayFunctionParameterTypeHints = false,
+      -- includeInlayVariableTypeHints = false,
+      -- includeInlayVariableTypeHintsWhenTypeMatchesName = false,
+      -- includeInlayPropertyDeclarationTypeHints = false,
+      includeInlayFunctionLikeReturnTypeHints = true,
+      includeInlayEnumMemberValueHints = true,
+      -- includeCompletionsForModuleExports = true,
+    },
+    tsserver_format_options = {
+      -- allowIncompleteCompletions = false,
+      -- allowRenameOfImportPath = false,
+    },
+    importModuleSpecifierPreference = "non-relative",
+  }
+}
+--   end
+-- })
 
 for _, adapter in ipairs { 'pwa-node', 'pwa-chrome' } do
   require 'dap'.adapters[adapter] = {
@@ -888,10 +1061,10 @@ end
 AUC('FileType', {
   pattern = vim.list_extend(exts_js, { 'html' }),
   callback = function()
-    require 'lspconfig'.angularls.setup {
+    vim.lsp.start {
       name = 'ng-ls',
       root_dir = get_root_dir { 'package.json', '.git' },
-      cmd = { 'node', vscode_ext_path .. [[angular.ng-template-17.0.3\server\index.js]], "--stdio", "--tsProbeLocations", [[node_modules\typescript\lib\tsserverlibrary.js]],
+      cmd = { 'node', vscode_ext_path .. [[angular.ng-template-14.0.0\server\index.js]], "--stdio", "--tsProbeLocations", [[node_modules\typescript\lib\tsserverlibrary.js]],
         "--ngProbeLocations", [[node_modules\@angular\language-server\bin]] }
     }
   end
@@ -1099,3 +1272,14 @@ vim.lsp.handlers['$/progress'] = function(_, result, ctx)
       }
     })
 end
+
+K('<leader>1', '<cmd>tab term npm run start:bff<cr><cmd>sp | term npm run start:ssr<cr><cmd>vsp | term npm run start<cr>')
+K('<leader>2', ':!TortoiseGitProc /command:log /path:.')
+K('<leader>3', function () vim.ui.input({}, function(ans)
+    if not ans then return end
+    vim.cmd("put =strftime('%H:%M').' " .. ans .. " ' | .w! >> ~\\" .. os.date('%m%d'))
+    vim.cmd"undo"
+  end)
+end)
+K('<leader>4', [[<cmd>!rm -rf C:\Users\sugimoto-hi\AppData\Local\nvim-data\swap<cr>]])
+K('<leader>5', '<cmd>set tabstop=2<cr><cmd>set noexpandtab<cr><cmd>%retab!<cr>')
