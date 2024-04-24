@@ -101,9 +101,8 @@ local packages = {
   'https://github.com/marilari88/neotest-vitest',
 
   'https://github.com/b0o/SchemaStore.nvim',
-  'https://github.com/tpope/vim-dadbod',
-  'https://github.com/kristijanhusak/vim-dadbod-ui',
-  'https://github.com/kristijanhusak/vim-dadbod-completion',
+  'https://github.com/kndndrj/nvim-dbee',
+  'https://github.com/MattiasMTS/cmp-dbee'
 }
 
 required_filetypes = {}
@@ -674,7 +673,13 @@ cmp.setup {
 
 cmp.setup.cmdline({ '/', '?' }, { mapping = cmp.mapping.preset.cmdline(), sources = { { name = 'buffer' } } })
 cmp.event:on('confirm_done', require 'nvim-autopairs.completion.cmp'.on_confirm_done())
-cmp.setup.filetype({ 'sql', 'mysql', 'plsql' }, { sources = cmp.config.sources { { name = 'vim-dadbod-completion' } } })
+cmp.setup.filetype({ 'sql' }, { sources = cmp.config.sources { { name = 'cmp-dbee' } } })
+
+require 'dbee'.setup {
+  sources = {
+    require 'dbee.sources'.FileSource:new(vim.fn.stdpath 'cache' .. '/dbee/persistence.json'),
+  }
+}
 
 ---@ LSP
 
