@@ -70,7 +70,6 @@ local packages = {
   'https://github.com/lukas-reineke/indent-blankline.nvim',
   'https://github.com/RRethy/vim-illuminate',
   'https://github.com/numToStr/Comment.nvim',
-  'https://github.com/JoosepAlviste/nvim-ts-context-commentstring',
   'https://github.com/kylechui/nvim-surround',
   'https://github.com/danieiff/nvim-ts-autotag',
   'https://github.com/windwp/nvim-autopairs',
@@ -521,8 +520,34 @@ require 'nvim-treesitter.configs'.setup {
 require 'ibl'.setup()
 require 'treesitter-context'.setup()
 
-require 'ts_context_commentstring'.setup { enable_autocmd = false }
-require 'Comment'.setup { pre_hook = require 'ts_context_commentstring.integrations.comment_nvim'.create_pre_hook() }
+require 'Comment'.setup { pre_hook = function(ctx)
+  local U = require 'Comment.utils'
+  local comment_config = {
+    tsx = {
+      jsx_element = '{/* %s */}',
+      jsx_fragment = '{/* %s */}',
+      jsx_expression = '/* %s */'
+    },
+  }
+
+  local row, col = vim.api.nvim_win_get_cursor(0)[1] - 1, vim.fn.match(vim.fn.getline '.', '\\S')
+  if ctx.ctype == U.ctype.blockwise then
+    row, col = ctx.range.srow - 1, ctx.range.scol
+  elseif ctx.cmotion == U.cmotion.v or ctx.cmotion == U.cmotion.V then
+    row, col = vim.fn.getpos("'<")[2] - 1, vim.fn.match(vim.fn.getline '.', '\\S')
+  end
+
+  local language_tree = vim.treesitter.get_parser()
+  local language_commentstring = comment_config[language_tree:lang()]
+  if not language_commentstring then return end
+
+  local function check_node(node)
+    local type = (node or { type = function() end }):type()
+    return type ~= 'statement_block' and (language_commentstring[type] or check_node(node:parent()))
+  end
+
+  return check_node(language_tree:named_node_for_range { row, col, row, col })
+end }
 
 require 'nvim-surround'.setup()
 require 'nvim-ts-autotag'.setup { enable_close_on_slash = false, }
