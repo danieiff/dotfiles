@@ -1,6 +1,6 @@
 --[[
 git diff COMMIT_HASH_1 COMMIT_HASH_2 | grep "your_search_term"
-Gedit git-obj:filepath
+Gedit gi-obj:filepath
 0Gclog
 Gclog --name-only
 
@@ -10,11 +10,15 @@ file filename
 filetype detect
 set buftype=nowrite
 
-!git log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(auto)%d%C(reset)' --all
+G log --graph --abbrev-commit --format=format:'%C(bold blue)%h%C(reset)%C(red)%d%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(auto) %C(bold green)(%ar)%C(reset)' --all
 
 git diff-tree --no-commit-id --name-only -r $1
 
 if | | else | | endif
+
+-- TODO:
+-- AI code doc comment writing
+
 ]]
 
 K, HL, CMD, AUC, AUG = function(lhs, rhs, opts)
@@ -78,13 +82,11 @@ local packages = {
   'https://github.com/hrsh7th/nvim-cmp',
   'https://github.com/hrsh7th/cmp-nvim-lsp',
   'https://github.com/hrsh7th/cmp-buffer',
-  'https://github.com/lukas-reineke/cmp-rg',
   'https://github.com/saadparwaiz1/cmp_luasnip',
   'https://github.com/L3MON4D3/LuaSnip',
   'https://github.com/danieiff/friendly-snippets',
   -- 'https://github.com/jcdickinson/codeium.nvim',
   'https://github.com/jackMort/ChatGPT.nvim',
-  'https://github.com/danymat/neogen',
 
   'https://github.com/neovim/nvim-lspconfig',
   'https://github.com/ray-x/lsp_signature.nvim',
@@ -95,10 +97,7 @@ local packages = {
   'https://github.com/rcarriga/nvim-dap-ui',
   'https://github.com/theHamsta/nvim-dap-virtual-text',
   'https://github.com/nvim-neotest/neotest',
-
-  'https://github.com/bennypowers/nvim-regexplainer',
   'https://github.com/pmizio/typescript-tools.nvim',
-  'https://github.com/joeveiga/ng.nvim',
   'https://github.com/nvim-neotest/neotest-jest',
   'https://github.com/marilari88/neotest-vitest',
 
@@ -206,9 +205,11 @@ REQUIRE { deps = packages, cb = function() vim.cmd 'source $MYVIMRC | silent! ta
 for k, v in pairs {
   autowriteall = true, undofile = true,
   shell = (os.getenv 'SHELL' or 'bash') .. ' -l',
+  grepprg = 'rg --vimgrep -S ', grepformat = '%f:%l:%c:m',
   ignorecase = true, smartcase = true,
   tabstop = 2, shiftwidth = 0, expandtab = true,
   pumblend = 30, winblend = 30, fillchars = 'eob: ',
+  list = true, listchars = '',
   laststatus = 3, cmdheight = 0, number = true, signcolumn = 'number',
   foldenable = false, foldmethod = 'expr',
   foldexpr = 'v:lua.vim.treesitter.foldexpr()', foldtext = 'v:lua.vim.treesitter.foldtext()' }
@@ -220,12 +221,12 @@ K('<C-h>', '<C-w>h')
 K('<C-j>', '<C-w>j')
 K('<C-k>', '<C-w>k')
 K('<C-l>', '<C-w>l')
+K('<C-y>', '3<C-y>')
+K('<C-e>', '3<C-e>')
 K('<C-w>-', '<cmd>resize -10<cr>')
 K('<C-w>+', '<cmd>resize +10<cr>')
 K('<C-w><', '<cmd>vertical resize -10<cr>')
 K('<C-w>>', '<cmd>vertical resize +10<cr>')
-K('<C-e>', ('<C-e>'):rep(10))
-K('<C-y>', ('<C-y>'):rep(10))
 K('<C-Left>', '<cmd>tabprevious<cr>', { silent = true, mode = { 'n', 't' } })
 K('<C-Right>', '<cmd>tabnext<cr>', { silent = true, mode = { 'n', 't' } })
 K('<C-Down>', '<cmd>bprevious<cr>', { silent = true })
@@ -261,12 +262,16 @@ end)
 
 K('[q', '<cmd>cprevious<cr>')
 K(']q', '<cmd>cnext<cr>')
-K('[Q', '<cmd>cfirst<cr>')
-K(']Q', '<cmd>clast<cr>')
+K('[[q', '<cmd>cfirst<cr>')
+K(']]q', '<cmd>clast<cr>')
+K('[Q', '<cmd>colder<cr>')
+K(']Q', '<cmd>cnewer<cr>')
 K('[l', '<cmd>lprevious<cr>')
 K(']l', '<cmd>lnext<cr>')
-K('[L', '<cmd>lfirst<cr>')
-K(']L', '<cmd>llast<cr>')
+K('[[l', '<cmd>lfirst<cr>')
+K(']]l', '<cmd>llast<cr>')
+K('[L', '<cmd>lolder<cr>')
+K(']L', '<cmd>lnewer<cr>')
 
 K('<leader>ou', function()
   local text = table.concat(vim.api.nvim_buf_get_lines(0, 0, -1, false), '\n')
@@ -328,7 +333,7 @@ vim.fn.digraph_setlist {
 }
 K('<C-k>e?', '⏪️', { mode = { 'i' } })
 
-AUC('FileType', { pattern = { 'json', 'jsonc', 'yaml', 'python', 'c', 'c++', 'go' }, command = 'set tabstop=4' })
+AUC('FileType', { pattern = { 'json', 'jsonc', 'yaml', 'python', 'c', 'go' }, command = 'set tabstop=4' })
 
 AUC('InsertLeave', {
   callback = function(ev)
@@ -343,30 +348,6 @@ AUC('InsertLeave', {
   nested = true
 })
 
-OPEN_FILES = {}
-local n = 0
-AUC('BufEnter', {
-  callback = function()
-    for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
-      if vim.api.nvim_get_option_value('modifiable', { buf = bufnr })
-          and vim.api.nvim_get_option_value('buftype', { buf = bufnr }) == ''
-          and not vim.api.nvim_get_option_value('readonly', { buf = bufnr })
-          and vim.api.nvim_get_option_value('filetype', { buf = bufnr }) ~= ''
-          and vim.api.nvim_buf_get_name(bufnr) ~= ''
-          and OPEN_FILES[bufnr] == nil then
-        n = n + 1
-        OPEN_FILES[bufnr] = {
-          n = n,
-          bufname = vim.fn.pathshorten(vim.fn.fnamemodify(vim.api.nvim_buf_get_name(bufnr), ':.'))
-        }
-        K(n .. 'g', function() vim.api.nvim_win_set_buf(0, bufnr) end)
-        K(n .. 'd', function() vim.api.nvim_win_set_buf(0, bufnr) end)
-      end
-    end
-  end
-})
-
-vim.cmd 'set sessionoptions-=curdir'
 local function normalize_session_path(dir)
   return vim.fn.stdpath 'data' .. vim.fn.fnamemodify(dir, ':p:h'):gsub('/', '%%')
 end
@@ -377,9 +358,6 @@ local function load_session_if_exists(dir)
     return true
   end
 end
-local function mksession(dir)
-  vim.cmd('silent! tabdo NvimTreeClose | mksession! ' .. vim.fn.fnameescape(normalize_session_path(dir)))
-end
 AUC('VimEnter', {
   callback = function()
     local vim_argv = vim.fn.argv()
@@ -388,13 +366,10 @@ AUC('VimEnter', {
     if load_session_if_exists(vim.fn.getcwd()) then for _, path in ipairs(vim_argv) do vim.cmd.tabedit(path) end end
   end
 })
-AUC('VimLeave', { callback = function() mksession(vim.fn.getcwd()) end })
-AUC('DirChangedPre', {
-  callback = function()
-    mksession(vim.g.prev_cwd); vim.cmd '%bwipe! | clearjumps'
-  end
-})
-AUC('DirChanged', { callback = function(ev) load_session_if_exists(ev.file) end })
+local function mksession()
+  vim.cmd('silent! tabdo NvimTreeClose | mksession! ' .. vim.fn.fnameescape(normalize_session_path(vim.fn.getcwd())))
+end
+AUC('VimLeave', { callback = mksession })
 
 ---@ Terminal
 
@@ -469,8 +444,6 @@ K('<leader>gc', require 'telescope.builtin'.git_bcommits_range, { mode = { 'x' }
 K('<leader>gb', require 'telescope.builtin'.git_branches)
 K('<leader>gs', require 'telescope.builtin'.git_stash)
 
-K('<C-g>', '<cmd>tabnew | term lazygit<cr><cmd>set nonumber<cr><cmd>startinsert<cr>')
-
 require 'gitsigns'.setup {
   signcolumn = false,
   numhl = true,
@@ -490,39 +463,46 @@ require 'gitsigns'.setup {
       return '<Ignore>'
     end, { expr = true })
 
-    K('<leader>hs', ':Gitsigns stage_hunk<cr>', { mode = { 'n', 'v' } })
-    K('<leader>hr', ':Gitsigns reset_hunk<cr>', { mode = { 'n', 'v' } })
-    K('<leader>hu', gs.undo_stage_hunk)
-    K('<leader>hp', gs.preview_hunk)
-    K('<leader>hb', function() gs.blame_line { full = true } end)
-    K('<leader>hB', gs.toggle_current_line_blame)
-    K('<leader>hd', gs.toggle_deleted)
+    K('Hs', ':Gitsigns stage_hunk<cr>', { mode = { 'n', 'v' } })
+    K('Hr', ':Gitsigns reset_hunk<cr>', { mode = { 'n', 'v' } })
+    K('Hu', gs.undo_stage_hunk)
+    K('Hp', gs.preview_hunk)
+    K('Hb', function() gs.blame_line { full = true } end)
+    K('Hd', gs.toggle_deleted)
     K('ih', '<cmd>Gitsigns select_hunk<cr>', { mode = { 'o', 'v' } })
   end
 }
 
-AUC('FileType', {
-  pattern = 'gitcommit',
-  callback = function(ev)
-    if not os.getenv 'OPENAI_API_KEY' then return end
-    local firstline = vim.api.nvim_buf_get_lines(ev.buf, 0, 1, false)[1]
-    if firstline == '' then
-      local cmd          = ([[curl https://api.openai.com/v1/chat/completions \
-                              -H "Content-Type: application/json" \
-                              -H "Authorization: Bearer %s \
-                              -d '{
-                                "model": "gpt-3.5-turbo",
-                                "messages": [{"role": "user", "content": "Write a git conventional commit message from this git diff: %s"}],
-                                "temperature": 0.7
-      }']]):format(os.getenv 'OPENAI_API_KEY', vim.fn.system 'git diff --cached')
-      local result       = vim.fn.system(cmd)
-      local ok, json_tbl = pcall(vim.fn.json_decode, result)
-      if not ok then return end
-      local resultMessage = json_tbl.choices[1].message.content
-      vim.api.nvim_buf_set_lines(ev.buf, 0, 1, false, vim.fn.join(resultMessage, '\n'))
-    end
-  end
-})
+K(';g', function()
+  vim.cmd(
+    vim.fn.winlisted(vim.fn.bufname('fugitive:///*/.git//$')) ~= 0
+    and [[execute ':bdelete' bufname('fugitive:///*/.git//$')]]
+    or [[G]]
+  )
+end)
+
+-- AUC('FileType', {
+--   pattern = 'gitcommit',
+--   callback = function(ev)
+--     if not os.getenv 'OPENAI_API_KEY' then return end
+--     local firstline = vim.api.nvim_buf_get_lines(ev.buf, 0, 1, false)[1]
+--     if firstline == '' then
+--       local cmd          = ([[curl https://api.openai.com/v1/chat/completions \
+--                               -H "Content-Type: application/json" \
+--                               -H "Authorization: Bearer %s \
+--                               -d '{
+--                                 "model": "gpt-3.5-turbo",
+--                                 "messages": [{"role": "user", "content": "Write a git conventional commit message from this git diff: %s"}],
+--                                 "temperature": 0.7
+--       }']]):format(os.getenv 'OPENAI_API_KEY', vim.fn.system 'git diff --cached')
+--       local result       = vim.fn.system(cmd)
+--       local ok, json_tbl = pcall(vim.fn.json_decode, result)
+--       if not ok then return end
+--       local resultMessage = json_tbl.choices[1].message.content
+--       vim.api.nvim_buf_set_lines(ev.buf, 0, 1, false, vim.fn.join(resultMessage, '\n'))
+--     end
+--   end
+-- })
 
 ---@ TreeSitter
 
@@ -531,9 +511,9 @@ require 'nvim-treesitter.configs'.setup {
     'javascript', 'typescript', 'tsx', 'html', 'css', 'vue', 'svelte', 'astro',
     'python', 'php', 'ruby', 'lua', 'bash',
     'c', 'java', 'go', 'rust',
-    'yaml', 'toml', 'json', 'jsonc', 'comment', 'markdown', 'markdown_inline',
-    'gitcommit', 'git_config', 'git_rebase',
-    'dockerfile', 'sql', 'prisma', 'graphql', 'regex'
+    'yaml', 'toml', 'json', 'jsonc', 'markdown', 'markdown_inline',
+    'gitcommit', 'git_rebase',
+    'dockerfile', 'sql', 'prisma', 'graphql'
   },
   highlight = { enable = true }
 }
@@ -596,10 +576,7 @@ K('vI',
 
 ---@ Coding Support
 
-require 'regexplainer'.setup()
-
 require 'chatgpt'.setup {}
-
 -- require 'codeium'.setup {}
 
 require 'neogen'.setup { snippet_engine = "luasnip" }
@@ -650,11 +627,7 @@ cmp.setup {
     ['<Tab>'] = cmp.mapping(function(fallback)
       PREPARING_LUASNIP_JUMP = true
       if vim.fn.mode() == 'c' then
-        if vim.fn.pumvisible() == 0 then
-          vim.api.nvim_feedkeys(require 'cmp.utils.keymap'.t('<C-z>'), 'in', true)
-        else
-          vim.api.nvim_feedkeys(require 'cmp.utils.keymap'.t('<C-n>'), 'in', true)
-        end
+        vim.api.nvim_feedkeys(require 'cmp.utils.keymap'.t(vim.fn.pumvisible() == 0 and '<C-z>' or '<C-n>'), 'in', true)
       else
         if not cmp.confirm { select = true, behavior = cmp.ConfirmBehavior.Replace } then fallback() end
       end
@@ -663,7 +636,6 @@ cmp.setup {
   sources = cmp.config.sources {
     { name = 'nvim_lsp' },
     { name = 'luasnip' },
-    { name = 'rg',      keyword_length = 3 },
     { name = 'codeium' },
     {
       name = 'buffer',
@@ -834,7 +806,6 @@ require 'dap.ext.vscode'.load_launchjs(nil, {
   ["pwa-chrome"] = { 'typescript', 'javascript', 'typescriptreact', 'javascriptreact', 'vue', 'svelte' },
   ["chrome"] = { 'typescript', 'javascript', 'typescriptreact', 'javascriptreact', 'vue', 'svelte' },
   -- ["python"] = { "python" },
-  -- ["cppdbg"] = { "c", "cpp" },
   -- ["dlv"] = { "go" },
 })
 
@@ -861,11 +832,12 @@ neotest.setup {
 }
 
 K('<leader>tr', neotest.run.run)
-K('<leadler>tf', function() neotest.run.run(vim.fn.expand("%")) end)
+K('<leadler>tf', function() neotest.run.run(vim.fn.expand '%') end)
 K('<leader>td', function() neotest.run.run { strategy = 'dap' } end)
 K('<leader>ts', neotest.run.stop)
 K('<leader>ta', neotest.run.attach)
 
+-- https://github.com/mason-org/mason-registry/tree/main/packages
 require 'languages'
 require 'typescript'
 
