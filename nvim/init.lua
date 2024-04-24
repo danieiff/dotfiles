@@ -28,6 +28,14 @@ K, HL, CMD, AUC, AUG = function(lhs, rhs, opts)
     vim.api.nvim_create_autocmd,
     vim.api.nvim_create_augroup
 
+local uname = vim.loop.os_uname()
+PLATFORM = {
+  mac = uname.sysname == 'Darwin',
+  linux = uname.sysname == 'Linux',
+  windows = uname.sysname:find 'Windows',
+  wsl = IS_LINUX and uname.release:lower():find 'microsoft'
+}
+
 ---@ Dependencies Management
 
 DEPS_DIR = {
@@ -269,15 +277,13 @@ K('<leader>ou', function()
   end
 end)
 
-if vim.fn.executable 'wslpath' ~= '' then
+if PLATFORM.wsl then
   vim.g.clipboard = {
-    name = 'WslClipboard',
     copy = { ['+'] = 'clip.exe', ['*'] = 'clip.exe' },
     paste = {
       ['+'] = 'powershell.exe -c [Console]::Out.Write($(Get-Clipboard -Raw).tostring().replace("`r", ""))',
       ['*'] = 'powershell.exe -c [Console]::Out.Write($(Get-Clipboard -Raw).tostring().replace("`r", ""))',
-    },
-    cache_enabled = 1,
+    }
   }
 end
 
