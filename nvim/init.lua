@@ -1,10 +1,7 @@
 --[[
-winget install git.git
-winget install zig.zig
-winget install Neovim.Neovim.Nightly
-winget install BurntSushi.ripgrep.MSVC
-winget install JesseDuffield.lazygit
-git clone --depth 1 https://github.com/danieiff/dotfiles;  New-Item -Path $ENV:LOCALAPPDATA/nvim -ItemType SymbolicLink -Value dotfiles/nvim
+@("git.git", "zig.zig", "Neovim.Neovim.Nightly", "BurntSushi.ripgrep.MSVC") | ForEach-Object { winget install $_ }
+git clone --depth 1 https://github.com/danieiff/dotfiles -b windows
+New-Item -Path $ENV:LOCALAPPDATA/nvim -ItemType SymbolicLink -Value dotfiles/nvim
 ]]
 
 K, AUC = function(lhs, rhs, opts)
@@ -33,18 +30,17 @@ local plugin_dir, plugins =
       'https://github.com/nvim-lua/plenary.nvim',
 
       'https://github.com/nvim-telescope/telescope.nvim',
+      'https://github.com/jackMort/ChatGPT.nvim',
       'https://github.com/nvim-neo-tree/neo-tree.nvim',
       'https://github.com/mbbill/undotree',
-
-      'https://github.com/NeogitOrg/neogit',
       'https://github.com/lewis6991/gitsigns.nvim',
+      'https://github.com/tpope/vim-fugitive',
 
       'https://github.com/nvim-treesitter/nvim-treesitter',
       'https://github.com/nvim-treesitter/nvim-treesitter-context',
       'https://github.com/lukas-reineke/indent-blankline.nvim',
       'https://github.com/RRethy/vim-illuminate',
       'https://github.com/numToStr/Comment.nvim',
-      'https://github.com/JoosepAlviste/nvim-ts-context-commentstring',
       'https://github.com/kylechui/nvim-surround',
       'https://github.com/danieiff/nvim-ts-autotag',
       'https://github.com/windwp/nvim-autopairs',
@@ -56,11 +52,11 @@ local plugin_dir, plugins =
       'https://github.com/hrsh7th/nvim-cmp',
       'https://github.com/hrsh7th/cmp-nvim-lsp',
       'https://github.com/hrsh7th/cmp-buffer',
-      'https://github.com/lukas-reineke/cmp-rg',
       'https://github.com/saadparwaiz1/cmp_luasnip',
       'https://github.com/L3MON4D3/LuaSnip',
       'https://github.com/danieiff/friendly-snippets',
-      'https://github.com/jackMort/ChatGPT.nvim',
+      'https://github.com/danieiff/nvim-dbee', -- 'https://github.com/kndndrj/nvim-dbee',
+      'https://github.com/MattiasMTS/cmp-dbee',
 
       'https://github.com/mfussenegger/nvim-dap',
       'https://github.com/rcarriga/nvim-dap-ui',
@@ -73,10 +69,6 @@ local plugin_dir, plugins =
       'https://github.com/nvimtools/none-ls.nvim',
       'https://github.com/pmizio/typescript-tools.nvim',
       'https://github.com/nvim-neotest/neotest-jest',
-
-      'https://github.com/tpope/vim-dadbod',
-      'https://github.com/kristijanhusak/vim-dadbod-ui',
-      'https://github.com/kristijanhusak/vim-dadbod-completion'
     }
 
 vim.fn.jobstart('dir /B ' .. plugin_dir, {
@@ -271,7 +263,6 @@ K('<leader>gs', require 'telescope.builtin'.git_stash)
 K('g;', '<cmd>G<cr>')
 K('<leader>gl', [[<cmd>G log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(auto)%d%C(reset)' --all --max-count 30<cr>]])
 
-K('<C-g>', '<cmd>tab term lazygit<cr><cmd>set nonumber<cr><cmd>startinsert<cr>')
 require 'neogit'.setup {}
 
 require 'gitsigns'.setup {
@@ -294,7 +285,7 @@ require 'gitsigns'.setup {
       return '<Ignore>'
     end, { expr = true })
 
-    K('Hs', '<cmd>Gitsigns stage_hunk<cr>', { mode = { 'n', 'v' } })
+    K('Hs', ':Gitsigns stage_hunk<cr>', { mode = { 'n', 'v', 'x' } })
     K('Hr', '<cmd>Gitsigns reset_hunk<cr>', { mode = { 'n', 'v' } })
     K('Hu', gs.undo_stage_hunk)
     K('Hp', gs.preview_hunk)
@@ -306,40 +297,7 @@ require 'gitsigns'.setup {
 
 AUC('FileType', {
   pattern = 'gitcommit',
-  callback = function(ev)
-    local openai_api_key = vim.fn.system 'powershell (Import-Clixml -Path "$env:USERPROFILE\\OPENAI_API_KEY").GetNetworkCredential().Password'
-    if openai_api_key:find ' ' or vim.api.nvim_buf_get_lines(ev.buf, 0, 1, false)[1] ~= '' then return end
-    local cmd = ([[
-        curl -s https://api.openai.com/v1/chat/completions
-          -H "Content-Type: application/json"
-          -H "Authorization: Bearer %s"
-          -d "%s"
-        ]]):format(
-      openai_api_key,
-      vim.fn.json_encode {
-        model = "gpt-3.5-turbo",
-        messages = {
-          {
-            role = "user",
-            content = ("Write a git conventional commit message from this git diff: %s")
-          }
-        }
-      }:gsub('"', '\\"'):format(
-        vim.fn.system 'git diff --cached':gsub('\n', '\\n'):gsub('\\', '\\\\')
-      )):gsub('%s+', ' ')
-    vim.fn.jobstart(cmd, {
-      stdout_buffered = true,
-      on_stdout = function(_, data)
-        local ok, res_tbl = pcall(vim.json.decode, vim.fn.join(data, ''))
-        if ok and res_tbl.choices then
-          local resultMessage = res_tbl.choices[1].message.content
-          vim.api.nvim_buf_set_lines(ev.buf, 0, 1, false, vim.split(resultMessage, '\n'))
-        else
-          vim.print(cmd, data)
-        end
-      end
-    })
-  end
+  callback = function(ev) vim.api.nvim_buf_set_lines(ev.buf, 0, 1, false, { vim.g.gitsigns_head:match('[A-Z]+-%d+') }) end
 })
 
 ---@TreeSitter
@@ -347,7 +305,7 @@ AUC('FileType', {
 require 'nvim-treesitter.configs'.setup {
   ensure_installed = {
     'javascript', 'typescript', 'html', 'css', 'scss', 'python', 'php', 'lua', 'java', 'sql', 'bash',
-    'json', 'comment', 'markdown', 'markdown_inline', 'gitcommit', 'git_config', 'git_rebase', 'vimdoc'
+    'json', 'markdown', 'markdown_inline', 'gitcommit', 'git_rebase', 'vimdoc'
   },
   highlight = { enable = true }
 }
@@ -498,7 +456,7 @@ cmp.setup.filetype({ 'sql', 'mysql', 'plsql' }, { sources = cmp.config.sources {
 vim.api.nvim_create_user_command('LspLog', 'tabe ' .. vim.lsp.get_log_path(), {}) -- vim.lsp.set_log_level 'DEBUG'
 vim.api.nvim_create_user_command('LspRestart', 'lua vim.lsp.stop_client(vim.lsp.get_active_clients()); vim.cmd"edit"',
   {})
-vim.api.nvim_create_user_command('LspConfigHelp',
+vim.api.nvim_create_user_command('LspHelp',
   'tabe https://raw.githubusercontent.com/neovim/nvim-lspconfig/master/lua/lspconfig/server_configurations/<args>.lua'
   , { nargs = 1 })
 vim.api.nvim_create_user_command('LspCapa', function()
@@ -895,7 +853,7 @@ AUC('FileType', {
           runtime = { version = 'LuaJIT' },
           workspace = {
             checkThirdParty = false,
-            library = { vim.env.VIMRUNTIME, '${3rd}/luv/library' }
+            library = vim.api.nvim_get_runtime_file("", true)
           }
         }
       }
@@ -1153,7 +1111,7 @@ local function draw_statusline()
     ['R']                                                       = 'MiniStatuslineModeReplace',
     ['c']                                                       = 'MiniStatuslineModeCommand'
   })[vim.fn.mode()] or 'MiniStatuslineModeOther'
-  local githead_vimmode = vim.g.gitsigns_head and ('%%#%s# %s %%*'):format(vim_mode_hl, vim.g.gitsigns_head)
+  local githead_vimmode = ('%%#%s# %s %%*'):format(vim_mode_hl, vim.fn['fugitive#statusline']():sub(6,-3))
 
   local gs_dict = vim.b.gitsigns_status_dict or {}
   local added, changed, removed = gs_dict.added, gs_dict.changed, gs_dict.removed
@@ -1182,7 +1140,7 @@ local function draw_statusline()
     ('%%#%s#%s%%*'):format(vim.o.modified and 'NeoTreeModified' or '', vim.fn.fnamemodify(vim.fn.expand '%', ':.')),
     '%P',
     os.date '%H:%M'
-  }), '  ')
+  }), ' ')
 end
 
 AUC(
