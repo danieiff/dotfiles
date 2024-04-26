@@ -4,17 +4,21 @@ git clone --depth 1 https://github.com/danieiff/dotfiles -b windows
 New-Item -Path $ENV:LOCALAPPDATA/nvim -ItemType SymbolicLink -Value dotfiles/nvim
 ]]
 
-K, AUC = function(lhs, rhs, opts)
-      opts = opts or {}
-      local mode = opts.mode or 'n'
-      opts.mode = nil
-      vim.keymap.set(mode, lhs, rhs, opts)
-    end,
-    vim.api.nvim_create_autocmd
+function K(lhs, rhs, opts)
+  opts = opts or {}
+  local mode = opts.mode or 'n'
+  opts.mode = nil
+  vim.keymap.set(mode, lhs, rhs, opts)
+end
+
+local default_group = vim.api.nvim_create_augroup('default', {})
+function AUC(ev, opts)
+  if not opts.group then opts.group = default_group end
+  vim.api.nvim_create_autocmd(ev, opts)
+end
 
 local function reload_editor()
   vim.cmd('set runtimepath^=' .. vim.fn.stdpath 'config' .. ' | runtime! plugin/**/*.{vim,lua}')
-  vim.api.nvim_clear_autocmds {}
   dofile(vim.env.MYVIMRC)
   vim.cmd 'helptags ALL | edit'
 end
@@ -110,8 +114,8 @@ for k, v in pairs {
   laststatus = 3, cmdheight = 0, number = true, signcolumn = 'number',
   foldenable = false, foldmethod = 'expr',
   foldexpr = 'v:lua.vim.treesitter.foldexpr()', foldtext = 'v:lua.vim.treesitter.foldtext()',
-  grepprg='rg\\ --vimgrep'
-} do vim.opt[k] = v end
+  grepprg = 'rg\\ --vimgrep', grepformat = '%f:%l:%c:%m'
+} do vim.opt[k] = v end -- Reset :set [option]&
 
 vim.fn.digraph_setlist { { 'eh', '✨' }, { 'ej', '🔧' }, { 'ek', '♻' }, { 'el', '🐛' }, { 'e;', '🩹' } }
 
