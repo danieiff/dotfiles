@@ -23,6 +23,8 @@
 #define MOUSEKEY_MOVE_DELTA 8
 #define MOUSEKEY_INTERVAL 20
 
+#define MK_KINETIC_SPEED
+
 #define AUTO_SHIFT_MODIFIERS // Enable Auto Shift for 1 or more modifier keys press.
 #define AUTO_SHIFT_TIMEOUT 140 // Holding for this time will get Shifted.
 #define AUTO_SHIFT_REPEAT
