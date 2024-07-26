@@ -1,4 +1,4 @@
---[[
+--[[ @Setup
 @("git.git", "zig.zig", "Neovim.Neovim.Nightly", "BurntSushi.ripgrep.MSVC") | ForEach-Object { winget install $_ }
 git clone --depth 1 https://github.com/danieiff/dotfiles -b windows
 New-Item -Path $ENV:LOCALAPPDATA/nvim -ItemType SymbolicLink -Value dotfiles/nvim
@@ -18,121 +18,119 @@ function AUC(ev, opts)
 end
 
 local function reload_editor()
-  vim.cmd('set runtimepath^=' .. vim.fn.stdpath 'config' .. ' | runtime! plugin/**/*.{vim,lua}')
+  vim.cmd 'set runtimepath& | runtime! plugin/**/*.{vim,lua}'
   dofile(vim.env.MYVIMRC)
   vim.cmd 'helptags ALL | edit'
 end
 
 ---@Dependencies
 
-local plugin_dir, plugins =
-    vim.fn.stdpath 'config' .. [[\pack\my\start\]],
-    {
-      'https://github.com/EdenEast/nightfox.nvim',
-      'https://github.com/NvChad/nvim-colorizer.lua',
-      'https://github.com/MunifTanjim/nui.nvim',
-      'https://github.com/nvim-lua/plenary.nvim',
+local plugin_dir = vim.fn.stdpath 'config' .. [[\pack\my\start\]]
 
-      'https://github.com/nvim-telescope/telescope.nvim',
-      'https://github.com/jackMort/ChatGPT.nvim',
-      'https://github.com/nvim-neo-tree/neo-tree.nvim',
-      'https://github.com/mbbill/undotree',
-      'https://github.com/lewis6991/gitsigns.nvim',
-      'https://github.com/tpope/vim-fugitive',
+local plugins = {
+  'https://github.com/EdenEast/nightfox.nvim',
+  'https://github.com/NvChad/nvim-colorizer.lua',
+  'https://github.com/MunifTanjim/nui.nvim',
+  'https://github.com/nvim-lua/plenary.nvim',
+  'https://github.com/nvim-neotest/nvim-nio',
 
-      'https://github.com/nvim-treesitter/nvim-treesitter',
-      'https://github.com/nvim-treesitter/nvim-treesitter-context',
-      'https://github.com/lukas-reineke/indent-blankline.nvim',
-      'https://github.com/RRethy/vim-illuminate',
-      'https://github.com/numToStr/Comment.nvim',
-      'https://github.com/kylechui/nvim-surround',
-      'https://github.com/danieiff/nvim-ts-autotag',
-      'https://github.com/windwp/nvim-autopairs',
-      'https://github.com/Wansmer/treesj',
-      'https://github.com/ziontee113/syntax-tree-surfer',
-      'https://github.com/folke/flash.nvim',
-      'https://github.com/chrisgrieser/nvim-spider',
+  'https://github.com/nvim-telescope/telescope.nvim',
+  'https://github.com/jackMort/ChatGPT.nvim',
+  'https://github.com/nvim-neo-tree/neo-tree.nvim',
+  'https://github.com/mbbill/undotree',
+  'https://github.com/lewis6991/gitsigns.nvim',
+  'https://github.com/tpope/vim-fugitive',
 
-      'https://github.com/hrsh7th/nvim-cmp',
-      'https://github.com/hrsh7th/cmp-nvim-lsp',
-      'https://github.com/hrsh7th/cmp-buffer',
-      'https://github.com/saadparwaiz1/cmp_luasnip',
-      'https://github.com/L3MON4D3/LuaSnip',
-      'https://github.com/danieiff/friendly-snippets',
-      'https://github.com/danieiff/nvim-dbee', -- 'https://github.com/kndndrj/nvim-dbee',
-      'https://github.com/MattiasMTS/cmp-dbee',
+  'https://github.com/nvim-treesitter/nvim-treesitter',
+  'https://github.com/nvim-treesitter/nvim-treesitter-context',
+  'https://github.com/lukas-reineke/indent-blankline.nvim',
+  'https://github.com/RRethy/vim-illuminate',
+  'https://github.com/numToStr/Comment.nvim',
+  'https://github.com/kylechui/nvim-surround',
+  'https://github.com/danieiff/nvim-ts-autotag',
+  'https://github.com/windwp/nvim-autopairs',
+  'https://github.com/Wansmer/treesj',
+  'https://github.com/ziontee113/syntax-tree-surfer',
+  'https://github.com/folke/flash.nvim',
+  'https://github.com/chrisgrieser/nvim-spider',
 
-      'https://github.com/mfussenegger/nvim-dap',
-      'https://github.com/rcarriga/nvim-dap-ui',
-      'https://github.com/theHamsta/nvim-dap-virtual-text',
-      'https://github.com/nvim-neotest/neotest',
+  'https://github.com/hrsh7th/nvim-cmp',
+  'https://github.com/hrsh7th/cmp-nvim-lsp',
+  'https://github.com/hrsh7th/cmp-buffer',
+  'https://github.com/saadparwaiz1/cmp_luasnip',
+  'https://github.com/L3MON4D3/LuaSnip',
+  'https://github.com/danieiff/friendly-snippets',
+  'https://github.com/danieiff/nvim-dbee', -- 'https://github.com/kndndrj/nvim-dbee',
+  'https://github.com/MattiasMTS/cmp-dbee',
 
-      'https://github.com/neovim/nvim-lspconfig',
-      'https://github.com/ray-x/lsp_signature.nvim',
-      'https://github.com/danieiff/lsp-lens.nvim',
-      'https://github.com/nvimtools/none-ls.nvim',
-      'https://github.com/pmizio/typescript-tools.nvim',
-      'https://github.com/nvim-neotest/neotest-jest',
-    }
+  'https://github.com/mfussenegger/nvim-dap',
+  'https://github.com/rcarriga/nvim-dap-ui',
+  'https://github.com/theHamsta/nvim-dap-virtual-text',
+  'https://github.com/nvim-neotest/neotest',
 
-vim.fn.jobstart('dir /B ' .. plugin_dir, {
-  stdout_buffered = true,
-  on_stdout = function(_, data)
-    for i, plugin in ipairs(plugins) do
-      local cache_name = vim.fn.fnamemodify(plugin, ':t')
-      if vim.tbl_contains(vim.tbl_map(vim.trim, data), cache_name) then
-        plugins[i] = nil
-      else
-        vim.fn.jobstart(('git clone %s %s'):format(plugin, plugin_dir .. cache_name), {
-          on_exit = function(_, code)
-            plugins[i] = nil
-            vim.print((code == 0 and 'Installed ' or 'Install Failed ') .. cache_name)
-          end
-        })
-      end
-    end
-    if not next(plugins) then return end
-    local timer = vim.uv.new_timer()
-    timer:start(1000, 500, function()
-      if next(plugins) then return end
-      timer:stop()
-      vim.schedule(reload_editor)
-    end)
+  'https://github.com/neovim/nvim-lspconfig',
+  'https://github.com/ray-x/lsp_signature.nvim',
+  'https://github.com/danieiff/lsp-lens.nvim',
+  'https://github.com/nvimtools/none-ls.nvim',
+  'https://github.com/pmizio/typescript-tools.nvim',
+  'https://github.com/nvim-neotest/neotest-jest',
+  'https://github.com/mfussenegger/nvim-jdtls'
+}
+
+local installed_plugins = vim.tbl_map(function(pack) return vim.fn.fnamemodify(pack, ':h:t') end,
+  vim.api.nvim__get_runtime({ '.git' }, true, {}))
+
+local jobs = {}
+
+for _, plugin in ipairs(plugins) do
+  local plugin_nm = vim.fn.fnamemodify(plugin, ':t')
+  if not vim.tbl_contains(installed_plugins, plugin_nm) then
+    table.insert(jobs, vim.system({ 'git', 'clone', plugin, plugin_dir .. plugin_nm }, {},
+      function(res) vim.print(plugin_nm .. res.stderr) end
+    ))
   end
-})
+end
+
+if vim.g.started and #jobs > 0 then
+  local results = vim.fn.jobwait(jobs)
+  if #vim.api.nvim_list_uis() < 1 then
+    os.exit(vim.fn.min { 1, #vim.tbl_filter(function(res) return res < 0 end, results) })
+    -- vim.api.nvim_err_writeln('error1')
+    -- error(' error2')
+    -- vim.notify('error3', vim.log.level.ERROR)
+  end
+  vim.schedule(reload_editor)
+end
 
 ---@Editor
 
 vim.fn.setenv('LANG', 'en')
-vim.fn.setenv('PATH', os.getenv 'PATH' .. ';' .. os.getenv 'PROGRAMFILES' .. [[\Git\usr\bin;]])
+vim.fn.setenv('PATH', os.getenv 'PATH' .. [[;\Program Files\Git\usr\bin;]])
 
 for k, v in pairs {
   autowriteall = true, undofile = true,
   ignorecase = true, smartcase = true,
-  tabstop = 2, shiftwidth = 0, expandtab = true, fixeol = false,
+  tabstop = 2, shiftwidth = 0, expandtab = true,
   pumblend = 30, winblend = 30,
+  list = true, listchars = { tab = "⇥ " },
   laststatus = 3, cmdheight = 0, number = true, signcolumn = 'number',
-  foldenable = false, foldmethod = 'expr',
-  foldexpr = 'v:lua.vim.treesitter.foldexpr()', foldtext = 'v:lua.vim.treesitter.foldtext()',
   grepprg = 'rg\\ --vimgrep', grepformat = '%f:%l:%c:%m'
-} do vim.opt[k] = v end -- Reset :set [option]&
-
-vim.fn.digraph_setlist { { 'eh', '✨' }, { 'ej', '🔧' }, { 'ek', '♻' }, { 'el', '🐛' }, { 'e;', '🩹' } }
+} do vim.opt[k] = v end -- Reset :set option&
 
 vim.g.mapleader = ' '
 
 K('<up>', '<C-w>w')
 K('<down>', '<cmd>tabe %<cr>')
-K('<left>', '<cmd>tabprevious<cr>', { silent = true, mode = { 'n', 't' } })
-K('<right>', '<cmd>tabnext<cr>', { silent = true, mode = { 'n', 't' } })
+K('<left>', '<cmd>tabprevious<cr>', { silent = true, mode = { 'n' } })
+K('<right>', '<cmd>tabnext<cr>', { silent = true, mode = { 'n' } })
 K('<leader>w', vim.cmd.write)
 K('<Leader>z', '<cmd>qa<cr>')
-K('<Leader>Z', '<cmd>noautocmd qa<cr>')
 K('<Leader>,', '<cmd>tabnew $MYVIMRC<cr>')
 K('<Leader>.,', reload_editor)
 K('<Leader>s', ':%s///g' .. ('<Left>'):rep(3))
 K('<Leader>s', ':s///g' .. ('<Left>'):rep(3), { mode = 'v' })
 K('<leader>S', ':%s/<C-r><C-w>/<C-r><C-w>/gI<Left><Left><Left>')
+K('Za', '<cmd>setlocal foldmethod=expr foldexpr=v:lua.vim.treesitter.foldexpr()<cr>za<cmd>setlocal foldmethod&<cr>')
 K('Y', 'y$')
 K('vP', '`[v`]')
 K('<cr>', '<cmd>call append(".", "")<cr>j')
@@ -155,7 +153,8 @@ K('[[q', '<cmd>silent cfirst<cr>')
 K(']]q', '<cmd>silent clast<cr>')
 K('[Q', '<cmd>silent colder<cr>')
 K(']Q', '<cmd>silent cnewer<cr>')
-K('qq', '<cmd>if empty(filter(getwininfo(), "v:val.quickfix")) | copen | else | cclose | endif<cr>')
+K('qq',
+  '<cmd>if empty(filter(range(1, winnr("$")), \'getwinvar(v:val, "&ft") == "qf"\')) | cwindow| else | cclose | endif<cr>')
 
 K('[l', '<cmd>silent lprevious<cr>')
 K(']l', '<cmd>silent lnext<cr>')
@@ -164,8 +163,8 @@ K(']]l', '<cmd>silent llast<cr>')
 K(']L', '<cmd>silent lolder<cr>')
 K(']L', '<cmd>silent lnewer<cr>')
 K('ql', '<cmd>if empty(filter(getwininfo(), "v:val.loclist")) | lopen | else | lclose | endif<cr>')
--- set modifiable
--- set errorformat=%f\|%l\ col\ %c\|\ %m | cbuffer
+-- :set modifiable
+-- :set errorformat=%f\|%l\ col\ %c\|\ %m | cbuffer
 -- :cc :ll
 
 K('<leader>op', function()
@@ -186,41 +185,20 @@ AUC('InsertLeave', {
   nested = true
 })
 
-OPEN_FILES = {}
-local n = 0
-AUC('BufEnter', {
-  callback = function()
-    for _, bufnr in ipairs(vim.api.nvim_list_bufs()) do
-      if vim.api.nvim_get_option_value('modifiable', { buf = bufnr })
-          and vim.api.nvim_get_option_value('buftype', { buf = bufnr }) == ''
-          and not vim.api.nvim_get_option_value('readonly', { buf = bufnr })
-          and vim.api.nvim_get_option_value('filetype', { buf = bufnr }) ~= ''
-          and vim.api.nvim_buf_get_name(bufnr) ~= ''
-          and OPEN_FILES[bufnr] == nil then
-        n = n + 1
-        OPEN_FILES[bufnr] = {
-          n = n,
-          bufname = vim.fn.pathshorten(vim.fn.fnamemodify(vim.api.nvim_buf_get_name(bufnr), ':.'))
-        }
-        K(n .. 'g', function() vim.api.nvim_win_set_buf(0, bufnr) end)
-        K(n .. 'd', function() vim.api.nvim_win_set_buf(0, bufnr) end)
-      end
-    end
-  end
-})
-
-vim.cmd 'set sessionoptions-=curdir,blank'
+vim.cmd 'set sessionoptions-=blank,buffers'
 local session_path = vim.fn.stdpath 'data' .. '\\' .. vim.fn.fnamemodify(vim.uv.cwd(), ':p:h'):gsub('[:\\]', '-')
 AUC('VimEnter', {
-  callback = function()
+  callback = function(ev)
+    if ev.file then vim.print(ev) end
     local vim_argv = vim.fn.argv()
     if #vim_argv > 0 and vim_argv[1]:find '.git\\COMMIT_EDITMSG' then return end
     vim.cmd('silent! source ' .. session_path)
-    vim.schedule(function() vim.cmd 'silent! tabdo windo edit' end)
-    for _, path in ipairs(vim_argv) do vim.cmd.tabedit(path) end
-  end
+    -- vim.schedule(function() vim.cmd 'silent! tabdo edit' end)
+    -- vim.schedule(function() vim.cmd 'silent! tabdo windo edit' end)
+  end,
+  desc = 'load session'
 })
-AUC('VimLeave', { command = 'mksession! ' .. session_path })
+AUC('VimLeave', { desc = 'session write', command = 'mksession! ' .. session_path })
 
 require 'neo-tree'.setup {
   sources = { 'filesystem', 'document_symbols' },
@@ -232,7 +210,9 @@ K('<C-s>', '<cmd>Neotree toggle document_symbols right show<cr>')
 
 K('<leader>u', '<cmd>UndotreeToggle<cr>')
 
-require 'telescope'.setup {}
+require 'telescope'.setup {
+  defaults = { file_ignore_patterns = { "test" } }
+}
 K('<leader> ', require 'telescope.builtin'.resume)
 K('<leader>f', require 'telescope.builtin'.find_files)
 K('<leader>b', require 'telescope.builtin'.buffers)
@@ -265,10 +245,8 @@ K('<leader>gb', require 'telescope.builtin'.git_branches)
 K('<leader>gs', require 'telescope.builtin'.git_stash)
 
 K('g;', '<cmd>G<cr>')
-K('<leader>gl', [[<cmd>G log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(auto)%d%C(reset)' --all --max-count 30<cr>]])
-
-require 'neogit'.setup {}
-
+K('<leader>gl',
+  [[<cmd>G log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset)%C(bold green)%d%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset) %C(auto)%ar%C(reset)' --max-count 30<cr><cmd>set nowrap<cr>]])
 require 'gitsigns'.setup {
   signcolumn = false,
   numhl = true,
@@ -289,8 +267,8 @@ require 'gitsigns'.setup {
       return '<Ignore>'
     end, { expr = true })
 
-    K('Hs', ':Gitsigns stage_hunk<cr>', { mode = { 'n', 'v', 'x' } })
-    K('Hr', '<cmd>Gitsigns reset_hunk<cr>', { mode = { 'n', 'v' } })
+    K('Hs', ':Gitsigns stage_hunk<cr>', { mode = { 'n', 'v' } })
+    K('Hr', ':Gitsigns reset_hunk<cr>', { mode = { 'n', 'v' } })
     K('Hu', gs.undo_stage_hunk)
     K('Hp', gs.preview_hunk)
     K('Hb', function() gs.blame_line { full = true } end)
@@ -301,7 +279,30 @@ require 'gitsigns'.setup {
 
 AUC('FileType', {
   pattern = 'gitcommit',
-  callback = function(ev) vim.api.nvim_buf_set_lines(ev.buf, 0, 1, false, { vim.g.gitsigns_head:match('[A-Z]+-%d+') }) end
+  callback = function(ev)
+    local issuekey = vim.fn['fugitive#statusline']():match '[A-Z]+-%d+'
+    if not issuekey or vim.api.nvim_buf_get_lines(0, 0, 1, {})[1] ~= '' then return end
+    vim.api.nvim_buf_set_text(ev.buf, 0, 0, 0, 0, { issuekey })
+
+    local cmd = ([[
+      curl --request GET --url ""
+        --user ""
+        --header 'Accept: application/json'
+    ]]):format(issuekey):gsub('%s+', ' ')
+    vim.fn.jobstart(cmd, {
+      stdout_buffered = true,
+      on_stdout = function(_, data)
+        local ok, res_tbl = pcall(vim.json.decode, vim.fn.join(data, ''))
+        if ok then
+          vim.api.nvim_buf_set_text(ev.buf, 0, -1, 0, -1, { vim.tbl_get(res_tbl, 'issues', 1, 'fields', 'summary') })
+        else
+          vim.api.nvim_buf_set_text(ev.buf, 0, 0, 0, -1, { '' })
+          vim.api.nvim_buf_delete(ev.buf, { force = true })
+          vim.print('No issue found')
+        end
+      end
+    })
+  end
 })
 
 ---@TreeSitter
@@ -317,8 +318,7 @@ require 'nvim-treesitter.configs'.setup {
 require 'ibl'.setup()
 require 'treesitter-context'.setup()
 
-require 'ts_context_commentstring'.setup { enable_autocmd = false }
-require 'Comment'.setup { pre_hook = require 'ts_context_commentstring.integrations.comment_nvim'.create_pre_hook() }
+require 'Comment'.setup {}
 
 require 'nvim-surround'.setup()
 require 'nvim-ts-autotag'.setup { enable_close_on_slash = false, }
@@ -440,12 +440,11 @@ cmp.setup {
   sources = cmp.config.sources {
     { name = 'nvim_lsp' },
     { name = 'luasnip' },
-    { name = 'rg',      keyword_length = 3 },
     {
       name = 'buffer',
       option = {
         get_bufnrs = function() return vim.tbl_map(vim.api.nvim_win_get_buf, vim.api.nvim_list_wins()) end,
-        indexing_interval = 1500
+        indexing_interval = 3000
       }
     }
   },
@@ -453,7 +452,20 @@ cmp.setup {
 
 cmp.setup.cmdline({ '/', '?' }, { mapping = cmp.mapping.preset.cmdline(), sources = { { name = 'buffer' } } })
 cmp.event:on('confirm_done', require 'nvim-autopairs.completion.cmp'.on_confirm_done())
-cmp.setup.filetype({ 'sql', 'mysql', 'plsql' }, { sources = cmp.config.sources { { name = 'vim-dadbod-completion' } } })
+
+-- require "dbee".install()
+require "dbee".setup {
+  sources = {
+    require 'dbee.sources'.FileSource:new(vim.fn.stdpath 'data' .. '/dbee/persistence.json')
+  },
+  extra_helpers = {
+    ["mysql"] = {
+      ["List All"] = "select * from {{ .Table }}",
+    }
+  }
+}
+cmp.setup.filetype({ 'sql' }, { sources = cmp.config.sources { { name = 'cmp-dbee' } } })
+
 
 ---@LSP
 
@@ -498,7 +510,7 @@ AUC('LspAttach', {
     --     end
     --   })
     -- end
-    K('=', vim.lsp.buf.format ) -- Try async_format?
+    K('=', vim.lsp.buf.format) -- Try async_format?
 
     K('[d', vim.diagnostic.goto_prev)
     K(']d', vim.diagnostic.goto_next)
@@ -525,7 +537,12 @@ AUC('LspAttach', {
         end
       })
     end)
-    K('<space>rf', vim.lsp.util.rename)
+    K('<space>rf', function()
+      local bufname = vim.api.nvim_buf_get_name(0)
+      vim.ui.input({ prompt = 'Rename file: ', default = bufname }, function(input)
+        vim.lsp.util.rename(bufname, input, {})
+      end)
+    end)
     K('<space>ca', vim.lsp.buf.code_action)
     K('<space>pa', vim.lsp.buf.add_workspace_folder)
     K('<space>pr', vim.lsp.buf.remove_workspace_folder)
@@ -622,14 +639,12 @@ K('<leader>ta', neotest.run.attach)
 
 ---@Languages
 
-local vscode_ext_path, vscode_builtin_ext_path = vim.uv.os_homedir() .. [[\.vscode\extensions\]],
-    os.getenv 'LOCALAPPDATA' .. [[\Programs\Microsoft VS Code\resources\app\extensions\]]
+local vscode_ext_path = vim.uv.os_homedir() .. '/.vscode/extensions/'
 
 local function get_root_dir(mark)
   return vim.fs.dirname(vim.fs.find(mark, {
-    upward = true,
-    stop = vim.uv.os_homedir(),
     path = vim.fs.dirname(vim.api.nvim_buf_get_name(0)),
+    upward = true
   })[1])
 end
 
@@ -639,45 +654,10 @@ local capabilities = require 'cmp_nvim_lsp'.default_capabilities()
 
 require 'null-ls'.setup {
   sources = {
-    package.loaded['null-ls'].builtins.formatting.prettier,
-    package.loaded['null-ls'].builtins.diagnostics.eslint,
     package.loaded['null-ls'].builtins.diagnostics.stylelint,
+    package.loaded['null-ls'].builtins.formatting.prettier
   }
 }
-
-local util = require 'lspconfig.util'
-local lsp = vim.lsp
-
-local function fix_all(opts)
-  opts = opts or {}
-
-  local eslint_lsp_client = util.get_active_client_by_name(opts.bufnr, 'eslint')
-  if eslint_lsp_client == nil then
-    return
-  end
-
-  local request
-  if opts.sync then
-    request = function(bufnr, method, params)
-      eslint_lsp_client.request_sync(method, params, nil, bufnr)
-    end
-  else
-    request = function(bufnr, method, params)
-      eslint_lsp_client.request(method, params, nil, bufnr)
-    end
-  end
-
-  local bufnr = util.validate_bufnr(opts.bufnr or 0)
-  request(0, 'workspace/executeCommand', {
-    command = 'eslint.applyAllFixes',
-    arguments = {
-      {
-        uri = vim.uri_from_bufnr(bufnr),
-        version = lsp.util.buf_versions[bufnr],
-      },
-    },
-  })
-end
 
 local root_file = {
   '.eslintrc',
@@ -689,161 +669,83 @@ local root_file = {
   'eslint.config.js',
 }
 
-AUC('FileType', { pattern = {
-        'javascript',
-      'javascriptreact',
-      'javascript.jsx',
-      'typescript',
-      'typescriptreact',
-      'typescript.tsx',
-      'vue',
-      'svelte',
-      'astro',
-    },
-    callback = function() 
-
-vim.lsp.start{
-    cmd = { 'vscode-eslint-language-server', '--stdio' },
-    -- https://eslint.org/docs/user-guide/configuring/configuration-files#configuration-file-formats
-    root_dir = function(fname)
-      root_file = util.insert_package_json(root_file, 'eslintConfig', fname)
-      return util.root_pattern(unpack(root_file))(fname)
-    end,
-    -- Refer to https://github.com/Microsoft/vscode-eslint#settings-options for documentation.
-    settings = {
-      validate = 'on',
-      packageManager = nil,
-      useESLintClass = false,
-      experimental = {
-        useFlatConfig = false,
-      },
-      codeActionOnSave = {
-        enable = false,
-        mode = 'all',
-      },
-      format = true,
-      quiet = false,
-      onIgnoredFiles = 'off',
-      rulesCustomizations = {},
-      run = 'onType',
-      problems = {
-        shortenToSingleLine = false,
-      },
-      -- nodePath configures the directory in which the eslint server should start its node_modules resolution.
-      -- This path is relative to the workspace folder (root dir) of the server instance.
-      nodePath = '',
-      -- use the workspace folder location or the file location (if no workspace folder is open) as the working directory
-      workingDirectory = { mode = 'location' },
-      codeAction = {
-        disableRuleComment = {
-          enable = true,
-          location = 'separateLine',
-        },
-        showDocumentation = {
-          enable = true,
-        },
-      },
-    },
-    on_new_config = function(config, new_root_dir)
-      -- The "workspaceFolder" is a VSCode concept. It limits how far the
-      -- server will traverse the file system when locating the ESLint config
-      -- file (e.g., .eslintrc).
-      config.settings.workspaceFolder = {
-        uri = new_root_dir,
-        name = vim.fn.fnamemodify(new_root_dir, ':t'),
-      }
-
-      -- Support flat config
-      if vim.fn.filereadable(new_root_dir .. '/eslint.config.js') == 1 then
-        config.settings.experimental.useFlatConfig = true
-      end
-
-      -- Support Yarn2 (PnP) projects
-      local pnp_cjs = util.path.join(new_root_dir, '.pnp.cjs')
-      local pnp_js = util.path.join(new_root_dir, '.pnp.js')
-      if util.path.exists(pnp_cjs) or util.path.exists(pnp_js) then
-        config.cmd = vim.list_extend({ 'yarn', 'exec' }, config.cmd)
-      end
-    end,
-    handlers = {
-      ['eslint/openDoc'] = function(_, result)
-        if not result then
-          return
-        end
-        local sysname = vim.loop.os_uname().sysname
-        if sysname:match 'Windows' then
-          os.execute(string.format('start %q', result.url))
-        elseif sysname:match 'Linux' then
-          os.execute(string.format('xdg-open %q', result.url))
-        else
-          os.execute(string.format('open %q', result.url))
-        end
-        return {}
-      end,
-      ['eslint/confirmESLintExecution'] = function(_, result)
-        if not result then
-          return
-        end
-        return 4 -- approved
-      end,
-      ['eslint/probeFailed'] = function()
-        vim.notify('[lspconfig] ESLint probe failed.', vim.log.levels.WARN)
-        return {}
-      end,
-      ['eslint/noLibrary'] = function()
-        vim.notify('[lspconfig] Unable to find ESLint library.', vim.log.levels.WARN)
-        return {}
-      end,
-    },
-  commands = {
-    EslintFixAll = {
-      function()
-        fix_all { sync = true, bufnr = 0 }
-      end,
-      description = 'Fix all eslint problems for this buffer',
-    },
+AUC('FileType', {
+  pattern = {
+    'javascript',
+    'javascriptreact',
+    'javascript.jsx',
+    'typescript',
+    'typescriptreact',
+    'typescript.tsx',
+    'vue',
+    'svelte',
+    'astro',
   },
-
-  on_attach = function(client, bufnr)
-    vim.api.nvim_create_autocmd("BufWritePre", {
-      buffer = bufnr,
-      command = "EslintFixAll",
-    })
-  end
-}
-end 
-})
-
-AUC('FileType', {
-  pattern = 'html',
   callback = function()
     vim.lsp.start {
-      name = 'html-ls',
-      root_dir = get_root_dir { 'package.json', '.git' },
-      cmd = { 'node', ([["%shtml-language-features\server\dist\node\htmlServerMain.js"]]):format(vscode_builtin_ext_path), '--stdio' },
-      capabilities = capabilities,
-      settings = {},
-      init_options = {
-        provideFormatter = true,
-        embeddedLanguages = { css = true, javascript = true },
-        configurationSection = { 'html', 'css', 'javascript' },
+      name = 'eslint',
+      cmd = { 'node', vscode_ext_path .. 'dbaeumer.vscode-eslint-2.4.4/server/out/eslintServer.js', '--stdio' },
+      root_dir = get_root_dir(root_file),
+      -- https://eslint.org/docs/user-guide/configuring/configuration-files#configuration-file-formats
+      -- Refer to https://github.com/Microsoft/vscode-eslint#settings-options for documentation.
+      settings = {
+        validate = 'on',
+        packageManager = nil,
+        useESLintClass = false,
+        experimental = { useFlatConfig = false },
+        codeActionOnSave = { enable = false, mode = 'all' },
+        format = true,
+        quiet = false,
+        onIgnoredFiles = 'off',
+        rulesCustomizations = {},
+        run = 'onType',
+        problems = { shortenToSingleLine = false },
+        -- nodePath configures the directory in which the eslint server should start its node_modules resolution.
+        -- This path is relative to the workspace folder (root dir) of the server instance.
+        nodePath = '',
+        -- use the workspace folder location or the file location (if no workspace folder is open) as the working directory
+        workingDirectory = { mode = 'location' },
+        codeAction = {
+          disableRuleComment = { enable = true, location = 'separateLine' },
+          showDocumentation = { enable = true }
+        },
+      },
+      on_new_config = function(config, new_root_dir)
+        -- The "workspaceFolder" is a VSCode concept. It limits how far the
+        -- server will traverse the file system when locating the ESLint config
+        -- file (e.g., .eslintrc).
+        config.settings.workspaceFolder = {
+          uri = new_root_dir, name = vim.fn.fnamemodify(new_root_dir, ':t'),
+        }
+        -- Support flat config
+        if vim.fn.filereadable(new_root_dir .. '/eslint.config.js') == 1 then
+          config.settings.experimental.useFlatConfig = true
+        end
+      end,
+      handlers = {
+        ['eslint/openDoc'] = function(_, result)
+          if not result then return end
+          os.execute(string.format(
+            (vim.loop.os_uname().sysname:match 'Windows' and 'start' or 'open') ..
+            ' %q',
+            result.url
+          ))
+          return {}
+        end,
+        ['eslint/confirmESLintExecution'] = function(_, result) return result or 4 --[[approved]] end,
       }
     }
   end
 })
 
-AUC('FileType', {
-  pattern = { 'css', 'scss' },
-  callback = function()
-    vim.lsp.start {
-      name = 'css-ls',
-      root_dir = get_root_dir { 'package.json', '.git' },
-      cmd = { 'node', ([["%scss-language-features\server\dist\node\cssServerMain.js"]]):format(vscode_builtin_ext_path), '--stdio' },
-      settings = { css = { validate = true }, scss = { validate = true } },
-      capabilities = capabilities
-    }
-  end
-})
+vim.api.nvim_create_user_command('EslintFixAll', function()
+  local eslint_lsp_client = vim.lsp.get_clients { name = 'eslint' }
+  if #eslint_lsp_client <= 0 then return end
+  vim.lsp.buf_request_sync(0, 'workspace/executeCommand', {
+    command = 'eslint.applyAllFixes',
+    arguments = { { uri = vim.uri_from_bufnr(0), version = vim.lsp.util.buf_versions[vim.fn.bufnr '%'] } }
+  })
+end, {})
 
 AUC('FileType', {
   pattern = 'lua',
@@ -851,13 +753,11 @@ AUC('FileType', {
     vim.lsp.start {
       name = 'lua-ls',
       root_dir = get_root_dir { '.git' },
-      cmd = { vscode_ext_path .. [[sumneko.lua-3.7.3-win32-x64\server\bin\lua-language-server.exe]] },
+      cmd = { vscode_ext_path .. [[sumneko.lua-3.7.4-win32-x64\server\bin\lua-language-server.exe]] },
       settings = {
         Lua = {
           runtime = { version = 'LuaJIT' },
-          workspace = {
-            checkThirdParty = false,
-            library = vim.api.nvim_get_runtime_file("", true)
+          workspace = { checkThirdParty = false, library = { vim.env.VIMRUNTIME, plugin_dir, "${3rd}/luv/library" }
           }
         }
       }
@@ -882,10 +782,21 @@ require 'dap'.configurations.php = {
 AUC('FileType', {
   pattern = 'php',
   callback = function()
+    local root = get_root_dir { 'composer.json', '.git' }
     vim.lsp.start {
       name = 'intelephense',
-      root_dir = get_root_dir { 'composer.json', '.git' },
-      cmd = { 'node', vscode_ext_path .. [[bmewburn.vscode-intelephense-client-1.10.2\node_modules\intelephense\lib\intelephense.js]], '--stdio' },
+      root_dir = root,
+      cmd = { 'node', vscode_ext_path .. 'bmewburn.vscode-intelephense-client-1.10.4/node_modules/intelephense/lib/intelephense.js', '--stdio' },
+      settings = {
+        intelephense = {
+          environment = {
+            includePaths = {
+              '/ZendFramework-1.12.5',
+              '/Smarty',
+            }
+          }
+        }
+      }
     }
   end
 })
@@ -959,7 +870,15 @@ for _, adapter in ipairs { 'pwa-node', 'pwa-chrome' } do
     type = "server",
     host = "localhost",
     port = "${port}",
-    executable = { command = "node", args = { ([["%sms-vscode.js-debug\src\extension.js"]]):format(vscode_builtin_ext_path), "${port}" } }
+    executable = {
+      command = "node",
+      args = {
+        '\'"' ..
+        os.getenv 'LocalAppData' ..
+        [[\Programs\Microsoft VS Code\resources\app\extensions\ms-vscode.js-debug\src\extension.js"']],
+        "${port}",
+      },
+    }
   }
 end
 for _, ext in ipairs(exts_js) do
@@ -1021,40 +940,28 @@ for _, ext in ipairs(exts_js) do
 end
 
 AUC('FileType', {
-  pattern = vim.list_extend(exts_js, { 'html' }),
+  pattern = { 'typescript', 'html' },
   callback = function()
     vim.lsp.start {
       name = 'ng-ls',
-      root_dir = get_root_dir { 'package.json', '.git' },
-      cmd = { 'node', vscode_ext_path .. [[angular.ng-template-14.0.0\server\index.js]], "--stdio", "--tsProbeLocations", [[node_modules\typescript\lib\tsserverlibrary.js]],
-        "--ngProbeLocations", [[node_modules\@angular\language-server\bin]] }
+      root_dir = get_root_dir 'angular.json',
+      --cmd = { 'node', vscode_ext_path .. [[angular.ng-template-14.0.0\server\index.js]], "--stdio", "--tsProbeLocations", 'node_modules', '--ngProbeLocations', 'node_modules' },
+      cmd = { 'node', [[\Users\sugimoto-hi\AppData\Roaming\nvm\v16.20.2\node_modules\@angular\language-server\index.js]], '--stdio', '--tsProbeLocations', 'node_modules', '--ngProbeLocations', 'node_modules' },
     }
   end
 })
 
-K("<leader>at", function()
-  vim.lsp.buf_request(0, 'angular/isAngularCoreInOwningProject', vim.lsp.util.make_position_params(0),
-    function(_, result) vim.print(result) end)
-
-  vim.lsp.buf_request(0, 'angular/getTemplateLocationForComponent', vim.lsp.util.make_position_params(0),
-    function(_, result)
-      vim.lsp.util.jump_to_location(result, 'utf-8')
-    end)
-end)
-
-K("<leader>ac", function()
-  vim.lsp.buf_request(0, 'angular/getComponentsWithTemplateFile', vim.lsp.util.make_position_params(0),
-    function(_, result)
-      if #result == 1 then
-        vim.lsp.util.jump_to_location(result[1], 'utf-8') -- TODO: check encoding
-      else
-        vim.fn.setqflist({}, ' ', {
-          title = 'Language Server',
-          items = vim.lsp.util.locations_to_items(result, 'utf-8'),
-        })
-        vim.cmd.copen()
-      end
-    end)
+K("<leader>aa", function()
+  local position_params = vim.lsp.util.make_position_params(0)
+  local command = vim.bo.ft == 'html' and 'angular/getComponentsWithTemplateFile' or
+      vim.bo.ft == 'typescript' and 'angular/getTemplateLocationForComponent'
+  if command and vim.lsp.buf_request(0, 'angular/isAngularCoreInOwningProject', position_params, function(_,
+                                                                                                          result)
+        vim.print(result)
+      end) then
+    vim.lsp.buf_request(0, command, position_params,
+      function(_, result) vim.lsp.util.jump_to_location(result[1], 'utf-8') end)
+  end
 end)
 
 local buffer, _uri, ns
@@ -1096,14 +1003,78 @@ K("<leader>aT", function()
   end)
 end)
 
+vim.fn.setenv('JAVA_HOME', [[\pleiades-v4.5\java\8]])
+vim.fn.setenv('CATALINA_HOME', [[\tomcat\apache-tomcat-8.5.28]])
+vim.fn.setenv('TOMCAT_HOME', [[\tomcat\apache-tomcat-8.5.28]])
+
+AUC('FileType', {
+  pattern = { 'java' },
+  callback = function()
+    -- :help vim.lsp.start_client
+    local config = {
+      -- https://github.com/eclipse/eclipse.jdt.ls#running-from-the-command-line
+      cmd = {
+        [[\Program Files\Java\jdk-17\bin\java]], -- winget install --id=Oracle.JDK.17 -e
+        '-Declipse.application=org.eclipse.jdt.ls.core.id1',
+        '-Dosgi.bundles.defaultStartLevel=4',
+        '-Declipse.product=org.eclipse.jdt.ls.core.product',
+        '-Dlog.protocol=true',
+        '-Dlog.level=ALL',
+        '-Xmx1g',
+        '--add-modules=ALL-SYSTEM',
+        '--add-opens', 'java.base/java.util=ALL-UNNAMED',
+        '--add-opens', 'java.base/java.lang=ALL-UNNAMED',
+
+        '-jar', [[\jdtls\plugins\org.eclipse.equinox.launcher_1.6.900.v20240613-2009.jar]],
+
+        '-configuration', [[\jdtls\config_win]],
+        '-data', '/path/to/unique/per/project/workspace/folder'
+      },
+
+      -- requires Neovim 0.10 vim.fs.root(0, { ".git", "mvnw", "gradlew" }),
+      root_dir = require 'jdtls.setup'.find_root { '.git', 'mvnw', 'gradlew' },
+
+      -- https://github.com/eclipse/eclipse.jdt.ls/wiki/Running-the-JAVA-LS-server-from-the-command-line#initialize-request
+      settings = {
+        java = {
+          -- home = [[C:\\pleiades-v4.5\\java\\8]],
+          project = {
+            referencedLibraries = {
+            },
+          },
+          configuration = {
+            runtimes = {
+              {
+                name = 'JavaSE-1.8',
+                path = [[\pleiades-v4.5\java\8\jre]],
+                default = true
+              }
+            }
+          }
+         }
+      },
+
+      -- Language server `initializationOptions`
+      -- You need to extend the `bundles` with paths to jar files
+      -- if you want to use additional eclipse.jdt.ls plugins.
+      --
+      -- See https://github.com/mfussenegger/nvim-jdtls#java-debug-installation
+      --
+      -- If you don't plan on using the debugger or other eclipse.jdt.ls plugins you can remove this
+      init_options = {
+        bundles = {},
+      },
+    }
+    require 'jdtls'.start_or_attach(config) -- starts a new client & server, or attaches to an existing depending on the `root_dir`.
+  end
+})
+
 ---@UI
 
 require 'nightfox'.setup { options = { transparent = true, inverse = { search = true } } }
 vim.cmd 'colorscheme nordfox'
 
 require 'colorizer'.setup { user_default_options = { css_fn = false, tailwind = true } }
-
-vim.api.nvim_set_hl(0, 'Statusline', { bg = 'NONE' })
 
 local function draw_statusline()
   local vim_mode_hl = ({
@@ -1115,44 +1086,47 @@ local function draw_statusline()
     ['R']                                                       = 'MiniStatuslineModeReplace',
     ['c']                                                       = 'MiniStatuslineModeCommand'
   })[vim.fn.mode()] or 'MiniStatuslineModeOther'
-  local githead_vimmode = ('%%#%s# %s %%*'):format(vim_mode_hl, vim.fn['fugitive#statusline']():sub(6,-3))
+  local githead_vimmode = ('%%#%s# %s %%*'):format(vim_mode_hl,
+    vim.fn['fugitive#statusline']():sub(6, -3) or vim.g.gitsigns_head)
 
   local gs_dict = vim.b.gitsigns_status_dict or {}
   local added, changed, removed = gs_dict.added, gs_dict.changed, gs_dict.removed
   local diff_status =
-      (added and added > 0 and ('%#GitsignsAdd#+' .. added .. '%*') or '') ..
-      (changed and changed > 0 and ('%#GitsignsChange#~' .. changed .. '%*') or '') ..
-      (removed and removed > 0 and ('%#GitsignsDelete#-' .. removed .. '%*') or '')
+      ((added or 0) > 0 and ('%#GitsignsAdd#+' .. added .. '%*') or '') ..
+      ((changed or 0) > 0 and ('%#GitsignsChange#~' .. changed .. '%*') or '') ..
+      ((removed or 0) > 0 and ('%#GitsignsDelete#-' .. removed .. '%*') or '')
 
-  local diagnostic_status
+  local diagnostic_status = ''
   for _, level in ipairs(vim.diagnostic.severity) do
     local count = #vim.diagnostic.get(0, { severity = vim.diagnostic.severity[level] })
     if count ~= 0 then
-      diagnostic_status = (diagnostic_status or '') ..
-          ('%%#Diagnostic%s#%s%s%%*'):format(level, level:sub(1, 1), count)
+      diagnostic_status = ('%s%%#Diagnostic%s#%s%s%%*'):format(diagnostic_status, level, level:sub(1, 1), count)
     end
   end
 
   local search = vim.fn.searchcount()
 
-  vim.o.statusline = vim.fn.join(vim.tbl_filter(function(item) return item end, {
+  vim.o.statusline = vim.fn.join {
     githead_vimmode,
     diff_status,
     diagnostic_status,
     ((search.total or 0) > 0 and ('%s/%s'):format(search.current, search.total) or ''),
-    '%=',
-    ('%%#%s#%s%%*'):format(vim.o.modified and 'NeoTreeModified' or '', vim.fn.fnamemodify(vim.fn.expand '%', ':.')),
+    '%<%=',
+    ('%%#%s#%s%%*'):format(
+      vim.o.modified and 'NeoTreeModified' or '',
+      vim.fs.normalize(vim.fn.fnamemodify(vim.fn.expand '%', ':.'))
+    ),
     '%P',
     os.date '%H:%M'
-  }), ' ')
+  }:gsub('%s+', ' ')
 end
 
 AUC(
   { 'WinEnter', 'BufEnter', 'SessionLoadPost', 'FileChangedShellPost', 'VimResized', 'Filetype', 'CursorMoved',
     'CursorMovedI', 'ModeChanged' },
-  { callback = draw_statusline }
+  { callback = function() pcall(draw_statusline) end }
 )
-vim.fn.timer_start(2000, draw_statusline, { ['repeat'] = -1 })
+vim.fn.timer_start(2000, function() pcall(draw_statusline) end, { ['repeat'] = -1 })
 
 local progress_token_to_title, progress_title_to_order, clients_title_progress, timerid_to_winbuf, spinner_frames = {},
     {}, {}, {}, { "⣾", "⣽", "⣻", "⢿", "⡿", "⣟", "⣯", "⣷", index = 1 }
@@ -1235,13 +1209,92 @@ vim.lsp.handlers['$/progress'] = function(_, result, ctx)
     })
 end
 
-K('<leader>1', '<cmd>tab term npm run start:bff<cr><cmd>sp | term npm run start:ssr<cr><cmd>vsp | term npm run start<cr>')
-K('<leader>2', ':!TortoiseGitProc /command:log /path:.')
-K('<leader>3', function () vim.ui.input({}, function(ans)
+---@Custom
+
+AUC('FileType', {
+  pattern = { 'java', 'php', 'smarty', 'javascript' },
+  callback = function()
+    if vim.fn.expand '<afile>:e' == "java" and vim.bo.fenc ~= 'cp932' and vim.bo.fenc ~= 'utf-8' then
+      vim.cmd 'edit ++enc=cp932'
+    end
+    vim.cmd 'set noexpandtab' -- :%retab!
+  end
+})
+
+K('<leader>0', '<cmd>tab term /xampp1.8/apache_start.bat<cr>') -- :term netstat -ano | findstr ":80" -> Task Manager > detail > PID
+K('<leader>1',
+  '<cmd>tab term rm -rf logs\\bff && npm run start:bff<cr><cmd>sp | term set NODE_OPTIONS=--max-old-space-size=11240 && npm run start<cr>')
+-- set NODE_OPTIONS=--max-old-space-size=15000 && ng serve at-root
+K('<leader>2', [[<cmd>%s/></>\r</g | filetype indent on | setf xml | normal gg=G<cr>]])
+K('<leader>3', [[<cmd>%!python -m json.tool<cr><cmd>%s/\\u\(\x\{4\}\)/\=nr2char('0x'.submatch(1),1)/g<cr>]])
+K('<leader>4', ([[<cmd>!rm -rf %s/swap %s/shada<cr>]]):format(vim.fn.stdpath 'data', vim.fn.stdpath 'data'))
+K('<leader>5', function()
+  local target_branch = ''
+  local reviewers = vim.fn.join({},
+    [[%7C%21%7C]])
+  local source_branch = vim.fn['fugitive#statusline']():match '%w+-[%w\\-]+%w+'
+  local open_pr_cmd =
+      [[!start https:// /bitbucket/projects/CMEDIAA/repos/ /pull-requests?create&targetBranch=refs%2Fheads%2F]] ..
+      target_branch .. [[&sourceBranch=refs%2Fheads%2F]] .. source_branch .. '&reviewers=' .. reviewers
+  local escaped_cmd = open_pr_cmd:gsub('&', '^&'):gsub('%%', '\\%%')
+  vim.cmd(escaped_cmd)
+end)
+K('<leader>6', function()
+  local urlpath, querystring = unpack(vim.split(vim.api.nvim_get_current_line(), '?'))
+  if urlpath and querystring then
+    local queryparams = vim.split(querystring, '&')
+    table.sort(queryparams)
+    local sorted_lines = { urlpath }
+    for idx, queryparam in ipairs(queryparams) do
+      table.insert(sorted_lines, (idx == 1 and '?' or '&') .. queryparam)
+    end
+    vim.api.nvim_buf_set_lines(0, vim.api.nvim_win_get_cursor(0)[1] - 1, -1, false, sorted_lines)
+  else
+    vim.cmd [['{,'}s/\n\@<!//g]]
+  end
+end)
+K('<leader>7', [[<cmd>!python \%UserProfile\%/my-task.py<cr><cmd>vsp ~/my-task.txt<cr>]])
+-- TODO:
+-- enter to open issue in browser
+-- open create PR page
+K('<leader>8', function()
+  vim.ui.input({}, function(ans)
     if not ans then return end
-    vim.cmd("put =strftime('%H:%M').' " .. ans .. " ' | .w! >> ~\\" .. os.date('%m%d'))
-    vim.cmd"undo"
+    vim.cmd("put =strftime('%H:%M').' " .. ans .. " ' | .w! >> ~\\" .. os.date '%m%d')
+    vim.cmd 'undo'
   end)
 end)
-K('<leader>4', [[<cmd>!rm -rf C:\Users\sugimoto-hi\AppData\Local\nvim-data\swap<cr>]])
-K('<leader>5', '<cmd>set tabstop=2<cr><cmd>set noexpandtab<cr><cmd>%retab!<cr>')
+K('<leader>9', function()
+  local alt_pairs = { { 'pc', 'sp' } }
+  local bufname, linenr = vim.api.nvim_buf_get_name(0), vim.api.nvim_win_get_cursor(0)[1]
+  for _, pair in pairs(alt_pairs) do
+    for i, type in ipairs(pair) do
+      local type_ptn = type .. '(%p)'
+      if bufname:find(type_ptn) then
+        return vim.cmd(('edit +%s %s'):format(linenr,
+          bufname:gsub(type_ptn, pair[(i % #pair) + 1] .. '%1')))
+      end
+    end
+  end
+end)
+
+--[[
+  curl qrenco.de/STRING
+  curl -s "https://jsonplaceholder.typicode.com/users"
+  curl dict://dict.org/d:command%20line
+  curl wttr.in/tokyo
+
+  :.!ls
+  :h complex-change
+  :{range}![!]{filter} [!][arg]
+  ls is the {filter} program. The filter program accepts the text of the current line at standard input.
+  If there is no intention to send anything to the command, it would be better to run this on an empty line.
+  !!{filter} is a quick way of entering the same sequence.
+
+:let @a = system("ls -ltr")
+ can use whatever register
+
+ vim.cmd'finish'
+ return; do return end;
+ os.exit()
+]]
