@@ -37,7 +37,7 @@ PLATFORM = {
   mac = uname.sysname == 'Darwin',
   linux = uname.sysname == 'Linux',
   windows = uname.sysname:find 'Windows',
-  wsl = IS_LINUX and uname.release:lower():find 'microsoft'
+  wsl = uname.sysname == 'Linux' and uname.release:lower():find 'microsoft'
 }
 
 ---@ Dependencies Management
@@ -471,14 +471,6 @@ require 'gitsigns'.setup {
   end
 }
 
-K(';g', function()
-  vim.cmd(
-    vim.fn.winlisted(vim.fn.bufname('fugitive:///*/.git//$')) ~= 0
-    and [[execute ':bdelete' bufname('fugitive:///*/.git//$')]]
-    or [[G]]
-  )
-end)
-
 -- AUC('FileType', {
 --   pattern = 'gitcommit',
 --   callback = function(ev)
@@ -519,9 +511,15 @@ require 'nvim-treesitter.configs'.setup {
 require 'ibl'.setup()
 require 'treesitter-context'.setup()
 
-require 'Comment'.setup { pre_hook = function(ctx)
-  local U = require 'Comment.utils'
+local _get_option = vim.filetype.get_option
+vim.filetype.get_option = function(filetype, option)
+  if option ~= "commentstring" then return _get_option(filetype, option) end
+
   local comment_config = {
+    javascript = '/* %s */',
+    javascriptreact = '/* %s */',
+    typescript = '/* %s */',
+    typescriptreact = '/* %s */',
     tsx = {
       jsx_element = '{/* %s */}',
       jsx_fragment = '{/* %s */}',
@@ -530,9 +528,7 @@ require 'Comment'.setup { pre_hook = function(ctx)
   }
 
   local row, col = vim.api.nvim_win_get_cursor(0)[1] - 1, vim.fn.match(vim.fn.getline '.', '\\S')
-  if ctx.ctype == U.ctype.blockwise then
-    row, col = ctx.range.srow - 1, ctx.range.scol
-  elseif ctx.cmotion == U.cmotion.v or ctx.cmotion == U.cmotion.V then
+  if vim.fn.mode():lower() == 'v' then
     row, col = vim.fn.getpos("'<")[2] - 1, vim.fn.match(vim.fn.getline '.', '\\S')
   end
 
@@ -541,19 +537,16 @@ require 'Comment'.setup { pre_hook = function(ctx)
   if not language_commentstring then return end
 
   local function check_node(node)
-    local type = (node or { type = function() end }):type()
-    return type ~= 'statement_block' and (language_commentstring[type] or check_node(node:parent()))
+    return node and (language_commentstring[node:type()] or check_node(node:parent()))
   end
 
-  return check_node(language_tree:named_node_for_range { row, col, row, col })
-end }
+  return check_node(language_tree:named_node_for_range { row, col, row, col }) or comment_config[filetype] or
+      _get_option(filetype, option)
+end
 
 require 'nvim-surround'.setup()
 require 'nvim-ts-autotag'.setup { enable_close_on_slash = false, }
 require 'nvim-autopairs'.setup { disable_in_visualblock = true, fast_wrap = { map = '<C-]>' } } -- <C-h> to delete only '('
-
-require 'treesj'.setup { use_default_keymaps = false }
-K('L', require 'treesj'.toggle)
 
 K("w", "<cmd>lua require 'spider' .motion 'w' <cr>", { mode = { "n", "o", "x" } })
 K("e", "<cmd>lua require 'spider' .motion 'e' <cr>", { mode = { "n", "o", "x" } })
@@ -565,38 +558,6 @@ K('f', require 'flash'.jump, { mode = { "n", "x", "o" } })
 K('r', require 'flash'.remote, { mode = { "o" } })
 K('v,', require 'flash'.treesitter, { mode = { "n", "x", "o" } })
 K('v;', require 'flash'.treesitter_search, { mode = { "n", "x", "o" } })
-
-require 'syntax-tree-surfer'.setup()
-K("vV", '<cmd>STSSelectMasterNode<cr>')
-K("vv", '<cmd>STSSelectCurrentNode<cr>')
-K("J", '<cmd>STSSelectNextSiblingNode<cr>', { mode = 'x' })
-K("K", '<cmd>STSSelectPrevSiblingNode<cr>', { mode = 'x' })
-K("H", '<cmd>STSSelectParentNode<cr>', { mode = 'x' })
-K("L", '<cmd>STSSelectChildNode<cr>', { mode = 'x' })
-
-K("vS", "<cmd>STSSwapOrHold<cr>")
-K("vS", "<cmd>STSSwapOrHoldVisual<cr>", { mode = { "x" } })
-K("vu", function()
-  vim.opt.opfunc = "v:lua.STSSwapUpNormal_Dot"; return "g@l"
-end, { silent = true, expr = true })
-K("vd", function()
-  vim.opt.opfunc = "v:lua.STSSwapDownNormal_Dot"; return "g@l"
-end, { silent = true, expr = true })
-K("vn", '<cmd>STSSwapNextVisual<cr>', { mode = { "x" } })
-K("vn", function()
-  vim.opt.opfunc = "v:lua.STSSwapCurrentNodeNextNormal_Dot"; return "g@l"
-end, { silent = true, expr = true })
-K("vp", '<cmd>STSSwapPrevVisual<cr>', { mode = { "x" } })
-K("vp", function()
-  vim.opt.opfunc = "v:lua.STSSwapCurrentNodePrevNormal_Dot"; return "g@l"
-end, { expr = true, silent = true })
-
-K('vI',
-  function()
-    require "syntax-tree-surfer".go_to_top_node_and_execute_commands(false,
-      { "normal! O", "normal! O", "startinsert" })
-  end
-)
 
 ---@ Coding Support
 
@@ -872,14 +833,3 @@ require 'languages'
 require 'typescript'
 
 require 'ui'
-
--- :G merge origin/<branch> --no-ff --no-edit
-
-local function toggleFugitiveGit()
-  if vim.fn.buflisted(vim.fn.bufname('fugitive:///*/.git//$')) ~= 0 then
-    vim.cmd [[ execute ':bdelete' bufname('fugitive:///*/.git//$') ]]
-  else
-    vim.cmd [[G]]
-  end
-end
-vim.keymap.set('n', ';g', toggleFugitiveGit, {})

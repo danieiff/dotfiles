@@ -1,174 +1,109 @@
 REQUIRE {
-  deps = {
-    -- https://github.com/fatih/gomodifytags
-    -- https://github.com/yoheimuta/protolint
-    -- https://github.com/rhysd/actionlint
-    {
-      type = 'bin',
-      arg =
-      [[ VERSION=$(curl -s https://api.github.com/repos/mattn/efm-langserver/releases/latest | grep -Po '"tag_name": "\K[^"]*') && curl -fsSL https://github.com/mattn/efm-langserver/releases/latest/download/efm-langserver_${VERSION}_linux_amd64.tar.gz | tar xz --strip-components=1 ]],
-      executable = 'efm-langserver'
+    -- https://github.com/nvimtools/none-ls.nvim
+    -- https://github.com/creativenull/efmls-configs-nvim
+    deps = {
+        -- https://github.com/fatih/gomodifytags
+        -- https://github.com/yoheimuta/protolint
+        -- https://github.com/rhysd/actionlint
+        {
+            type = 'bin',
+            arg =
+            [[ VERSION=$(curl -s https://api.github.com/repos/mattn/efm-langserver/releases/latest | grep -Po '"tag_name": "\K[^"]*') && curl -fsSL https://github.com/mattn/efm-langserver/releases/latest/download/efm-langserver_${VERSION}_linux_amd64.tar.gz | tar xz --strip-components=1 ]],
+            executable = 'efm-langserver'
+        },
+        { type = 'npm', arg = '@fsouza/prettierd' },
     },
-    { type = 'npm', arg = '@fsouza/prettierd' },
-    { type = 'npm', arg = 'cspell' },
-  },
-  cb = function(ls)
-    local languages = {
-      go = {
-        {
-          prefix = 'golangci-lint',
-          lintCommand = 'golangci-lint run --color never --out-format tab ${INPUT}',
-          lintStdin = false,
-          lintFormats = { '%.%#:%l:%c %m' },
-          rootMarkers = {},
+    cb = function(ls)
+        local languages = {
+            go = {
+                {
+                    prefix = 'golangci-lint',
+                    lintCommand = 'golangci-lint run --color never --out-format tab ${INPUT}',
+                    lintStdin = false,
+                    lintFormats = { '%.%#:%l:%c %m' },
+                    rootMarkers = {},
+                }
+            },
+            php = {
+                {
+                    -- https://github.com/phpstan/phpstan https://github.com/nunomaduro/larastan
+                    prefix = 'phpstan',
+                    lintSource = 'phpstan',
+                    lintCommand =
+                    './vendor/bin/phpstan analyse --no-progress --no-ansi --error-format=raw "${INPUT}"',
+                    lintStdin = false,
+                    lintFormats = { '%.%#:%l:%m' },
+                    rootMarkers = { 'phpstan.neon', 'phpstan.neon.dist', 'composer.json' },
+                }
+            }
         }
-      },
-      gitcommit = {
-        {
-          lintCommand = 'gitlint --contrib contrib-title-conventional-commits',
-          lintStdin = true,
-          lintFormats = { '%l: %m: "%r"', '%l: %m', }
+        local prettier = {
+            formatCanRange = true,
+            formatCommand =
+            "prettierd '${INPUT}' ${--tab-width=tabSize} ${--use-tabs=!insertSpaces} ${--range-start=charStart} ${--range-end=charEnd}",
+            -- "./node_modules/.bin/prettier --stdin --stdin-filepath '${INPUT}' ${--range-start:charStart} ${--range-end:charEnd} ${--tab-width:tabSize} ${--use-tabs:!insertSpaces}",
+            formatStdin = true,
+            rootMarkers = {
+                '.prettierrc',
+                '.prettierrc.json',
+                '.prettierrc.js',
+                '.prettierrc.yml',
+                '.prettierrc.yaml',
+                '.prettierrc.json5',
+                '.prettierrc.mjs',
+                '.prettierrc.cjs',
+                '.prettierrc.toml',
+                'package.json',
+            },
         }
-      },
-      php = {
-        {
-          -- https://github.com/phpstan/phpstan https://github.com/nunomaduro/larastan
-          prefix = 'phpstan',
-          lintSource = 'phpstan',
-          lintCommand =
-          './vendor/bin/phpstan analyse --no-progress --no-ansi --error-format=raw "${INPUT}"',
-          lintStdin = false,
-          lintFormats = { '%.%#:%l:%m' },
-          rootMarkers = { 'phpstan.neon', 'phpstan.neon.dist', 'composer.json' },
+        local eslint = {
+            prefix = 'eslint',
+            lintCommand = './node_modules/.bin/eslint --no-color --format visualstudio --stdin-filename ${INPUT} --stdin',
+            lintStdin = true,
+            lintFormats = { '%f(%l,%c): %trror %m', '%f(%l,%c): %tarning %m' },
+            lintIgnoreExitCode = true,
+            rootMarkers = {
+                '.eslintrc',
+                '.eslintrc.cjs',
+                '.eslintrc.js',
+                '.eslintrc.yaml',
+                '.eslintrc.json',
+                '.eslintrc.yml',
+                'package.json',
+            },
         }
-      },
-      ['='] = {
-        {
-          lintSource = 'cspell',
-          lintCommand = 'cspell --no-color --no-progress --no-summary "${INPUT}"',
-          lintIgnoreExitCode = true,
-          lintStdin = false,
-          lintFormats = { '%f:%l:%c - Unknown word (%m)' --[[ , '%f:%l:%c %m' ]] },
-          lintSeverity = vim.diagnostic.severity.INFO,
+        local stylelint = {
+            prefix = 'stylelint',
+            lintCommand =
+            './node_modules/.bin/stylelint --no-color --formatter compact --stdin --stdin-filename ${INPUT}',
+            lintStdin = true,
+            lintFormats = { '%.%#: line %l, col %c, %trror - %m', '%.%#: line %l, col %c, %tarning - %m' },
+            -- rootMarkers = { '.stylelintrc' },
         }
-      }
-    }
-    local prettier = {
-      formatCanRange = true,
-      formatCommand =
-      "prettierd '${INPUT}' ${--tab-width=tabSize} ${--use-tabs=!insertSpaces} ${--range-start=charStart} ${--range-end=charEnd}",
-      -- "./node_modules/.bin/prettier --stdin --stdin-filepath '${INPUT}' ${--range-start:charStart} ${--range-end:charEnd} ${--tab-width:tabSize} ${--use-tabs:!insertSpaces}",
-      formatStdin = true,
-      rootMarkers = {
-        '.prettierrc',
-        '.prettierrc.json',
-        '.prettierrc.js',
-        '.prettierrc.yml',
-        '.prettierrc.yaml',
-        '.prettierrc.json5',
-        '.prettierrc.mjs',
-        '.prettierrc.cjs',
-        '.prettierrc.toml',
-        'package.json',
-      },
-    }
-    local eslint = {
-      prefix = 'eslint',
-      lintCommand = './node_modules/.bin/eslint --no-color --format visualstudio --stdin-filename ${INPUT} --stdin',
-      lintStdin = true,
-      lintFormats = { '%f(%l,%c): %trror %m', '%f(%l,%c): %tarning %m' },
-      lintIgnoreExitCode = true,
-      rootMarkers = {
-        '.eslintrc',
-        '.eslintrc.cjs',
-        '.eslintrc.js',
-        '.eslintrc.yaml',
-        '.eslintrc.json',
-        '.eslintrc.yml',
-        'package.json',
-      },
-    }
-    local stylelint = {
-      prefix = 'stylelint',
-      lintCommand = './node_modules/.bin/stylelint --no-color --formatter compact --stdin --stdin-filename ${INPUT}',
-      lintStdin = true,
-      lintFormats = { '%.%#: line %l, col %c, %trror - %m', '%.%#: line %l, col %c, %tarning - %m' },
-      -- rootMarkers = { '.stylelintrc' },
-    }
-    local exts_js = { 'typescript', 'javascript', 'typescriptreact', 'javascriptreact', 'vue', 'svelte', 'astro' }
-    for _, ext in ipairs(exts_js) do languages[ext] = { prettier, eslint } end
-    local exts_prettier = { 'html', 'json', 'jsonc', 'yaml', 'markdown' }
-    for _, ext in ipairs(exts_prettier) do languages[ext] = { prettier } end
-    local exts_css = { "css", "scss", "less", "sass" }
-    for _, ext in ipairs(exts_css) do languages[ext] = { prettier, stylelint } end
+        local exts_js = { 'typescript', 'javascript', 'typescriptreact', 'javascriptreact', 'vue', 'svelte', 'astro' }
+        for _, ext in ipairs(exts_js) do languages[ext] = { prettier, eslint } end
+        local exts_prettier = { 'html', 'json', 'jsonc', 'yaml', 'markdown' }
+        for _, ext in ipairs(exts_prettier) do languages[ext] = { prettier } end
+        local exts_css = { "css", "scss", "less", "sass" }
+        for _, ext in ipairs(exts_css) do languages[ext] = { prettier, stylelint } end
 
-    require 'lspconfig'.efm.setup {
-      cmd = { ls },
-      init_options = {
-        documentFormatting = true,
-        documentRangeFormatting = true,
-        hover = true,
-        -- documentSymbol = true,
-        codeAction = true,
-        completion = true
-      },
-      settings = {
-        rootMarkers = { ".git/" },
-        languages = languages,
-      },
-      filetypes = { '*' }
-    }
-  end
-}
-
--- REQUIRE {
---   ft = 'markdown',
---   lsp_mode = true,
---   deps = { { type = 'npm', arg = 'grammarly-languageserver' } },
---   cb = function()
---     local nvm_node_16 = ('%s/.nvm/versions/node/%s/bin/'):format(os.getenv 'HOME', 'v16.20.2')
---     if vim.loop.fs_stat(nvm_node_16) then
---       return {
---         name = 'grammarly-languageserver',
---         -- cmd = { 'n', 'exec', '16', 'grammarly-languageserver', '--stdio' },
---         cmd = { nvm_node_16 .. 'node', nvm_node_16 .. 'grammarly-languageserver', '--stdio' },
---         root_dir = vim.fn.getcwd(),
---         handlers = { ['$/updateDocumentState'] = function() return '' end },
---         init_options = { clientId = 'client_BaDkMgx4X19X9UxxYRCXZo' }, -- public clientId
---       }
---     end
---   end
--- }
-
-REQUIRE {
-  ft = 'lua',
-  lsp_mode = true,
-  deps = {
-    {
-      type = 'bin',
-      arg =
-      [[mkdir lua-language-server && cd $_ && VERSION=$(curl -s https://api.github.com/repos/LuaLS/lua-language-server/releases/latest | grep -Po '"tag_name": "\K[^"]*') && curl -fsSL https://github.com/LuaLS/lua-language-server/releases/download/${VERSION}/lua-language-server-${VERSION}-linux-x64.tar.gz | tar xz]],
-      executable = 'lua-language-server/bin/lua-language-server'
-    } },
-  cb = function(ls)
-    local capa = vim.lsp.protocol.make_client_capabilities()
-    capa.textDocument.formatting = true
-    capa.textDocument.rangeFormatting = true
-    return {
-      cmd = { ls },
-      capabilities = capa,
-      root_dir = vim.fn.getcwd(),
-      settings = {
-        Lua = {
-          runtime = { version = 'LuaJIT' },
-          workspace = {
-            checkThirdParty = false,
-            library = { vim.env.VIMRUNTIME, "${3rd}/luv/library" }
-          }
+        require 'lspconfig'.efm.setup {
+            cmd = { ls },
+            init_options = {
+                documentFormatting = true,
+                documentRangeFormatting = true,
+                hover = true,
+                -- documentSymbol = true,
+                codeAction = true,
+                completion = true
+            },
+            settings = {
+                rootMarkers = { ".git/" },
+                languages = languages,
+            },
+            filetypes = { '*' }
         }
-      }
-    }
-  end
+    end
 }
 
 REQUIRE {
