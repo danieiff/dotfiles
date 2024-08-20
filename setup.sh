@@ -1,49 +1,28 @@
 #!/bin/bash
+# curl https://raw.githubusercontent.com/danieiff/dotfiles/setup | sh
 
-set -e
+set -e && cd ~
 
-sudo apt update && sudo apt install -y curl git tar unzip fzf ripgrep clang
+sudo apt update && sudo apt install -y
 
-DOTFILES_DIR="$(pwd)/dotfiles"
-[ ! -d "$DOTFILES_DIR" ] && git clone --depth 1 https://github.com/danieiff/dotfiles "$DOTFILES_DIR"
-cp -fsr "$DOTFILES_DIR" ~/.config && (cp -fs "$DOTFILES_DIR"/.* ~ || true)
+[ -d dotfiles ] || git clone --depth 1 https://github.com/danieiff/dotfiles
+cp -fsr dotfiles/nvim ~/.config
 
-curl -L https://github.com/zellij-org/zellij/releases/latest/download/zellij-x86_64-unknown-linux-musl.tar.gz | sudo tar -C /bin -xz
+curl https://mise.run | sh
+mise use -g zig node zellij neovim yq ripgrep github-cli 
 
-GH_VERSION=$(curl -s https://api.github.com/repos/cli/cli/releases/latest | grep -Po '"tag_name": "v\K[^"]*') && \
-  curl -L "https://github.com/cli/cli/releases/latest/download/gh_${GH_VERSION}_linux_amd64.tar.gz" | tar xvz && \
-  sudo cp gh_"$GH_VERSION"_linux_amd64/bin/gh /bin
-
-LAZYGIT_VERSION=$(curl -s https://api.github.com/repos/jesseduffield/lazygit/releases/latest | grep -Po '"tag_name": "v\K[^"]*') && \
-  curl -L "https://github.com/jesseduffield/lazygit/releases/latest/download/lazygit_${LAZYGIT_VERSION}_Linux_x86_64.tar.gz" | tar xvz && \
-  sudo install lazygit /bin
-
-sudo curl -Lo /bin/yq https://github.com/mikefarah/yq/releases/latest/download/yq_linux_amd64 && sudo chmod +x /bin/yq
-
-sudo curl -Lo /bin/viu https://github.com/atanunq/viu/releases/latest/download/viu-x86_64-unknown-linux-musl && sudo chmod +x /bin/viu
-
-curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.5/install.sh | bash && . ~/.nvm/nvm.sh && nvm install 18
-
-curl -L https://github.com/neovim/neovim/releases/download/nightly/nvim-linux64.tar.gz | tar xz && \
-  sudo ln -fs "$(pwd)"/nvim-linux64/bin/nvim /bin/nvim && nvim --headless +'sleep 15 | LoadRequiredFileTypes' +'sleep 60 | quitall'
+nvim --headless +'sleep 15 | LoadRequiredFileTypes' +'sleep 60 | quitall'
 
 ulimit -n 10240
 
 # if [ -z "$REMOTE_CONTAINER" ]; then
-#
 # curl -fsSL https://get.docker.com | sh
-#
 # curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash
-#
 # curl -Lo devpod "https://github.com/loft-sh/devpod/releases/latest/download/devpod-linux-amd64" && install -c -m 0755 devpod /bin && rm -f devpod
-#
 # fi
 
-
 if [ "$WSLENV" ]; then
-
   WslLocalAppData="$(wslpath "$(powershell.exe \$Env:LocalAppData)" | tr -d "\r")"
-  powershell.exe "(New-Object System.Net.WebClient).DownloadString(\"https://raw.githubusercontent.com/webinstall/webi-installers/main/nerdfont/install.ps1\") | powershell -command -"
   cp "$DOTFILES_DIR/windows-terminal-settings.json" "$WslLocalAppData/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState/settings.json"
   ln -fs "$WslLocalAppData/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState/settings.json" "$DOTFILES_DIR/_windows-terminal-settings.json"
 
@@ -66,9 +45,6 @@ if [ "$WSLENV" ]; then
   #   ssh -L "${1:-3000}:localhost:${1:-3000}" <user@host>
   # }
   # sudo systemctl start sshd
-
-  ## Keyring
-  sudo apt install -y gnome-keyring
 
   ## Chrome (google-chrome)
   curl -O https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb

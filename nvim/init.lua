@@ -3,6 +3,11 @@ git diff COMMIT_HASH_1 COMMIT_HASH_2 | grep "your_search_term"
 Gedit gi-obj:filepath
 0Gclog
 Gclog --name-only
+git update-index --skip-worktree
+git update-index --no-skip-worktree
+git ls-files -v | grep ^S
+
+nvim --server \$NVIM --remote-silent"
 
 new
 r! git show branch:file
@@ -16,8 +21,53 @@ git diff-tree --no-commit-id --name-only -r $1
 
 if | | else | | endif
 
+Quit Vim with error code {N}
+
 -- TODO:
 -- AI code doc comment writing
+
+## ReactNative Android
+# mkdir ~/Android && ln -s /mnt/c/Users/Hirohisa/AppData/Local/Android/Sdk ~/Android/sdk
+# ln -s ~/Android/Sdk/platform-tools/adb.exe ~/Android/Sdk/platform-tools/adb
+# ln -s ~/Android/Sdk/platform-tools/emulator/emulator.exe ~/Android/Sdk/emulator/emulator
+ANDROID_HOME=~/Android/sdk
+export PATH=$PATH:$ANDROID_HOME/platform-tools
+alias emu='$ANDROID_HOME/emulator/emulator @Pixel_4_API_30'
+alias emu-list='$ANDROID_HOME/emulator/emulator -list-avds'
+
+# Foreach ( $port in 19000,19001,19002 ) { netsh interface portproxy add v4tov4 listenport=$port connectport=$port connectaddress=$($(wsl hostname -I).Trim()) }
+# Foreach ( $dir in "Inbound","Outbound" ) { New-NetFireWallRule -DisplayName 'WSL Expo ports for LAN development' -Direction $dir -LocalPort 19000-19002 -Action Allow -Protocol TCP }
+alias rn-expo='REACT_NATIVE_PACKAGER_HOSTNAME=$(/mnt/c/Windows/system32/ipconfig.exe | grep -m 1 "IPv4 Address" | sed "s/.*: //") npx expo start'
+
+
+ghinstall() {
+  curl "https://api.github.com/repos/$1/releases/latest" \
+    | grep -Po "(?<=browser_download_url\": \")https://[^\"]*" \
+    | fzf --reverse --height 30% --bind "enter:execute( curl -L {} | tar xvz )+abort"
+}
+
+gistget() {
+  local temp=$(curl "https://api.github.com/gists/$1")
+  for filename in $(echo "$temp" | yq -r ".files|.[]?|.filename")
+  do echo "$temp" | yq -r ".files|.[\"$filename\"]|.content" > "$filename"
+  done
+}
+
+dev-docker() {
+  local docker_home=/home/me
+  docker run -it \
+    -v /var/run/docker.sock:/var/run/docker.sock \
+    -v ~/.config/gh:$docker_home/.config/gh \
+    -v ~/.cache/nvim/codeium:$docker_home/.cache/nvim/codeium \
+    -v .:$docker_home/workspace \
+    -e LOCAL_UID="$(id -u "$USER")" \
+    -e LOCAL_GID="$(id -g "$USER")" \
+    "$@"
+}
+
+dev-ssh() {
+  ssh -L "${1:-3000}:localhost:${1:-3000} ${3:-user@host}"
+}
 
 ]]
 
@@ -53,7 +103,6 @@ DEPS_CACHE = {
 }
 
 local packages = {
-  'https://github.com/EdenEast/nightfox.nvim',
   'https://github.com/NvChad/nvim-colorizer.lua',
   'https://github.com/nvim-tree/nvim-web-devicons',
   'https://github.com/MunifTanjim/nui.nvim',
@@ -86,6 +135,7 @@ local packages = {
   'https://github.com/danieiff/friendly-snippets',
   -- 'https://github.com/jcdickinson/codeium.nvim',
   'https://github.com/jackMort/ChatGPT.nvim',
+  'https://github.com/danymat/neogen',
 
   'https://github.com/neovim/nvim-lspconfig',
   'https://github.com/ray-x/lsp_signature.nvim',
@@ -96,6 +146,7 @@ local packages = {
   'https://github.com/rcarriga/nvim-dap-ui',
   'https://github.com/theHamsta/nvim-dap-virtual-text',
   'https://github.com/nvim-neotest/neotest',
+  'https://github.com/nvim-neotest/nvim-nio',
   'https://github.com/pmizio/typescript-tools.nvim',
   'https://github.com/nvim-neotest/neotest-jest',
   'https://github.com/marilari88/neotest-vitest',
@@ -202,15 +253,10 @@ REQUIRE { deps = packages, cb = function() vim.cmd 'source $MYVIMRC | silent! ta
 
 for k, v in pairs {
   autowriteall = true, undofile = true,
-  shell = (os.getenv 'SHELL' or 'bash') .. ' -l',
-  grepprg = 'rg --vimgrep -S ', grepformat = '%f:%l:%c:m',
-  ignorecase = true, smartcase = true,
-  tabstop = 2, shiftwidth = 0, expandtab = true,
-  pumblend = 30, winblend = 30, fillchars = 'eob: ',
-  list = true, listchars = '',
-  laststatus = 3, cmdheight = 0, number = true, signcolumn = 'number',
-  foldenable = false, foldmethod = 'expr',
-  foldexpr = 'v:lua.vim.treesitter.foldexpr()', foldtext = 'v:lua.vim.treesitter.foldtext()' }
+  shellcmdflag = '-c', grepprg = 'rg --vimgrep -S ', grepformat = '%f:%l:%c:m',
+  ignorecase = true, smartcase = true, tabstop = 2, shiftwidth = 0, expandtab = true,
+  pumblend = 30, winblend = 30,  termguicolors = true, list = true, laststatus = 3, cmdheight = 0, number = true, signcolumn = 'number',
+  foldenable = false, foldmethod = 'expr', foldexpr = 'v:lua.vim.treesitter.foldexpr()', foldtext = 'v:lua.vim.treesitter.foldtext()' }
 do vim.opt[k] = v end
 
 vim.g.mapleader = ' '
@@ -392,6 +438,8 @@ CMD('RNExpo', function() start_interactive_shell_job { { cmd = 'emu' }, { cmd = 
 CMD('NpmRun', function()
   start_interactive_shell_job { { cmd = [[yq -r '.scripts | keys | join("\n")' package.json | npm run `fzf`]] } }
 end, {})
+
+require'nvim-web-devicons'.setup {}
 
 require "nvim-tree".setup {
   view = { width = 60, side = 'right' },
