@@ -1,10 +1,11 @@
-on: 
+on:
   push:
     paths:
       - corne-wireless-zmk-config
-    pull_request:
+  pull_request:
+    paths:
       - corne-wireless-zmk-config
-    workflow_dispatch:
+  workflow_dispatch:
 
 jobs:
   build:
