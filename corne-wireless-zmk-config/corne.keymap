@@ -12,64 +12,59 @@
 #include <dt-bindings/zmk/mouse.h>
 
 / {
-        keymap {
-                compatible = "zmk,keymap";
-                default_layer {
-                        display-name = "Base";
-                        bindings = <
-/*┌────────┬────────┬────────┬────────┬────────┬────────┐ ┌────────┬────────┬────────┬────────┬────────┬────────┐*/
-   &kp TAB  &kp Q    &kp W    &kp E    &kp R    &kp T      &kp Y    &kp U    &kp I    &kp O    &kp P    &kp BSPC
-/*├────────┼────────┼────────┼────────┼────────┼────────┤ ├────────┼────────┼────────┼────────┼────────┼────────┤*/
-   &kp LCTRL &kp A   &kp S    &kp D    &kp F    &kp G      &kp H    &kp J    &kp K    &kp L    &kp SEMI &kp SQT
-/*├────────┼────────┼────────┼────────┼────────┼────────┤ ├────────┼────────┼────────┼────────┼────────┼────────┤*/
-   &kp LSHFT &kp Z   &kp X    &kp C    &kp V    &kp B      &kp N    &kp M    &kp COMMA &kp DOT &kp FSLH &kp ESC
-/*└────────┴────────┴────────┼────────┼────────┼────────┤ ├────────┼────────┼────────┼────────┴────────┴────────┘*/
-                              &kp LGUI &mo 1    &kp SPACE  &kp RET  &mo 2    &kp RALT
-                           /*└────────┴────────┴────────┘ └────────┴────────┴────────┘*/
-                        >;
-                };
-                lower_layer {
-// KC_LNG1, KC_LNG2,  KC_DEL
-                        display-name = "Lower";
-                        bindings = <
-/*┌────────┬────────┬────────┬────────┬────────┬────────┐ ┌────────┬────────┬────────┬────────┬────────┬────────┐*/
-   &kp TAB  &kp N1   &kp N2   &kp N3   &kp N4   &kp N5     &kp N6   &kp N7   &kp N8   &kp N9   &kp N0   &kp BSPC
-/*├────────┼────────┼────────┼────────┼────────┼────────┤ ├────────┼────────┼────────┼────────┼────────┼────────┤*/
-  &bt BT_CLR &bt BT_SEL 0 &bt BT_SEL 1 &bt BT_SEL 2 &bt BT_SEL 3 &bt BT_SEL 4 &kp LEFT &kp DOWN &kp UP &kp RIGHT &trans &trans
-/*├────────┼────────┼────────┼────────┼────────┼────────┤ ├────────┼────────┼────────┼────────┼────────┼────────┤*/
-  &kp LSHFT &trans   &trans   &trans   &trans   &trans     &trans   &trans   &trans   &trans   &trans   &trans
-/*└────────┴────────┴────────┼────────┼────────┼────────┤ ├────────┼────────┼────────┼────────┴────────┴────────┘*/
-                              &kp LGUI &trans   &kp SPACE  &kp RET  &trans   &kp RALT
-                           /*└────────┴────────┴────────┘ └────────┴────────┴────────┘*/
-                        >;
-                };
-                raise_layer {
-  //┌────────┬────────┬────────┬────────┬────────┬────────┐ ┌────────┬────────┬────────┬────────┬────────┬────────┐
-  //  _______, RM_RSTP, KC_WH_L, KC_MS_U, KC_WH_R, KC_WH_U,     KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,   KC_F6,
-  //├────────┼────────┼────────┼────────┼────────┼────────┤ ├────────┼────────┼────────┼────────┼────────┼────────┤
-  //  DM_REC1, DM_REC2, KC_MS_L, KC_MS_D, KC_MS_R, KC_WH_D,
-  //├────────┼────────┼────────┼────────┼────────┼────────┤ ├────────┼────────┼────────┼────────┼────────┼────────┤
-  //  DM_PLY1, DM_PLY2, KC_HOME, KC_PGDN, KC_PGUP,  KC_END,     KC_F7,   KC_F8,   KC_F9,  KC_F10,  KC_F11,  KC_F12,
-  //└────────┴────────┴────────┼────────┼────────┼────────┤ ├────────┼────────┼────────┴────────┴────────┴────────┘
-  //                           KC_BTN1,PSCR_CCLK,RCLK_SCLK, MUTE_VOLD,MPLY_VOLU,_______
-  //                           └────────┴────────┴────────┘ └────────┴────────┴────────┘
-// -------------------------------------------------------------------------------
-// |  TAB |  !  |  @  |  #  |  $  |  %  |   |  ^  |  &  |  *  |  (  |  )  | BKSP |
-// | CTRL |     |     |     |     |     |   |  -  |  =  |  [  |  ]  |  \  |  `   |
-// | SHFT |     |     |     |     |     |   |  _  |  +  |  {  |  }  | "|" |  ~   |
-//                    | GUI |     | SPC |   | ENT |     | ALT |
-                        display-name = "Raise";
-                        bindings = <
-/*┌────────┬────────┬────────┬────────┬────────┬────────┐ ┌────────┬────────┬────────┬────────┬────────┬────────┐*/
-   &kp TAB  &kp EXCL &kp AT   &kp HASH &kp DLLR &kp PRCNT  &kp CARET &kp AMPS &kp KP_MULTIPLY &kp LPAR &kp RPAR &kp BSPC
-/*├────────┼────────┼────────┼────────┼────────┼────────┤ ├────────┼────────┼────────┼────────┼────────┼────────┤*/
-   &kp LCTRL &mmv MOVE_LEFT &mmv MOVE_DOWN &mmv MOVE_UP &mmv MOVE_RIGHT &mkp RCLK    &kp MINUS &kp EQUAL &kp LBKT &kp RBKT &kp BSLH &kp GRAVE
-/*├────────┼────────┼────────┼────────┼────────┼────────┤ ├────────┼────────┼────────┼────────┼────────┼────────┤*/
-   &kp LSHFT &msc SCRL_LEFT &msc SCRL_DOWN &mmv SCRL_UP &mmv SCRL_RIGHT &mkp LCLK    &kp UNDER &kp PLUS  &kp LBRC &kp RBRC &kp PIPE &kp TILDE
-/*└────────┴────────┴────────┼────────┼────────┼────────┤ ├────────┼────────┼────────┼────────┴────────┴────────┘*/
-                              &kp LGUI &trans   &kp SPACE  &kp RET  &trans   &kp RALT
-                           /*└────────┴────────┴────────┘ └────────┴────────┴────────┘*/
-                        >;
-                };
+    behaviors {
+        ht: hold_tap {
+            compatible = "zmk,behavior-hold-tap";
+            #binding-cells = <2>;
+            flavor = "tap-preferred";
+            tapping-term-ms = <400>;
+            quick-tap-ms = <200>;
+            bindings = <&kp>, <&kp>;
         };
+    };
+    keymap {
+        compatible = "zmk,keymap";
+        default_layer {
+            display-name = "Character1";
+            bindings = <
+                /*┌────────┬────────┬────────┬────────┬────────┬────────┐ ┌────────┬────────┬────────┬────────┬────────┬────────┐*/
+                &kp TAB  &kp Q    &kp W    &kp E    &kp R    &kp T      &kp Y    &kp U    &kp I    &kp O    &kp P    &kp BSPC
+                /*├────────┼────────┼────────┼────────┼────────┼────────┤ ├────────┼────────┼────────┼────────┼────────┼────────┤*/
+                &kp LCTRL &kp A   &kp S    &kp D    &kp F    &kp G      &kp H    &kp J    &kp K    &kp L    &kp SEMI &kp SQT
+                /*├────────┼────────┼────────┼────────┼────────┼────────┤ ├────────┼────────┼────────┼────────┼────────┼────────┤*/
+                &kp LSHFT &kp Z   &kp X    &kp C    &kp V    &kp B      &kp N    &kp M    &kp COMMA &kp DOT &kp FSLH &kp ESC
+                /*└────────┴────────┴────────┼────────┼────────┼────────┤ ├────────┼────────┼────────┼────────┴────────┴────────┘*/
+                /*                      */ &kp LALT &mo 2    &kp SPACE  &kp RET  &mo 1    &kp LGUI
+                /*                           └────────┴────────┴────────┘ └────────┴────────┴────────┘                           */
+            >;
+        };
+        lower_layer {
+            display-name = "Character2";
+            bindings = <
+                /*┌────────┬────────┬────────┬────────┬────────┬────────┐ ┌────────┬────────┬────────┬────────┬────────┬────────┐*/
+                &kp TAB  &kp N1 &kp N2 &kp N3   &kp N4   &kp N5     &kp N6   &kp N7   &kp N8   &kp N9   &kp N0   &kp BSPC
+                /*├────────┼────────┼────────┼────────┼────────┼────────┤ ├────────┼────────┼────────┼────────┼────────┼────────┤*/
+                &kp LCTRL &kp EXCL &kp AT  &kp HASH &kp DLLR &kp PRCNT  &kp CARET &kp AMPS &kp KP_MULTIPLY &kp LPAR &kp RPAR &kp BSLH
+                /*├────────┼────────┼────────┼────────┼────────┼────────┤ ├────────┼────────┼────────┼────────┼────────┼────────┤*/
+                &kp LSHFT &kp GRAVE &kp TILDE &kp MINUS &kp UNDER &kp EQUAL &kp PLUS &kp LBRC &kp RBRC &kp LBKT &kp RBKT &kp PIPE
+                /*└────────┴────────┴────────┼────────┼────────┼────────┤ ├────────┼────────┼────────┼────────┴────────┴────────┘*/
+                /*                      */ &kp LALT     &trans   &trans     &trans   &trans   &trans
+                /*                           └────────┴────────┴────────┘ └────────┴────────┴────────┘                           */
+            >;
+        };
+        raise_layer {
+            display-name = "Control";
+            bindings = <
+                /*┌────────┬────────┬────────┬────────┬────────┬────────┐ ┌────────┬────────┬────────┬────────┬────────┬────────┐*/
+                &kp LALT &msc SCRL_LEFT &mmv MOVE_UP &mmv SCRL_RIGHT &mkp LCLK &mmv SCRL_UP /**/ &kp LEFT &kp DOWN  &kp UP &kp RIGHT &kp PSCRN &kp DEL
+                /*├────────┼────────┼────────┼────────┼────────┼────────┤ ├────────┼────────┼────────┼────────┼────────┼────────┤*/
+                &kp LCTRL &mmv MOVE_LEFT &mmv MOVE_DOWN &mmv MOVE_RIGHT &mkp RCLK &msc SCRL_DOWN /**/ &kp F1 &kp F2 &kp F3 &kp F4 &kp F5 &kp F6
+                /*├────────┼────────┼────────┼────────┼────────┼────────┤ ├────────┼────────┼────────┼────────┼────────┼────────┤*/
+                &kp LSHFT &kp PG_DN &kp PG_UP &bt BT_CLR &bt BT_SEL 0 &bt BT_SEL 1 /**/ &kp F7 &kp F8  &kp F9   &kp F10  &kp F11  &kp F12
+                /*└────────┴────────┴────────┼────────┼────────┼────────┤ ├────────┼────────┼────────┼────────┴────────┴────────┘*/
+                /*                          */ &trans   &trans   &trans   &ht C_VOL_DN C_MUTE &ht C_VOL_UP C_PP &trans
+                /*                           └────────┴────────┴────────┘ └────────┴────────┴────────┘                           */
+            >;
+        };
+    };
 };
