@@ -186,17 +186,91 @@ AUC('InsertLeave', {
 })
 
 vim.cmd 'set sessionoptions-=blank,buffers'
-local session_path = vim.fn.stdpath 'data' .. '\\' .. vim.fn.fnamemodify(vim.uv.cwd(), ':p:h'):gsub('[:\\]', '-')
+local session_path = NVIM_DATA ..
+    '/session' .. vim.fn.fnamemodify(vim.fn.getcwd(), ':p:h'):gsub('^(%w+):\\', '%1;\\'):gsub('[/\\]', '!')
+
+local function select_sessions_ui()
+  local dashboard_bufnr, preview_bufn = vim.api.nvim_create_buf(false, true), vim.api.nvim_create_buf(false, true)
+
+  local lines, lines_data_map = { 'Sessions' }, {}
+  local padding = #lines
+  for i, f in ipairs(vim.fn.globpath(NVIM_DATA, 'session*', false, true)) do
+    -- local session_line = vim.fn.fnamemodify(f, ':t'):gsub('^session', ''):gsub('^(%w+);', '%1:/'):gsub('!', '/')
+    -- table.insert(lines, session_line)
+    lines[padding + i] = vim.fn.fnamemodify(f, ':t'):gsub('^session', ''):gsub('^(%w+);', '%1:/'):gsub('!', '/')
+    lines_data_map[padding + i] = f
+  end
+  vim.api.nvim_buf_set_lines(dashboard_bufnr, 0, -1, false, lines)
+
+  local dashboard_winnr = vim.api.nvim_open_win(dashboard_bufnr, true,
+    {
+      relative = 'editor',
+      row = 0,
+      col = 0,
+      height = vim.api.nvim_win_get_height(0),
+      width = vim.o.columns,
+      border =
+      'single'
+    })
+  vim.api.nvim_set_option_value('number', false, { win = dashboard_winnr })
+
+  local prev_row, preview_winnr, preview_bufnr
+  vim.api.nvim_create_autocmd('CursorMoved', {
+    buffer = dashboard_bufnr,
+    callback = function()
+      local row = vim.api.nvim_win_get_cursor(dashboard_winnr)[1]
+      if prev_row ~= row and lines_data_map[row] then
+        if preview_winnr == nil then
+          local half_cols = vim.fn.floor(vim.o.columns / 2)
+          vim.api.nvim_win_set_width(dashboard_winnr, half_cols - 3)
+          preview_winnr = vim.api.nvim_open_win(preview_bufn, false,
+            {
+              relative = 'editor',
+              row = 0,
+              col = half_cols + 1,
+              height = vim.api.nvim_win_get_height(0),
+              width = half_cols - 1,
+              border = 'single'
+            })
+        end
+        -- vim.api.nvim_buf_set_lines(preview_bufnr, 0, -1, false, vim.fn.readfile(lines_data_map[row]))
+        vim.api.nvim_win_call(preview_winnr, function()
+          vim.cmd('noautocmd edit ' .. lines_data_map[row])
+          if preview_bufnr then vim.api.nvim_buf_delete(preview_bufnr, {}) end
+          preview_bufnr = vim.api.nvim_get_current_buf()
+          vim.treesitter.start(preview_bufnr, 'vim')
+        end)
+      end
+    end
+  })
+
+  vim.keymap.set('n', '<CR>', function () vim.cmd.source(lines_data_map[prev_row]) end)
+  vim.keymap.set('n', 'q', function()
+    vim.api.nvim_buf_delete(dashboard_bufnr, {})
+    vim.api.nvim_buf_delete(preview_bufnr, {})
+  end, { buffer = dashboard_bufnr })
+end
+vim.api.nvim_create_user_command('SessionSelect', select_sessions_ui, {})
+
+vim.api.nvim_create_user_command('SessionWrite', function()
+  vim.ui.input({ prompt = 'session name: '}, function(input)
+    if input == '' then vim.cmd.mksession(session_path)
+    elseif input and not input:find'[%p%s]' then vim.cmd.mksession(NVIM_DATA .. '/session' .. input) end
+  end)
+end, {})
+
 AUC('VimEnter', {
   callback = function(ev)
-    if ev.file then vim.print(ev) end
-    local vim_argv = vim.fn.argv()
-    if #vim_argv > 0 and vim_argv[1]:find '.git\\COMMIT_EDITMSG' then return end
-    vim.cmd('silent! source ' .. session_path)
-    -- vim.schedule(function() vim.cmd 'silent! tabdo edit' end)
-    -- vim.schedule(function() vim.cmd 'silent! tabdo windo edit' end)
-  end,
-  desc = 'load session'
+    if ev.file == '' then
+      vim.cmd('silent! source ' .. session_path)
+      for _, tabnr in pairs(vim.api.nvim_list_tabpages()) do
+        for _, winnr in pairs(vim.api.nvim_tabpage_list_wins(tabnr)) do
+          local bufnr = vim.api.nvim_win_get_buf(winnr)
+          vim.bo[bufnr].ft = vim.filetype.match { buf = bufnr } or ''
+        end
+      end
+    end
+  end
 })
 AUC('VimLeave', { desc = 'session write', command = 'mksession! ' .. session_path })
 
