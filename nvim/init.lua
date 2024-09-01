@@ -23,6 +23,8 @@ if | | else | | endif
 
 Quit Vim with error code {N}
 
+:oldfiles :browse oldfiles
+
 -- TODO:
 -- AI code doc comment writing
 
@@ -142,6 +144,7 @@ local packages = {
   'https://github.com/danieiff/lsp-lens.nvim',
   'https://github.com/simrat39/symbols-outline.nvim',
 
+  -- https://github.com/stevearc/overseer.nvim,
   'https://github.com/mfussenegger/nvim-dap',
   'https://github.com/rcarriga/nvim-dap-ui',
   'https://github.com/theHamsta/nvim-dap-virtual-text',
@@ -278,7 +281,7 @@ K('<C-Up>', '<cmd>bnext<cr>', { silent = true })
 K('<leader>w', vim.cmd.write)
 K('<Leader>z', '<cmd>qa<cr>')
 K('<Leader>Z', '<cmd>noautocmd qa<cr>')
-K('<Leader>,', '<cmd>tabnew $MYVIMRC<cr>')
+K('<Leader>,', '<cmd>execute "tabe " . resolve($MYVIMRC)<cr>')
 K('<Leader>.,', function()
   vim.cmd('set runtimepath^=' .. vim.fn.stdpath 'config' .. ' | runtime! plugin/**/*.{vim,lua}')
   vim.cmd 'source $MYVIMRC | helptags ALL'
@@ -326,15 +329,13 @@ K('<leader>ou', function()
   end
 end)
 
+local copy, paste = vim.tbl_get(vim, 'g', 'clipboard', 'copy', '+'), vim.tbl_get(vim, 'g', 'clipboard', 'paste', '+')
 if PLATFORM.wsl then
-  vim.g.clipboard = {
-    copy = { ['+'] = 'clip.exe', ['*'] = 'clip.exe' },
-    paste = {
-      ['+'] = 'powershell.exe -c [Console]::Out.Write($(Get-Clipboard -Raw).tostring().replace("`r", ""))',
-      ['*'] = 'powershell.exe -c [Console]::Out.Write($(Get-Clipboard -Raw).tostring().replace("`r", ""))',
-    }
-  }
+  copy, paste = 'clip.exe', 'powershell.exe -c [Console]::Out.Write($(Get-Clipboard -Raw).tostring().replace("`r", ""))'
+elseif PLATFORM.linux then
+  copy, paste = 'wl-copy', 'wl-paste'
 end
+vim.g.clipboard =  { copy = { ['+'] = copy, ['*'] = copy }, paste = { ['+'] = paste, ['*'] = paste } }
 
 vim.fn.digraph_setlist {
   { 'j[', '「' }, { 'j]', '」' }, { 'j{', '『' }, { 'j}', '』' }, { 'j<', '【' }, { 'j>', '】' },

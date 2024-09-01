@@ -56,7 +56,7 @@
             display-name = "Control";
             bindings = <
                 /*┌────────┬────────┬────────┬────────┬────────┬────────┐ ┌────────┬────────┬────────┬────────┬────────┬────────┐*/
-                &kp LALT &msc SCRL_LEFT &mmv MOVE_UP &mmv SCRL_RIGHT &mkp LCLK &mmv SCRL_UP /**/ &kp LEFT &kp DOWN  &kp UP &kp RIGHT &kp PSCRN &kp DEL
+                &kp LALT &msc SCRL_LEFT &mmv MOVE_UP &msc SCRL_RIGHT &mkp LCLK &msc SCRL_UP /**/ &kp LEFT &kp DOWN  &kp UP &kp RIGHT &kp PSCRN &kp DEL
                 /*├────────┼────────┼────────┼────────┼────────┼────────┤ ├────────┼────────┼────────┼────────┼────────┼────────┤*/
                 &kp LCTRL &mmv MOVE_LEFT &mmv MOVE_DOWN &mmv MOVE_RIGHT &mkp RCLK &msc SCRL_DOWN /**/ &kp F1 &kp F2 &kp F3 &kp F4 &kp F5 &kp F6
                 /*├────────┼────────┼────────┼────────┼────────┼────────┤ ├────────┼────────┼────────┼────────┼────────┼────────┤*/
