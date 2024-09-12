@@ -4,6 +4,8 @@ git clone --depth 1 https://github.com/danieiff/dotfiles -b windows
 New-Item -Path $ENV:LOCALAPPDATA/nvim -ItemType SymbolicLink -Value dotfiles/nvim
 ]]
 
+NVIM_DATA = vim.fn.stdpath 'data'
+
 function K(lhs, rhs, opts)
   opts = opts or {}
   local mode = opts.mode or 'n'
@@ -25,7 +27,7 @@ end
 
 ---@Dependencies
 
-local plugin_dir = vim.fn.stdpath 'config' .. [[\pack\my\start\]]
+local plugin_dir = vim.fn.stdpath 'config' .. [[/pack/my/start/]]
 
 local plugins = {
   'https://github.com/EdenEast/nightfox.nvim',
@@ -36,7 +38,7 @@ local plugins = {
 
   'https://github.com/nvim-telescope/telescope.nvim',
   'https://github.com/jackMort/ChatGPT.nvim',
-  'https://github.com/nvim-neo-tree/neo-tree.nvim',
+  -- 'https://github.com/nvim-neo-tree/neo-tree.nvim',
   'https://github.com/mbbill/undotree',
   'https://github.com/lewis6991/gitsigns.nvim',
   'https://github.com/tpope/vim-fugitive',
@@ -274,11 +276,11 @@ AUC('VimEnter', {
 })
 AUC('VimLeave', { desc = 'session write', command = 'mksession! ' .. session_path })
 
-require 'neo-tree'.setup {
-  sources = { 'filesystem', 'document_symbols' },
-  filesystem = { follow_current_file = { enabled = true } },
-  document_symbols = { follow_cursor = true, window = { mappings = { l = 'toggle_node' } } }
-}
+-- require 'neo-tree'.setup {
+--   sources = { 'filesystem', 'document_symbols' },
+--   filesystem = { follow_current_file = { enabled = true } },
+--   document_symbols = { follow_cursor = true, window = { mappings = { l = 'toggle_node' } } }
+-- }
 K('<C-t>', '<cmd>Neotree toggle right reveal<cr>')
 K('<C-s>', '<cmd>Neotree toggle document_symbols right show<cr>')
 
@@ -443,24 +445,26 @@ K('vI',
 
 ---@Editing
 
-local openai_api_key_cmd =
-'powershell (Import-Clixml -Path "$env:USERPROFILE\\OPENAI_API_KEY").GetNetworkCredential().Password'
-vim.fn.jobstart(openai_api_key_cmd, {
-  stdout_buffered = true,
-  on_stdout = function(_, data)
-    if (#data == 1 and data[1] == '') then
-      vim.fn.jobstart(
-        [[powershell "Get-Credential | Export-Clixml -Path \"$env:USERPROFILE\OPENAI_API_KEY\"]])
-    end
-  end
-})
-require 'chatgpt'.setup {
-  api_key_cmd = openai_api_key_cmd,
-  popup_input = { submit = '<cr>' },
-  openai_params = { model = "gpt-3.5-turbo", max_tokens = 2048 },
-  openai_edit_params = { model = "gpt-3.5-turbo" }
-}
-K('<C-c>', '<cmd>ChatGPT<cr><cmd>startinsert!<cr>')
+-- if PLATFORM.wsl then
+--   local openai_api_key_cmd =
+--   'powershell (Import-Clixml -Path "$env:USERPROFILE\\OPENAI_API_KEY").GetNetworkCredential().Password'
+--   vim.fn.jobstart(openai_api_key_cmd, {
+--     stdout_buffered = true,
+--     on_stdout = function(_, data)
+--       if (#data == 1 and data[1] == '') then
+--         vim.fn.jobstart(
+--           [[powershell "Get-Credential | Export-Clixml -Path \"$env:USERPROFILE\OPENAI_API_KEY\"]])
+--       end
+--     end
+--   })
+--   require 'chatgpt'.setup {
+--     api_key_cmd = openai_api_key_cmd,
+--     popup_input = { submit = '<cr>' },
+--     openai_params = { model = "gpt-3.5-turbo", max_tokens = 2048 },
+--     openai_edit_params = { model = "gpt-3.5-turbo" }
+--   }
+--   K('<C-c>', '<cmd>ChatGPT<cr><cmd>startinsert!<cr>')
+-- end
 
 local luasnip = require 'luasnip'
 require 'luasnip.loaders.from_vscode'.lazy_load()
@@ -726,12 +730,12 @@ local exts_js = { 'javascript', 'typescript' }
 
 local capabilities = require 'cmp_nvim_lsp'.default_capabilities()
 
-require 'null-ls'.setup {
-  sources = {
-    package.loaded['null-ls'].builtins.diagnostics.stylelint,
-    package.loaded['null-ls'].builtins.formatting.prettier
-  }
-}
+-- require 'null-ls'.setup {
+--   sources = {
+--     package.loaded['null-ls'].builtins.diagnostics.stylelint,
+--     package.loaded['null-ls'].builtins.formatting.prettier
+--   }
+-- }
 
 local root_file = {
   '.eslintrc',
@@ -1077,9 +1081,9 @@ K("<leader>aT", function()
   end)
 end)
 
-vim.fn.setenv('JAVA_HOME', [[\pleiades-v4.5\java\8]])
-vim.fn.setenv('CATALINA_HOME', [[\tomcat\apache-tomcat-8.5.28]])
-vim.fn.setenv('TOMCAT_HOME', [[\tomcat\apache-tomcat-8.5.28]])
+-- vim.fn.setenv('JAVA_HOME', [[\pleiades-v4.5\java\8]])
+-- vim.fn.setenv('CATALINA_HOME', [[\tomcat\apache-tomcat-8.5.28]])
+-- vim.fn.setenv('TOMCAT_HOME', [[\tomcat\apache-tomcat-8.5.28]])
 
 AUC('FileType', {
   pattern = { 'java' },
@@ -1099,9 +1103,9 @@ AUC('FileType', {
         '--add-opens', 'java.base/java.util=ALL-UNNAMED',
         '--add-opens', 'java.base/java.lang=ALL-UNNAMED',
 
-        '-jar', [[\jdtls\plugins\org.eclipse.equinox.launcher_1.6.900.v20240613-2009.jar]],
+        '-jar', [[/jdtls/plugins/org.eclipse.equinox.launcher_1.6.900.v20240613-2009.jar]],
 
-        '-configuration', [[\jdtls\config_win]],
+        '-configuration', [[/jdtls/config_win]],
         '-data', '/path/to/unique/per/project/workspace/folder'
       },
 
@@ -1120,7 +1124,7 @@ AUC('FileType', {
             runtimes = {
               {
                 name = 'JavaSE-1.8',
-                path = [[\pleiades-v4.5\java\8\jre]],
+                path = [[/pleiades-v4.5/java/8/jre]],
                 default = true
               }
             }
