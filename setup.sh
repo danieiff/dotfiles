@@ -1,17 +1,17 @@
-#!/bin/bash
+#!/bin/bash -eu
 # curl https://raw.githubusercontent.com/danieiff/dotfiles/setup | sh
 
-set -e && cd ~
+cd ~
 
-sudo apt update && sudo apt install -y
+sudo apt update && sudo apt upgrade -y
 
 [ -d dotfiles ] || git clone --depth 1 https://github.com/danieiff/dotfiles
-cp -fsr dotfiles/nvim ~/.config
+ln -s ~/dotfiles/nvim ${XDG_CONFIG_HOME:-~/.config} 
 
 curl https://mise.run | sh
-mise use -g zig node zellij neovim yq ripgrep github-cli 
+mise use -g zig node zellij neovim yq ripgrep github-cli
 
-nvim --headless +'sleep 15 | LoadRequiredFileTypes' +'sleep 60 | quitall'
+nvim --headless +'MasonInstall | qa'
 
 ulimit -n 10240
 
