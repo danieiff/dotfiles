@@ -145,3 +145,6 @@
 [submodule "nvim/pack/my/start/fidget.nvim"]
 	path = nvim/pack/my/start/fidget.nvim
 	url = https://github.com/j-hui/fidget.nvim
+[submodule "/home/sugielff/dotfiles/nvim/pack/opt/start/roslyn.nvim"]
+	path = /home/sugielff/dotfiles/nvim/pack/opt/start/roslyn.nvim
+	url = https://github.com/seblj/roslyn.nvim
