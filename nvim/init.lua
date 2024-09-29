@@ -23,10 +23,7 @@ if | | else | | endif
 
 Quit Vim with error code {N}
 
-:oldfiles :browse oldfiles
-
--- TODO:
--- AI code doc comment writing
+ulimit -n 10240
 
 ## ReactNative Android
 # mkdir ~/Android && ln -s /mnt/c/Users/Hirohisa/AppData/Local/Android/Sdk ~/Android/sdk
@@ -41,48 +38,90 @@ alias emu-list='$ANDROID_HOME/emulator/emulator -list-avds'
 # Foreach ( $dir in "Inbound","Outbound" ) { New-NetFireWallRule -DisplayName 'WSL Expo ports for LAN development' -Direction $dir -LocalPort 19000-19002 -Action Allow -Protocol TCP }
 alias rn-expo='REACT_NATIVE_PACKAGER_HOSTNAME=$(/mnt/c/Windows/system32/ipconfig.exe | grep -m 1 "IPv4 Address" | sed "s/.*: //") npx expo start'
 
-
-ghinstall() {
-  curl "https://api.github.com/repos/$1/releases/latest" \
-    | grep -Po "(?<=browser_download_url\": \")https://[^\"]*" \
-    | fzf --reverse --height 30% --bind "enter:execute( curl -L {} | tar xvz )+abort"
-}
-
-gistget() {
-  local temp=$(curl "https://api.github.com/gists/$1")
-  for filename in $(echo "$temp" | yq -r ".files|.[]?|.filename")
-  do echo "$temp" | yq -r ".files|.[\"$filename\"]|.content" > "$filename"
-  done
-}
+nvim --server \$NVIM --remote-silent"
 
 dev-docker() {
   local docker_home=/home/me
   docker run -it \
-    -v /var/run/docker.sock:/var/run/docker.sock \
-    -v ~/.config/gh:$docker_home/.config/gh \
-    -v ~/.cache/nvim/codeium:$docker_home/.cache/nvim/codeium \
-    -v .:$docker_home/workspace \
-    -e LOCAL_UID="$(id -u "$USER")" \
-    -e LOCAL_GID="$(id -g "$USER")" \
-    "$@"
+  -v /var/run/docker.sock:/var/run/docker.sock \
+  -v ~/.config/gh:$docker_home/.config/gh \
+  -v ~/.cache/nvim/codeium:$docker_home/.cache/nvim/codeium \
+  -v .:$docker_home/workspace \
+  -e LOCAL_UID="$(id -u "$USER")" \
+  -e LOCAL_GID="$(id -g "$USER")" \
+  "$@"
 }
 
 dev-ssh() {
   ssh -L "${1:-3000}:localhost:${1:-3000} ${3:-user@host}"
 }
 
+# curl https://raw.githubusercontent.com/danieiff/dotfiles/setup | sh
+
+cd ~
+curl https://mise.run | sh
+mise use -g zig@0.10 node zellij neovim yq ripgrep github-cli
+
+[ -d dotfiles ] || git clone --depth 1 https://github.com/danieiff/dotfiles --recurse-submodules --shallow-submodules --jobs 100
+ln -s ~/dotfiles/nvim ${XDG_CONFIG_HOME:-~/.config}
+
+nvim --headless +'MasonInstall | qa'
+
+# if [ -z "$REMOTE_CONTAINER" ]; then
+# curl -fsSL https://get.docker.com | sh
+# curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash
+# curl -Lo devpod "https://github.com/loft-sh/devpod/releases/latest/download/devpod-linux-amd64" && install -c -m 0755 devpod /bin && rm -f devpod
+# fi
+
+if [ "$WSLENV" ]; then
+  WslLocalAppData="$(wslpath "$(powershell.exe \$Env:LocalAppData)" | tr -d "\r")"
+  cp "$DOTFILES_DIR/windows-terminal-settings.json" "$WslLocalAppData/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState/settings.json"
+  ln -fs "$WslLocalAppData/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState/settings.json" "$DOTFILES_DIR/_windows-terminal-settings.json"
+
+  ## SSH https://futurismo.biz/archives/6862/#-nat-
+  # sudo apt install -y openssh-server
+  ### Run in Powershell as Admin
+  # $wsl_ipaddress1 = (wsl hostname -I).split(" ", 2)[0]
+  # netsh interface portproxy delete v4tov4 listenaddress=0.0.0.0 listenport=22
+  # netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=22 connectaddress=$wsl_ipaddress1 connectport=22
+  # netsh interface portproxy show v4tov4
+  # Foreach ( $dir in "Inbound","Outbound" ) { New-NetFireWallRule -DisplayName 'WSL 2 Firewall Unlock' -Direction Outbound -LocalPort 22 -Action Allow -Protocol TCP }
+
+  # vi /etc/ssh/sshd_config # Edit yes/no for PubkeyAuthentication, PasswordAuthentication
+  # sudo chmod 600 ~/.ssh/authorized_keys
+
+  # ssh-keygen && ssh-copy-id <user@host>
+  # # Opt) Generate public domain e.g.) https://www.noip.com/
+  # # Config Wifi router to open port or proxy to different port from default of ssh
+  # dev() {
+  #   ssh -L "${1:-3000}:localhost:${1:-3000}" <user@host>
+  # }
+  # sudo systemctl start sshd
+
+  ## Chrome (google-chrome)
+  curl -O https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
+  set +e
+  sudo dpkg -i google-chrome-stable_current_amd64.deb
+  sudo apt install language-pack-ja fonts-ipafont fonts-ipaexfont
+  set -e
+  sudo apt install --fix-broken -y
+  fc-cache -fv
+fi
+
+https://github.com/yetone/avante.nvim
+https://github.com/stevearc/quicker.nvim
 ]]
 
-K, HL, CMD, AUC, AUG = function(lhs, rhs, opts)
-      opts = opts or {}
-      local mode = opts.mode or 'n'
-      opts.mode = nil
-      vim.keymap.set(mode, lhs, rhs, opts)
-    end,
-    vim.api.nvim_set_hl,
-    vim.api.nvim_create_user_command,
-    vim.api.nvim_create_autocmd,
-    vim.api.nvim_create_augroup
+K = function(lhs, rhs, opts)
+  opts = opts or {}
+  local mode = opts.mode or 'n'
+  opts.mode = nil
+  vim.keymap.set(mode, lhs, rhs, opts)
+end
+HL = vim.api.nvim_set_hl
+CMD = vim.api.nvim_create_user_command
+AUC = vim.api.nvim_create_autocmd
+AUG = vim.api.nvim_create_augroup
 
 local uname = vim.loop.os_uname()
 PLATFORM = {
