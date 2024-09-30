@@ -1,13 +1,10 @@
 --[[
 git diff COMMIT_HASH_1 COMMIT_HASH_2 | grep "your_search_term"
-Gedit gi-obj:filepath
+Gedit git-obj:filepath
 0Gclog
 Gclog --name-only
 git update-index --skip-worktree
 git update-index --no-skip-worktree
-git ls-files -v | grep ^S
-
-nvim --server \$NVIM --remote-silent"
 
 new
 r! git show branch:file
@@ -133,21 +130,15 @@ PLATFORM = {
 
 ---@ Dependencies Management
 
-DEPS_DIR = {
-  pack = vim.fn.stdpath 'config' .. '/pack/my/start',
-  bin = vim.fn.stdpath 'config'
-}
-DEPS_CACHE = {
-  pack = vim.split(vim.fn.system('ls ' .. DEPS_DIR.pack), '\n'),
-  npm = vim.split(vim.fn.system('npm -gp list | grep -Po "node_modules/\\K.*"'), '\n'),
-  bin = vim.split(vim.fn.system('ls ' .. DEPS_DIR.bin), '\n')
-}
+NVIM_DATA = vim.fn.stdpath 'data'
 
 CMD('GitSubmoduleAddVimPlugin', function(arg)
-  vim.system({ 'git', 'submodule', 'add', arg.args }, { cwd = 'nvim/pack/my/start' }, function(res)
-    if res.code ~= 0 then return vim.notify('git submodule add failed') end
-    vim.cmd('set runtimepath^=' .. vim.fn.stdpath 'config' .. ' | runtime! plugin/**/*.{vim,lua} | helptags ALL')
-  end)
+  vim.system({ 'git', 'submodule', 'add', arg.args },
+    { cwd = vim.fn.stdpath 'config' .. '/pack/my/start/' .. vim.fn.fnamemodify(arg.args, ':t') },
+    function(res)
+      if res.code ~= 0 then return vim.notify('git submodule add failed') end
+      vim.cmd('set runtimepath^=' .. vim.fn.stdpath 'config' .. ' | runtime! plugin/**/*.{vim,lua} | helptags ALL')
+    end)
 end, {})
 
 ---@ Editor Config
@@ -156,8 +147,8 @@ for k, v in pairs {
   autowriteall = true, undofile = true,
   shellcmdflag = '-c', grepprg = 'rg --vimgrep -S ', grepformat = '%f:%l:%c:m',
   ignorecase = true, smartcase = true, tabstop = 2, shiftwidth = 0, expandtab = true,
-  pumblend = 30, winblend = 30,  termguicolors = true, list = true, laststatus = 3, cmdheight = 0, number = true, signcolumn = 'number',
-  foldenable = false, foldmethod = 'expr', foldexpr = 'v:lua.vim.treesitter.foldexpr()', foldtext = 'v:lua.vim.treesitter.foldtext()' }
+  pumblend = 30, winblend = 30, termguicolors = true, list = true, laststatus = 3, cmdheight = 0, number = true, signcolumn = 'number',
+  foldenable = false, foldmethod = 'expr', foldexpr = 'v:lua.vim.nreesitter.foldexpr()' }
 do vim.opt[k] = v end
 
 vim.g.mapleader = ' '
@@ -172,10 +163,8 @@ K('<C-w>-', '<cmd>resize -10<cr>')
 K('<C-w>+', '<cmd>resize +10<cr>')
 K('<C-w><', '<cmd>vertical resize -10<cr>')
 K('<C-w>>', '<cmd>vertical resize +10<cr>')
-K('<C-Left>', '<cmd>tabprevious<cr>', { silent = true, mode = { 'n', 't' } })
-K('<C-Right>', '<cmd>tabnext<cr>', { silent = true, mode = { 'n', 't' } })
-K('<C-Down>', '<cmd>bprevious<cr>', { silent = true })
-K('<C-Up>', '<cmd>bnext<cr>', { silent = true })
+K('<S-Left>', '<cmd>tabprevious<cr>', { silent = true, mode = { 'n', 't' } })
+K('<S-Right>', '<cmd>tabnext<cr>', { silent = true, mode = { 'n', 't' } })
 K('<leader>w', vim.cmd.write)
 K('<Leader>z', '<cmd>qa<cr>')
 K('<Leader>Z', '<cmd>noautocmd qa<cr>')
@@ -229,54 +218,14 @@ end)
 
 local copy, paste = vim.tbl_get(vim, 'g', 'clipboard', 'copy', '+'), vim.tbl_get(vim, 'g', 'clipboard', 'paste', '+')
 if PLATFORM.wsl then
-  copy, paste = 'clip.exe', 'powershell.exe -c [Console]::Out.Write($(Get-Clipboard -Raw).tostring().replace("`r", ""))'
+  copy, paste = 'clip.exe',
+      'powershell.exe -c [Console]::Out.Write($(Get-Clipboard -Raw).tostring().replace("`r", ""))'
 elseif PLATFORM.linux then
   copy, paste = 'wl-copy', 'wl-paste'
 end
-vim.g.clipboard =  { copy = { ['+'] = copy, ['*'] = copy }, paste = { ['+'] = paste, ['*'] = paste } }
+vim.g.clipboard = { copy = { ['+'] = copy, ['*'] = copy }, paste = { ['+'] = paste, ['*'] = paste } }
 
-vim.fn.digraph_setlist {
-  { 'j[', '「' }, { 'j]', '」' }, { 'j{', '『' }, { 'j}', '』' }, { 'j<', '【' }, { 'j>', '】' },
-  { 'js', '　' }, { 'j,', '、' }, { 'j.', '。' }, { 'jj', 'j' },
-  -- emoji
-  --┌────────┬────────┬────────┬────────┬────────┬────────┬────────┐                          ┌────────┬────────┬────────┬────────┬────────┬────────┬────────┐
-  --│        │        │        │        │        │        │        │                          │        │        │        │        │        │        │        │
-  --├────────┼────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┼────────┤
-  --│        │ ✨  💥 │ 🚨  🎨 │ 💡  🔊 │ 📝     │ 🔀 (⏪️)│        │                          │        │ ✅  🧪 │ 🤡  ⚗  │  🏷 🦺 │        │        │        │
-  --├────────┼────────┼────────┼────────┼────────┼────────┼────────┤                          ├────────┼────────┼────────┼────────┼────────┼────────┼────────┤
-  --│        │ 🐛  🚑 │ 🩹  ♻  │ 🔥  🚚 │  🗑 👽 │        │        │                          │        │ 👔  💸 │ 🧱  🗃 │ ⚡  🧵 │ 🔒  🛂 │        │        │
-  --├────────┼────────┼────────┼────────┼────────┼────────┼───────
-  --    ├────────┼────────┼────────┼────────┼────────┼────────┼────────┤
-  --│        │ 🚧  👷 │ 🔧  🔨 │ ➕  ➖ │  ⬆  ⬇  │ 🚀  🔖 │        │                          │        │ 💄  💫 │ 🚸  ♿ │ 📱  🔍 │ 📈  🌐 │ 💬  🍱 │        │
-  --├────────┼────────┼────────┼────────┼────────┼────────┼────────┼────────┐        ┌────────┼────────┼────────┼────────┼────────┼────────┼────────┼────────┤
-  --│        │        │        │        │        │        │        │        │        │        │        │        │        │        │        │        │        │
-  --└────────┴────────┴────────┴────────┘        └────────┴────────┴────────┘        └────────┴────────┴────────┘        └────────┴────────┴────────┴────────┘
-  { 'eq', '✨' }, { 'eQ', '💥' }, { 'ew', '🚨' }, { 'eW', '🎨' }, { 'ee', '💡' }, { 'eE', '🔊' }, {
-  'er',
-  '📝' },
-  { 'ea', '🐛' }, { 'eA', '🚑' }, { 'es', '🩹' }, { 'eS', '♻' }, { 'ed', '🔥' }, { 'eD', '🚚' }, {
-  'ef',
-  '🗑' }, {
-  'eF', '👽' },
-  { 'ez', '🚧' }, { 'eZ', '👷' }, { 'ex', '🔧' }, { 'eX', '🔨' }, { 'ec', '➕' }, { 'eC', '➖' }, { 'ev',
-  '⬆' }, {
-  'eV', '⬇' }, { 'eb', '🚀' }, { 'eB', '🔖' },
-
-  { 'ey', '✅' }, { 'eY', '🧪' }, { 'eu', '🤡' }, { 'eU', '⚗' }, { 'ei', '🏷' }, { 'eI', '🦺' }, { 'eo',
-  '💬' }, {
-  'eO', '🍱' },
-  { 'eh', '👔' }, { 'eH', '💸' }, { 'ek', '🧱' }, { 'eK', '🗃' }, { 'el', '⚡' }, { 'eL', '🧵' }, {
-  'e;',
-  '🔒' }, {
-  'e:', '🛂' },
-  { 'en', '💄' }, { 'eN', '💫' }, { 'em', '🚸' }, { 'eM', '♿' }, { 'e,', '📱' }, { 'e<', '🔍' }, {
-  'e.',
-  '📈' }, {
-  'e>', '🌐' }, { 'e/', '🔀' } --{ 'e?', '⏪️' },
-}
-K('<C-k>e?', '⏪️', { mode = { 'i' } })
-
-AUC('FileType', { pattern = { 'json', 'jsonc', 'yaml', 'python', 'c', 'go' }, command = 'set tabstop=4' })
+AUC('FileType', { pattern = { 'json', 'jsonc', 'yaml', 'python', 'c', 'cpp', 'java', 'go' }, command = 'set tabstop=4' })
 
 AUC('InsertLeave', {
   callback = function(ev)
@@ -304,7 +253,6 @@ end
 AUC('VimEnter', {
   callback = function()
     local vim_argv = vim.fn.argv()
-    if not vim.tbl_contains(vim.v.argv, '--server') then return end
     if #vim_argv > 0 and vim_argv[1]:find '.git/COMMIT_EDITMSG' then return end
     if load_session_if_exists(vim.fn.getcwd()) then for _, path in ipairs(vim_argv) do vim.cmd.tabedit(path) end end
   end
@@ -338,7 +286,10 @@ CMD('NpmRun', function()
   start_interactive_shell_job { { cmd = [[yq -r '.scripts | keys | join("\n")' package.json | npm run `fzf`]] } }
 end, {})
 
-require'nvim-web-devicons'.setup {}
+local overseer = require 'overseer'
+overseer.setup {}
+
+require 'ui'
 
 require "nvim-tree".setup {
   view = { width = 60, side = 'right' },
@@ -356,9 +307,10 @@ K("<C-q>", function() require 'nvim-tree.api'.tree.toggle({ find_file = true }) 
 K('<leader>u', '<cmd>UndotreeToggle<cr>')
 
 require 'telescope'.setup {}
-
 K('<leader> ', require 'telescope.builtin'.resume)
+
 K('<leader>f', require 'telescope.builtin'.find_files)
+K('<leader>F', require 'telescope.builtin'.oldfiles) -- :oldfiles :browse oldfiles
 K('<leader>b', require 'telescope.builtin'.buffers)
 
 K('<leader>r', require 'telescope.builtin'.registers)
@@ -450,7 +402,7 @@ require 'nvim-treesitter.configs'.setup {
     'c', 'java', 'go', 'rust',
     'yaml', 'toml', 'json', 'jsonc', 'markdown', 'markdown_inline',
     'gitcommit', 'git_rebase',
-    'dockerfile', 'sql', 'prisma', 'graphql'
+    'dockerfile', 'sql', 'prisma', 'graphql', 'http'
   },
   highlight = { enable = true }
 }
@@ -510,7 +462,11 @@ K('v;', require 'flash'.treesitter_search, { mode = { "n", "x", "o" } })
 
 require 'chatgpt'.setup {}
 -- require 'codeium'.setup {}
+-- require 'avante_lib'.load()
+-- require 'avante'.setup {}
+-- https://github.com/monkoose/neocodeium
 
+-- TODO: AI code doc comment writing
 require 'neogen'.setup { snippet_engine = "luasnip" }
 K('<leader>doc', ':Neogen ', { desc = 'arg: func|class|type' })
 
@@ -588,6 +544,19 @@ require 'dbee'.setup {
     require 'dbee.sources'.FileSource:new(vim.fn.stdpath 'cache' .. '/dbee/persistence.json'),
   }
 }
+
+require 'lint'.linters_by_ft = {
+  javascript = { 'eslint' },
+  javascriptreact = { 'eslint' },
+  typescript = { 'eslint' },
+  typescriptreact = { 'eslint' }
+}
+
+AUC({ "BufWritePost" }, {
+  callback = function()
+    require("lint").try_lint()
+  end,
+})
 
 ---@ LSP
 
@@ -765,7 +734,7 @@ neotest.setup {
     end,
       env = { CI = true }
     },
-    require 'neotest-vitest',
+    -- require 'neotest-vitest',
   }
 }
 
@@ -775,7 +744,6 @@ K('<leader>td', function() neotest.run.run { strategy = 'dap' } end)
 K('<leader>ts', neotest.run.stop)
 K('<leader>ta', neotest.run.attach)
 
--- https://github.com/mason-org/mason-registry/tree/main/packages
 require 'languages'
 require 'typescript'
 
