@@ -370,6 +370,8 @@ require 'gitsigns'.setup {
   end
 }
 
+require "octo".setup {}
+
 -- AUC('FileType', {
 --   pattern = 'gitcommit',
 --   callback = function(ev)

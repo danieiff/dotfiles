@@ -151,3 +151,6 @@
 [submodule "nvim/pack/my/start/avante.nvim"]
 	path = nvim/pack/my/start/avante.nvim
 	url = https://github.com/yetone/avante.nvim
+[submodule "nvim/pack/opt/start/octo.nvim"]
+	path = nvim/pack/opt/start/octo.nvim
+	url = https://github.com/pwntester/octo.nvim
