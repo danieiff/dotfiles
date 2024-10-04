@@ -154,3 +154,9 @@
 [submodule "nvim/pack/opt/start/octo.nvim"]
 	path = nvim/pack/opt/start/octo.nvim
 	url = https://github.com/pwntester/octo.nvim
+[submodule "nvim/pack/opt/start/neocodeium"]
+	path = nvim/pack/opt/start/neocodeium
+	url = https://github.com/monkoose/neocodeium
+[submodule "neocodeium"]
+	path = neocodeium
+	url = https://github.com/monkoose/neocodeium

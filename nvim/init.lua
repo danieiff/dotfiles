@@ -463,10 +463,13 @@ K('v;', require 'flash'.treesitter_search, { mode = { "n", "x", "o" } })
 ---@ Coding Support
 
 require 'chatgpt'.setup {}
--- require 'codeium'.setup {}
--- require 'avante_lib'.load()
--- require 'avante'.setup {}
--- https://github.com/monkoose/neocodeium
+
+require 'avante_lib'.load()
+require 'avante'.setup { cluade = { model = 'claude-3.5-sonnet' } }
+
+local neocodeium = require 'neocodeium'
+neocodeium.setup()
+vim.keymap.set("i", "<A-f>", neocodeium.accept)
 
 -- TODO: AI code doc comment writing
 require 'neogen'.setup { snippet_engine = "luasnip" }
