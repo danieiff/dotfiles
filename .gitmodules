@@ -157,6 +157,6 @@
 [submodule "nvim/pack/opt/start/neocodeium"]
 	path = nvim/pack/opt/start/neocodeium
 	url = https://github.com/monkoose/neocodeium
-[submodule "neocodeium"]
-	path = neocodeium
-	url = https://github.com/monkoose/neocodeium
+[submodule "nvim/pack/opt/start/nvim-dap-kotlin"]
+	path = nvim/pack/opt/start/nvim-dap-kotlin
+	url = https://github.com/Mgenuit/nvim-dap-kotlin
