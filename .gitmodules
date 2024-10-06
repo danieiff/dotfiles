@@ -160,3 +160,6 @@
 [submodule "nvim/pack/opt/start/nvim-dap-kotlin"]
 	path = nvim/pack/opt/start/nvim-dap-kotlin
 	url = https://github.com/Mgenuit/nvim-dap-kotlin
+[submodule "nvim/pack/my/start/newpaper.nvim"]
+	path = nvim/pack/my/start/newpaper.nvim
+	url = https://github.com/yorik1984/newpaper.nvim

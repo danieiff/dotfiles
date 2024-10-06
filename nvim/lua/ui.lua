@@ -1,6 +1,4 @@
--- :so $VIMRUNTIME/syntax/hitest.vim
-vim.opt.background = 'light'
-vim.cmd.colorscheme 'my_theme'
+require 'newpaper'.setup {}
 
 require 'nvim-web-devicons'.setup {}
 

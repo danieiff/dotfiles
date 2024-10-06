@@ -105,7 +105,6 @@ if [ "$WSLENV" ]; then
   fc-cache -fv
 fi
 
-https://github.com/yetone/avante.nvim
 https://github.com/stevearc/quicker.nvim
 ]]
 
@@ -281,7 +280,7 @@ local function start_interactive_shell_job(cmds_params)
   end
 end
 CMD('RNExpo', function() start_interactive_shell_job { { cmd = 'emu' }, { cmd = 'rn-expo --android' } } end, {})
---
+
 CMD('NpmRun', function()
   start_interactive_shell_job { { cmd = [[yq -r '.scripts | keys | join("\n")' package.json | npm run `fzf`]] } }
 end, {})
@@ -395,13 +394,80 @@ require "octo".setup {}
 --   end
 -- })
 
+overseer.register_template {
+  name = 'Get GitHub Release',
+  builder = function(params)
+    -- @type TaskDefinition
+    return {
+      -- cmd is the only required field
+      cmd = { 'echo' },
+      -- additional arguments for the cmd
+      args = { "hello", "world" },
+      -- the name of the task (defaults to the cmd of the task)
+      name = "Greet",
+      -- set the working directory for the task
+      cwd = "/tmp",
+      -- additional environment variables
+      env = {
+        VAR = "FOO",
+      },
+      -- the list of components or component aliases to add to the task
+      components = { "my_custom_component", "default" },
+      -- arbitrary table of data for your own personal use
+      metadata = {
+        foo = "bar",
+      },
+    }
+  end,
+}
+
+CMD('GHGet', function()
+  local repo_id = vim.fn.input 'Enter github {user/repo} to get the latest release from: '
+  if repo_id == '' then return vim.notify 'no input' end
+
+  local latest_release_data = vim.fn.system('curl -s "https://api.github.com/repos/' .. repo_id .. '/releases/latest"')
+
+  local ok, latest_release_feed = pcall(vim.fn.json_decode, latest_release_data)
+  if not ok then return vim.notify('not valid json: ' .. latest_release_data) end
+
+  local releases = vim.tbl_map(function(item) return item.browser_download_url end, latest_release_feed.assets)
+
+  vim.ui.select(releases, { prompt = 'Select release' }, function(choice)
+    local cmd = 'curl -o %s'
+    if choice:find 'tar%.gz$' then cmd = 'curl -fSL %s | tar xz' end
+    vim.system({ cmd:format(choice) }, { text = true }, function(res)
+      vim.notify('Request for ' .. choice .. ' settled: ' .. res.stdout .. res.stderr)
+    end)
+  end)
+end, {})
+
+CMD('Gistget', function()
+  local gist_id = vim.fn.input 'Enter github {user/gist} to get: '
+  if gist_id == '' then return vim.notify 'no input' end
+
+  vim.system({ 'curl', '-s', ("https://api.github.com/gists/%s"):format(gist_id) }, { text = true }, function(res)
+    if res.code ~= 0 then return vim.notify(res.stderr) end
+    local ok, gist_json = pcall(vim.json.decode, res.stdout)
+    if not ok then return vim.notify('not valid json: ' .. res.stdout) end
+    for fname, fdata in pairs(gist_json.files) do
+      vim.schedule(function()
+        vim.cmd 'tabe'
+        vim.api.nvim_buf_set_lines(0, 0, 0, false, vim.split(fdata.content, '\n'))
+        vim.api.nvim_buf_set_name(0, fname)
+        vim.filetype.match { buf = 0, filename = fname }
+      end)
+    end
+  end)
+end, {})
+
 ---@ TreeSitter
 
 require 'nvim-treesitter.configs'.setup {
   ensure_installed = {
     'javascript', 'typescript', 'tsx', 'html', 'css', 'vue', 'svelte', 'astro',
     'python', 'php', 'ruby', 'lua', 'bash',
-    'c', 'java', 'go', 'rust',
+    'java', 'c_sharp',
+    'c', 'go', 'rust',
     'yaml', 'toml', 'json', 'jsonc', 'markdown', 'markdown_inline',
     'gitcommit', 'git_rebase',
     'dockerfile', 'sql', 'prisma', 'graphql', 'http'
@@ -567,21 +633,40 @@ AUC({ "BufWritePost" }, {
 
 -- vim.lsp.set_log_level 'DEBUG' -- :LspLog
 CMD('LspRestart', 'lua vim.lsp.stop_client(vim.lsp.get_active_clients()); vim.cmd.edit()', {})
-CMD('LspConfigReference', function(ev)
-  local bufnr = vim.api.nvim_create_buf(false, true)
-  vim.api.nvim_open_win(bufnr, true, {
-    relative = 'editor',
-    col = 0,
-    row = 0,
-    width = vim.o.columns,
-    height = vim.o.lines,
-  })
-  vim.api.nvim_buf_set_lines(bufnr, 0, 1, false,
-    vim.fn.systemlist(('curl -fsSL https://raw.githubusercontent.com/neovim/nvim-lspconfig/master/lua/lspconfig/server_configurations/%s.lua')
-      :format(ev.args)))
-  vim.bo[bufnr].filetype = 'lua'
-  K('q', '<cmd>q!<cr>', { buffer = bufnr })
-end, { nargs = '?' })
+
+CMD('LspConfigReference', function()
+  local ft = vim.fn.input { prompt = 'Search lsp config for filetype: ', default = vim.bo.ft }
+  if ft == '' then return vim.notify 'no input' end
+
+  vim.system(
+    { 'curl', '-fsSL', 'https://raw.githubusercontent.com/neovim/nvim-lspconfig/master/doc/configs.txt' },
+    { text = true },
+    function(res)
+      if res.code ~= 0 then return vim.notify(res.stderr) end
+
+      local server_configs_txt = res.stdout:gsub('\n##', '¬')
+      local pattern = ('lua%%s+require\'lspconfig\'%%.([%%a_-]+)%%.setup[^¬]+%%- `filetypes` :%%s+```lua%%s+%%{[%%a", ]*"%s"[%%a", ]*%%}')
+          :format(ft)
+
+      local founds = server_configs_txt:gmatch(pattern)
+      for ls in founds do
+        local fname = ls .. '.lua'
+        vim.system(
+          { 'curl', '-fsSL', ('https://raw.githubusercontent.com/neovim/nvim-lspconfig/master/lua/lspconfig/server_configurations/' .. fname) },
+          {}, function(curl_lsconfig_res)
+            if curl_lsconfig_res.code ~= 0 then return vim.notify(curl_lsconfig_res.stderr) end
+            vim.schedule(function()
+              vim.cmd 'tabe'
+              vim.api.nvim_buf_set_lines(0, 0, 0, false, vim.split(curl_lsconfig_res.stdout, '\n'))
+              vim.api.nvim_buf_set_name(0, fname)
+              vim.bo.ft = 'lua'
+            end)
+          end)
+      end
+    end
+  )
+end, {})
+
 CMD('LspCapa', function()
   local clients = vim.lsp.get_clients()
   vim.ui.select(vim.tbl_map(function(item) return item.name end, clients), {},
@@ -627,6 +712,17 @@ AUC('LspAttach', {
       })
     end
 
+    --[[
+      Use CTRL-w ] to split the current window and jump to the definition of the symbol under the cursor in the upper window.
+      Use CTRL-w } to open a preview window with the definition of the symbol under the cursor.
+      Use :tselect <name> to list all tags matching the name
+      Use :tjump <name>, like :tselect, but jump to it if there is only one match.
+      gq (format)
+
+      vim.lsp.codelens.refresh()
+
+      vim.lsp.start { cmd = vim.lsp.rpc.connect('127.0.0.1', 6008), ... } -- builtin TCP support with neovim 0.8+
+    ]]
     K('[d', vim.diagnostic.goto_prev)
     K(']d', vim.diagnostic.goto_next)
     K('[D', function() vim.diagnostic.goto_prev { severity = { min = vim.diagnostic.severity.WARN } } end)
@@ -750,6 +846,4 @@ K('<leader>ts', neotest.run.stop)
 K('<leader>ta', neotest.run.attach)
 
 require 'languages'
-require 'typescript'
-
-require 'ui'
+-- require 'typescript'
