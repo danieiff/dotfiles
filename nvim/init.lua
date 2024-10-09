@@ -528,14 +528,23 @@ K('v;', require 'flash'.treesitter_search, { mode = { "n", "x", "o" } })
 
 ---@ Coding Support
 
-require 'chatgpt'.setup {}
+require 'chatgpt'.setup {
+  openai_params = { model = 'gpt-4o-mini' }
+}
 
 require 'avante_lib'.load()
-require 'avante'.setup { cluade = { model = 'claude-3.5-sonnet' } }
+require 'avante'.setup {
+  provider = 'openai', openai = { model = 'gpt-4o-mini' }
+}
 
 local neocodeium = require 'neocodeium'
 neocodeium.setup()
-vim.keymap.set("i", "<A-f>", neocodeium.accept)
+K("<A-y>", neocodeium.accept, { mode = { "i" } })
+K("<A-w>", neocodeium.accept_word, { mode = { "i" } })
+K("<A-Y>", neocodeium.accept_line, { mode = { "i" } })
+K("<A-n>", neocodeium.cycle_or_complete, { mode = { "i" } })
+K("<A-p>", function() neocodeium.cycle_or_complete(-1) end, { mode = { "i" } })
+K("<A-c>", neocodeium.clear, { mode = { "i" } })
 
 -- TODO: AI code doc comment writing
 require 'neogen'.setup { snippet_engine = "luasnip" }
