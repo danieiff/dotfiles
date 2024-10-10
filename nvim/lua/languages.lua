@@ -511,12 +511,19 @@ dap.configurations.cs = {
 
 
 require 'lspconfig'.kotlin_language_server.setup {}
+-- https://github.com/rbenv/ruby-build/wiki#suggested-build-environment
+require 'lspconfig'.ruby_lsp.setup {}
+require("dap-ruby").setup() -- gem install rdbg rspec
 
 dap.adapters.kotlin = {
   type = "executable",
   command = "kotlin-debug-adapter",
   options = { auto_continue_if_many_stopped = false },
 }
+local function start_ruby_debugger()
+  vim.fn.setenv("RUBYOPT", "-rdebug/open")
+  require("dap").continue()
+end
 
 dap.configurations.kotlin = {
   {
@@ -543,13 +550,6 @@ dap.configurations.kotlin = {
     -- ./gradlew --info cleanTest test --debug-jvm
     -- then attach the debugger to it
     type = "kotlin",
-    request = "attach",
-    name = "Attach to debugging session",
-    port = 5005,
-    args = {},
-    projectRoot = vim.fn.getcwd,
-    hostName = "localhost",
-    timeout = 2000,
   },
 }
 

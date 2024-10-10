@@ -773,7 +773,31 @@ local dap, dapui, dap_widgets = require 'dap', require 'dapui', require 'dap.ui.
 K("<Leader>di", dap.toggle_breakpoint)
 K("<Leader>dI", function() dap.set_breakpoint(vim.fn.input "Breakpoint condition: ") end)
 K("<Leader>dp", function() dap.set_breakpoint(nil, nil, vim.fn.input "Log point message: ") end)
-K("<Leader>ds", dap.continue)
+K("<Leader>ds", function()
+    if vim.bo.filetype == "ruby" then
+      vim.fn.setenv("RUBYOPT", "-rdebug/open")
+      if vim.api.nvim_buf_get_name(0):find 'spec' then
+        require("dap").run({
+          type = "ruby",
+          name = "debug rspec file",
+          request = "attach",
+          command = "rspec",
+          script = "${file}",
+          port = 38698,
+          server = "127.0.0.1",
+          localfs = true,      -- required to be able to set breakpoints locally
+          stopOnEntry = false, -- This has no effect
+        })
+        return
+      end
+      vim.fn.setenv("RUBYOPT", "-rdebug/open")
+      require("dap").continue()
+      require("dap").continue()
+    else
+    end
+    require("dap").continue()
+  end,
+  { desc = "Start/Continue" })
 K("<Leader>dl", dap.run_to_cursor)
 K("<Leader>dS", dap.disconnect)
 K("<Leader>dn", dap.step_over)

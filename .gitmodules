@@ -157,9 +157,12 @@
 [submodule "nvim/pack/opt/start/neocodeium"]
 	path = nvim/pack/opt/start/neocodeium
 	url = https://github.com/monkoose/neocodeium
-[submodule "nvim/pack/opt/start/nvim-dap-kotlin"]
-	path = nvim/pack/opt/start/nvim-dap-kotlin
-	url = https://github.com/Mgenuit/nvim-dap-kotlin
+[submodule "nvim/pack/opt/start/flutter-tools.nvim"]
+	path = nvim/pack/opt/start/flutter-tools.nvim
+	url = https://github.com/nvim-flutter/flutter-tools.nvim
 [submodule "nvim/pack/my/start/newpaper.nvim"]
 	path = nvim/pack/my/start/newpaper.nvim
 	url = https://github.com/yorik1984/newpaper.nvim
+[submodule "nvim/pack/opt/start/nvim-dap-ruby"]
+	path = nvim/pack/opt/start/nvim-dap-ruby
+	url = https://github.com/suketa/nvim-dap-ruby
