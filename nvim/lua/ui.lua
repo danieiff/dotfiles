@@ -50,8 +50,7 @@ local function statusline()
   }), '  ')
 end
 
-AUC({ 'WinEnter', 'BufEnter', 'FileChangedShellPost', 'VimResized', 'CursorMoved', 'ModeChanged' },
-  { callback = statusline })
+AUC({ 'BufEnter', 'FileChangedShellPost', 'CursorMoved', 'ModeChanged', 'DirChanged' }, { callback = statusline })
 
 local win_bufname_ns = vim.api.nvim_create_namespace('win_bufname')
 AUC({ 'WinEnter', 'WinScrolled', 'WinResized', 'VimResized' }, {
@@ -90,16 +89,16 @@ end
 local dap = require 'dap'
 
 dap.listeners.before['event_progressStart']['progress-notifications'] = function(session, body)
-  vim.notify(body.percentage .. "%\t" .. body.message, vim.log.levels.INFO,
-    { title = session.config.type .. (#body.title > 0 and ": " .. body.title or ""), group = body.progressId })
+  vim.notify((body.percentage and body.percentage or '') .. "%\t" .. body.message, vim.log.levels.INFO,
+    { title = session.config.type .. (body.title and ": " .. body.title or ""), group = body.progressId })
 end
 
 dap.listeners.before['event_progressUpdate']['progress-notifications'] = function(session, body)
-  vim.notify(body.percentage .. "%\t" .. body.message, vim.log.levels.INFO,
-    { title = session.config.type .. (#body.title > 0 and ": " .. body.title or ""), group = body.progressId })
+  vim.notify((body.percentage and body.percentage or '') .. "%\t" .. body.message, vim.log.levels.INFO,
+    { title = session.config.type .. (body.title and ": " .. body.title or ""), group = body.progressId })
 end
 
 dap.listeners.before['event_progressEnd']['progress-notifications'] = function(session, body)
-  vim.notify(body.percentage .. "%\t" .. body.message, vim.log.levels.INFO,
-    { title = session.config.type .. (#body.title > 0 and ": " .. body.title or ""), group = body.progressId })
+  vim.notify((body.percentage and body.percentage or '') .. "%\t" .. body.message, vim.log.levels.INFO,
+    { title = session.config.type .. (body.title and ": " .. body.title or ""), group = body.progressId })
 end

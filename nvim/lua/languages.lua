@@ -510,46 +510,28 @@ dap.configurations.cs = {
 }
 
 
-require 'lspconfig'.kotlin_language_server.setup {}
 -- https://github.com/rbenv/ruby-build/wiki#suggested-build-environment
 require 'lspconfig'.ruby_lsp.setup {}
 require("dap-ruby").setup() -- gem install rdbg rspec
 
-dap.adapters.kotlin = {
-  type = "executable",
-  command = "kotlin-debug-adapter",
-  options = { auto_continue_if_many_stopped = false },
-}
-local function start_ruby_debugger()
-  vim.fn.setenv("RUBYOPT", "-rdebug/open")
-  require("dap").continue()
-end
 
-dap.configurations.kotlin = {
-  {
-    type = "kotlin",
-    request = "launch",
-    name = "This file",
-    -- may differ, when in doubt, whatever your project structure may be,
-    -- it has to correspond to the class file located at `build/classes/`
-    -- and of course you have to build before you debug (like `./gradlew build`)
-    mainClass = function()
-      local root = (vim.fs.find("src", { path = vim.uv.cwd(), upward = true, stop = vim.env.HOME })[1] or ""):gsub(
-        "([%W])", "%%%1")
-      local fname = vim.api.nvim_buf_get_name(0)
-      -- src/main/kotlin/websearch/Main.kt -> websearch.MainKt
-      return fname:gsub(root, ""):gsub("main/kotlin/", ""):gsub(".kt", "Kt"):gsub("/", "."):sub(2, -1)
+require 'flutter-tools'.setup {
+  debugger = {
+    enabled = true,
+    register_configurations = function(_)
+      if vim.loop.fs_stat(vim.fn.getcwd() .. '/.vscode/launch.json') then
+        require("dap").configurations.dart = {}
+        require("dap.ext.vscode").load_launchjs()
+      end
     end,
-    projectRoot = "${workspaceFolder}",
-    jsonLogFile = "",
-    enableJsonLogging = false,
-  },
-  {
-    -- Use this for unit tests
-    -- First, run
-    -- ./gradlew --info cleanTest test --debug-jvm
-    -- then attach the debugger to it
-    type = "kotlin",
   },
 }
+-- require("telescope").load_extension("flutter")
 
+-- require 'lspconfig'.elixir.setup {
+--   settings = {
+--     elixirLS = {
+--       autoBuild = true,
+--     }
+--   }
+-- }
