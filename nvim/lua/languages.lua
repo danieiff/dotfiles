@@ -490,25 +490,6 @@ REQUIRE {
     }
     return { name = ls, cmd = { ls, 'start' } }
   end
--- https://github.com/seblj/roslyn.nvim
--- https://dev.azure.com/azure-public/vside/_artifacts/feed/vs-impl/NuGet/Microsoft.CodeAnalysis.LanguageServer.linux-x64
-require 'roslyn'.setup {}
-
-dap.adapters.coreclr = {
-  type = 'executable',
-  command = 'netcoredbg',
-  args = { '--interpreter=vscode' }
-}
-
-dap.configurations.cs = {
-  {
-    type = "coreclr",
-    name = "launch - netcoredbg",
-    request = "launch",
-    program = function() return vim.fn.input('Path to dll', vim.fn.getcwd() .. '/bin/Debug/', 'file') end,
-  },
-}
-
 
 -- https://github.com/rbenv/ruby-build/wiki#suggested-build-environment
 require 'lspconfig'.ruby_lsp.setup {}
