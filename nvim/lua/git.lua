@@ -1,3 +1,24 @@
+--[[[
+
+git diff COMMIT_HASH_1 COMMIT_HASH_2 | grep "your_search_term"
+Gedit git-obj:filepath
+0Gclog
+Gclog --name-only
+git update-index --skip-worktree
+git update-index --no-skip-worktree
+
+new
+r! git show branch:file
+file filename
+filetype detect
+set buftype=nowrite
+
+G log --graph --abbrev-commit --format=format:'%C(bold blue)%h%C(reset)%C(red)%d%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(auto) %C(bold green)(%ar)%C(reset)' --all
+
+git diff-tree --no-commit-id --name-only -r $1
+
+]]
+
 K('<leader>gC', require 'telescope.builtin'.git_commits)
 K('<leader>gc', require 'telescope.builtin'.git_bcommits)
 K('<leader>gc', require 'telescope.builtin'.git_bcommits_range, { mode = { 'x' } })

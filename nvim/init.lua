@@ -273,6 +273,8 @@ AUC('TermClose', { callback = function(ev) vim.cmd('silent! bwipe!' .. ev.buf) e
 local overseer = require 'overseer'
 overseer.setup {}
 
+require 'git'
+
 require 'ui'
 
 require "nvim-tree".setup {
