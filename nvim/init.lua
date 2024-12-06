@@ -374,13 +374,8 @@ require 'nvim-surround'.setup()
 require 'nvim-ts-autotag'.setup { enable_close_on_slash = false, }
 require 'nvim-autopairs'.setup { disable_in_visualblock = true, fast_wrap = { map = '<C-]>' } } -- <C-h> to delete only '('
 
-K("w", "<cmd>lua require 'spider' .motion 'w' <cr>", { mode = { "n", "o", "x" } })
-K("e", "<cmd>lua require 'spider' .motion 'e' <cr>", { mode = { "n", "o", "x" } })
-K("b", "<cmd>lua require 'spider' .motion 'b' <cr>", { mode = { "n", "o", "x" } })
-K("ge", "<cmd>lua require 'spider' .motion 'ge' <cr>", { mode = { "n", "o", "x" } })
-
 require 'flash'.setup { label = { uppercase = false }, modes = { search = { enabled = false } } }
-K('f', require 'flash'.jump, { mode = { "n", "x", "o" } })
+K('s', require 'flash'.jump, { mode = { "n", "x", "o" } })
 K('r', require 'flash'.remote, { mode = { "o" } })
 K('v,', require 'flash'.treesitter, { mode = { "n", "x", "o" } })
 K('v;', require 'flash'.treesitter_search, { mode = { "n", "x", "o" } })

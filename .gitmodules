@@ -58,9 +58,6 @@
 [submodule "nvim/pack/my/start/flash.nvim"]
 	path = nvim/pack/my/start/flash.nvim
 	url = https://github.com/folke/flash.nvim
-[submodule "nvim/pack/my/start/nvim-spider"]
-	path = nvim/pack/my/start/nvim-spider
-	url = https://github.com/chrisgrieser/nvim-spider
 [submodule "nvim/pack/my/start/nvim-cmp"]
 	path = nvim/pack/my/start/nvim-cmp
 	url = https://github.com/hrsh7th/nvim-cmp
