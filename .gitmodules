@@ -37,9 +37,6 @@
 [submodule "nvim/pack/my/start/vim-illuminate"]
 	path = nvim/pack/my/start/vim-illuminate
 	url = https://github.com/RRethy/vim-illuminate
-[submodule "nvim/pack/my/start/Comment.nvim"]
-	path = nvim/pack/my/start/Comment.nvim
-	url = https://github.com/numToStr/Comment.nvim
 [submodule "nvim/pack/my/start/nvim-surround"]
 	path = nvim/pack/my/start/nvim-surround
 	url = https://github.com/kylechui/nvim-surround
@@ -49,30 +46,12 @@
 [submodule "nvim/pack/my/start/nvim-autopairs"]
 	path = nvim/pack/my/start/nvim-autopairs
 	url = https://github.com/windwp/nvim-autopairs
-[submodule "nvim/pack/my/start/treesj"]
-	path = nvim/pack/my/start/treesj
-	url = https://github.com/Wansmer/treesj
 [submodule "nvim/pack/my/start/syntax-tree-surfer"]
 	path = nvim/pack/my/start/syntax-tree-surfer
 	url = https://github.com/ziontee113/syntax-tree-surfer
 [submodule "nvim/pack/my/start/flash.nvim"]
 	path = nvim/pack/my/start/flash.nvim
 	url = https://github.com/folke/flash.nvim
-[submodule "nvim/pack/my/start/nvim-cmp"]
-	path = nvim/pack/my/start/nvim-cmp
-	url = https://github.com/hrsh7th/nvim-cmp
-[submodule "nvim/pack/my/start/cmp-nvim-lsp"]
-	path = nvim/pack/my/start/cmp-nvim-lsp
-	url = https://github.com/hrsh7th/cmp-nvim-lsp
-[submodule "nvim/pack/my/start/cmp-buffer"]
-	path = nvim/pack/my/start/cmp-buffer
-	url = https://github.com/hrsh7th/cmp-buffer
-[submodule "nvim/pack/my/start/cmp_luasnip"]
-	path = nvim/pack/my/start/cmp_luasnip
-	url = https://github.com/saadparwaiz1/cmp_luasnip
-[submodule "nvim/pack/my/start/LuaSnip"]
-	path = nvim/pack/my/start/LuaSnip
-	url = https://github.com/L3MON4D3/LuaSnip
 [submodule "nvim/pack/my/start/friendly-snippets"]
 	path = nvim/pack/my/start/friendly-snippets
 	url = https://github.com/danieiff/friendly-snippets
@@ -127,12 +106,6 @@
 [submodule "nvim/pack/my/start/SchemaStore.nvim"]
 	path = nvim/pack/my/start/SchemaStore.nvim
 	url = https://github.com/b0o/SchemaStore.nvim
-[submodule "nvim/pack/my/start/nvim-dbee"]
-	path = nvim/pack/my/start/nvim-dbee
-	url = https://github.com/kndndrj/nvim-dbee
-[submodule "nvim/pack/my/start/cmp-dbee"]
-	path = nvim/pack/my/start/cmp-dbee
-	url = https://github.com/MattiasMTS/cmp-dbee
 [submodule "nvim/pack/my/start/rest-nvim"]
 	path = nvim/pack/my/start/rest-nvim
 	url = https://github.com/rest-nvim/rest.nvim
@@ -163,3 +136,27 @@
 [submodule "nvim/pack/opt/start/nvim-dap-ruby"]
 	path = nvim/pack/opt/start/nvim-dap-ruby
 	url = https://github.com/suketa/nvim-dap-ruby
+[submodule "nvim/pack/my/start/nvim-scissors"]
+	path = nvim/pack/my/start/nvim-scissors
+	url = https://github.com/chrisgrieser/nvim-scissors
+[submodule "nvim/pack/my/start/nvim-chainsaw"]
+	path = nvim/pack/my/start/nvim-chainsaw
+	url = https://github.com/chrisgrieser/nvim-chainsaw
+[submodule "nvim/pack/my/start/neogit"]
+	path = nvim/pack/my/start/neogit
+	url = https://github.com/NeogitOrg/neogit
+[submodule "nvim/pack/my/start/nvim-tinygit"]
+	path = nvim/pack/my/start/nvim-tinygit
+	url = https://github.com/chrisgrieser/nvim-tinygit
+[submodule "nvim/pack/my/start/blink.cmp"]
+	path = nvim/pack/my/start/blink.cmp
+	url = https://github.com/saghen/blink.cmp
+[submodule "nvim/pack/my/start/symbol-usage.nvim"]
+	path = nvim/pack/my/start/symbol-usage.nvim
+	url = https://github.com/Wansmer/symbol-usage.nvim
+[submodule "/home/sugiel/dotfiles/nvim/pack/my/start/satellite.nvim"]
+	path = /home/sugiel/dotfiles/nvim/pack/my/start/satellite.nvim
+	url = https://github.com/lewis6991/satellite.nvim
+[submodule "/home/sugiel/dotfiles/nvim/pack/my/start/nvim-scrollbar"]
+	path = /home/sugiel/dotfiles/nvim/pack/my/start/nvim-scrollbar
+	url = https://github.com/petertriho/nvim-scrollbar
