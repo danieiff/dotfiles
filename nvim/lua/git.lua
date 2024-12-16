@@ -44,12 +44,12 @@ require 'gitsigns'.setup {
       return '<Ignore>'
     end, { expr = true })
 
-    K('Hs', ':Gitsigns stage_hunk<cr>', { mode = { 'n', 'v' } })
-    K('Hr', ':Gitsigns reset_hunk<cr>', { mode = { 'n', 'v' } })
-    K('Hu', gs.undo_stage_hunk)
-    K('Hp', gs.preview_hunk)
-    K('Hb', function() gs.blame_line { full = true } end)
-    K('Hd', gs.toggle_deleted)
+    K('Ss', ':Gitsigns stage_hunk<cr>', { mode = { 'n', 'v' } })
+    K('Sr', ':Gitsigns reset_hunk<cr>', { mode = { 'n', 'v' } })
+    K('Su', gs.undo_stage_hunk)
+    K('Sp', gs.preview_hunk)
+    K('Sb', function() gs.blame_line { full = true } end)
+    K('Sd', gs.toggle_deleted)
     K('ih', '<cmd>Gitsigns select_hunk<cr>', { mode = { 'o', 'v' } })
   end
 }
@@ -95,3 +95,30 @@ CMD('Gistget', function()
   end)
 end, {})
 
+AUC('FileType', {
+  pattern = 'gitcommit',
+  callback = function(ev)
+    local issuekey = vim.fn['fugitive#statusline']():match '[A-Z]+-%d+'
+    if not issuekey or vim.api.nvim_buf_get_lines(0, 0, 1, {})[1] ~= '' then return end
+    vim.api.nvim_buf_set_text(ev.buf, 0, 0, 0, 0, { issuekey })
+
+    local cmd = ([[
+      curl --request GET --url ""
+        --user ""
+        --header 'Accept: application/json'
+    ]]):format(issuekey):gsub('%s+', ' ')
+    vim.fn.jobstart(cmd, {
+      stdout_buffered = true,
+      on_stdout = function(_, data)
+        local ok, res_tbl = pcall(vim.json.decode, vim.fn.join(data, ''))
+        if ok then
+          vim.api.nvim_buf_set_text(ev.buf, 0, -1, 1, -1, { vim.tbl_get(res_tbl, 'issues', 1, 'fields', 'summary') })
+        else
+          vim.api.nvim_buf_set_text(ev.buf, 0, 0, 0, -1, { '' })
+          vim.api.nvim_buf_delete(ev.buf, { force = true })
+          vim.print('No issue found')
+        end
+      end
+    })
+  end
+})
