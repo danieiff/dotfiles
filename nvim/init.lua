@@ -412,6 +412,7 @@ end
 for k, v in pairs { ['typescriptreact'] = { 'javascript' }, ['typescript'] = { 'javascript' } } do
   luasnip.filetype_extend(k, v)
 end
+require 'debugprint'.setup {}
 
 require 'blink.cmp'.setup {
   -- 'default' for mappings similar to built-in completion

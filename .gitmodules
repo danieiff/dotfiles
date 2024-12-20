@@ -139,9 +139,6 @@
 [submodule "nvim/pack/my/start/nvim-scissors"]
 	path = nvim/pack/my/start/nvim-scissors
 	url = https://github.com/chrisgrieser/nvim-scissors
-[submodule "nvim/pack/my/start/nvim-chainsaw"]
-	path = nvim/pack/my/start/nvim-chainsaw
-	url = https://github.com/chrisgrieser/nvim-chainsaw
 [submodule "nvim/pack/my/start/neogit"]
 	path = nvim/pack/my/start/neogit
 	url = https://github.com/NeogitOrg/neogit
@@ -160,3 +157,6 @@
 [submodule "/home/sugiel/dotfiles/nvim/pack/my/start/nvim-scrollbar"]
 	path = /home/sugiel/dotfiles/nvim/pack/my/start/nvim-scrollbar
 	url = https://github.com/petertriho/nvim-scrollbar
+[submodule "nvim/pack/my/start/debugprint.nvim"]
+  path = nvim/pack/my/start/debugprint.nvim
+  url = https://github.com/andrewferrier/debugprint.nvim
