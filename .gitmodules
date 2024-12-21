@@ -28,9 +28,6 @@
 [submodule "nvim/pack/my/start/overseer.nvim"]
 	path = nvim/pack/my/start/overseer.nvim
 	url = https://github.com/stevearc/overseer.nvim
-[submodule "nvim/pack/my/start/nvim-treesitter-context"]
-	path = nvim/pack/my/start/nvim-treesitter-context
-	url = https://github.com/nvim-treesitter/nvim-treesitter-context
 [submodule "nvim/pack/my/start/indent-blankline.nvim"]
 	path = nvim/pack/my/start/indent-blankline.nvim
 	url = https://github.com/lukas-reineke/indent-blankline.nvim
@@ -67,18 +64,12 @@
 [submodule "nvim/pack/my/start/nvim-lspconfig"]
 	path = nvim/pack/my/start/nvim-lspconfig
 	url = https://github.com/neovim/nvim-lspconfig
-[submodule "nvim/pack/my/start/lsp_signature.nvim"]
-	path = nvim/pack/my/start/lsp_signature.nvim
-	url = https://github.com/ray-x/lsp_signature.nvim
 [submodule "nvim/pack/my/start/lsp-lens.nvim"]
 	path = nvim/pack/my/start/lsp-lens.nvim
 	url = https://github.com/danieiff/lsp-lens.nvim
 [submodule "nvim/pack/my/start/symbols-outline.nvim"]
 	path = nvim/pack/my/start/symbols-outline.nvim
 	url = https://github.com/simrat39/symbols-outline.nvim
-[submodule "nvim/pack/my/start/nvim-lint"]
-	path = nvim/pack/my/start/nvim-lint
-	url = https://github.com/mfussenegger/nvim-lint
 [submodule "nvim/pack/my/start/conform.nvim"]
 	path = nvim/pack/my/start/conform.nvim
 	url = https://github.com/stevearc/conform.nvim
@@ -91,9 +82,6 @@
 [submodule "nvim/pack/my/start/nvim-dap-virtual-text"]
 	path = nvim/pack/my/start/nvim-dap-virtual-text
 	url = https://github.com/theHamsta/nvim-dap-virtual-text
-[submodule "nvim/pack/my/start/neotest"]
-	path = nvim/pack/my/start/neotest
-	url = https://github.com/nvim-neotest/neotest
 [submodule "nvim/pack/my/start/nvim-nio"]
 	path = nvim/pack/my/start/nvim-nio
 	url = https://github.com/nvim-neotest/nvim-nio
@@ -142,9 +130,6 @@
 [submodule "nvim/pack/my/start/neogit"]
 	path = nvim/pack/my/start/neogit
 	url = https://github.com/NeogitOrg/neogit
-[submodule "nvim/pack/my/start/nvim-tinygit"]
-	path = nvim/pack/my/start/nvim-tinygit
-	url = https://github.com/chrisgrieser/nvim-tinygit
 [submodule "nvim/pack/my/start/blink.cmp"]
 	path = nvim/pack/my/start/blink.cmp
 	url = https://github.com/saghen/blink.cmp
@@ -154,9 +139,33 @@
 [submodule "/home/sugiel/dotfiles/nvim/pack/my/start/satellite.nvim"]
 	path = /home/sugiel/dotfiles/nvim/pack/my/start/satellite.nvim
 	url = https://github.com/lewis6991/satellite.nvim
-[submodule "/home/sugiel/dotfiles/nvim/pack/my/start/nvim-scrollbar"]
-	path = /home/sugiel/dotfiles/nvim/pack/my/start/nvim-scrollbar
-	url = https://github.com/petertriho/nvim-scrollbar
+[submodule "/home/sugiel/dotfiles/nvim/pack/my/start/aoc.nvim"]
+	path = /home/sugiel/dotfiles/nvim/pack/my/start/aoc.nvim
+	url = https://github.com/csessh/aoc.nvim
+[submodule "/home/sugiel/dotfiles/nvim/pack/my/start/blink.cmp"]
+	path = /home/sugiel/dotfiles/nvim/pack/my/start/blink.cmp
+	url = https://github.com/saghen/blink.cmp
+[submodule "/home/sugiel/dotfiles/nvim/pack/my/start/lsp_signature.nvim"]
+	path = /home/sugiel/dotfiles/nvim/pack/my/start/lsp_signature.nvim
+	url = https://github.com/ray-x/lsp_signature.nvim
+[submodule "/home/sugiel/dotfiles/nvim/pack/my/start/nvim-lint"]
+	path = /home/sugiel/dotfiles/nvim/pack/my/start/nvim-lint
+	url = https://github.com/mfussenegger/nvim-lint
+[submodule "/home/sugiel/dotfiles/nvim/pack/my/start/nvim-treesitter-context"]
+	path = /home/sugiel/dotfiles/nvim/pack/my/start/nvim-treesitter-context
+	url = https://github.com/nvim-treesitter/nvim-treesitter-context
+[submodule "/home/sugiel/dotfiles/nvim/pack/my/start/lush.nvim"]
+	path = /home/sugiel/dotfiles/nvim/pack/my/start/lush.nvim
+	url = https://github.com/rktjmp/lush.nvim
+[submodule "/home/sugiel/dotfiles/nvim/pack/my/start/nightfox.nvim"]
+	path = /home/sugiel/dotfiles/nvim/pack/my/start/nightfox.nvim
+	url = https://github.com/EdenEast/nightfox.nvim
 [submodule "nvim/pack/my/start/debugprint.nvim"]
   path = nvim/pack/my/start/debugprint.nvim
   url = https://github.com/andrewferrier/debugprint.nvim
+[submodule "nvim/pack/my/start/neotest"]
+	path = nvim/pack/my/start/neotest
+	url = https://github.com/nvim-neotest/neotest
+[submodule "nvim/pack/my/start/markdown-preview.nvim"]
+	path = nvim/pack/my/start/markdown-preview.nvim
+	url = https://github.com/iamcco/markdown-preview.nvim

@@ -132,11 +132,39 @@ PLATFORM = {
 NVIM_DATA = vim.fn.stdpath 'data'
 
 CMD('GitSubmoduleAddVimPlugin', function(arg)
-  vim.system({ 'git', 'submodule', 'add', arg.args },
-    { cwd = vim.fn.stdpath 'config' .. '/pack/my/start/' .. vim.fn.fnamemodify(arg.args, ':t') },
-    function(res)
-      if res.code ~= 0 then return vim.notify('git submodule add failed') end
-      vim.cmd('set runtimepath^=' .. vim.fn.stdpath 'config' .. ' | runtime! plugin/**/*.{vim,lua} | helptags ALL')
+  vim.system(
+    { 'git', 'submodule', 'add', arg.args, 'nvim/pack/my/start/' .. vim.fn.fnamemodify(arg.args, ':t') },
+    { cwd = vim.fn.fnamemodify(vim.fn.resolve(vim.fn.stdpath 'config'), ':h') },
+    function(data)
+      assert(data.code == 0, 'git submodule add ' .. arg.args .. ' failed: ' .. data.stderr)
+      vim.schedule(function() vim.cmd('set runtimepath& | runtime! plugin/**/*.{vim,lua} | helptags ALL') end)
+    end)
+end, { nargs = 1 })
+
+CMD('GetLatestAwsmNvim', function()
+  local awsm_nvim_diff_file = vim.fs.find(function(name)
+    return name:find '%w+%.%.%w+%.diff' and true or false
+  end, { path = NVIM_DATA, type = 'file' })[1]
+
+  local stat = vim.uv.fs_stat(awsm_nvim_diff_file)
+  local date = vim.fn.strftime('%Y-%m-%d', stat and stat.mtime.sec or os.time())
+
+  vim.system({ 'curl', '-sS', 'https://api.github.com/repos/rockerBOO/awesome-neovim/commits?since=' .. date }, {},
+    function(data)
+      local json_ok, json = pcall(vim.json.decode, data.stdout)
+      assert(data.code == 0 and json_ok, 'get commit id with specific date ' .. (data.stderr or data.stdout))
+      if #json == 0 then vim.schedule(function() vim.notify 'awesome-neovim has no diff' end) end
+
+      local tail_fname = ('%s..%s.diff'):format((awsm_nvim_diff_file):match('%.%.(%w+)%.') or json[#json].sha,
+        json[1].sha)
+
+      vim.system(
+        { 'curl', '-LO', 'http://github.com/rockerBOO/awesome-neovim/compare/' .. tail_fname },
+        { cwd = NVIM_DATA },
+        function(diff_data)
+          assert(diff_data.code == 0, 'awesome-neovim diff failed')
+          vim.schedule(function() vim.cmd.tabe(NVIM_DATA .. tail_fname) end)
+        end)
     end)
 end, {})
 
