@@ -4,6 +4,8 @@ require 'nvim-web-devicons'.setup {}
 
 require 'colorizer'.setup { user_default_options = { css_fn = false, tailwind = true } }
 
+require 'render-markdown'.setup {}
+
 local mode_hl_tbl = {
   ['n'] = 'StatuslineModeNormal',
   ['v'] = 'StatuslineModeVisual',
