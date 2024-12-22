@@ -1,3 +1,10 @@
+require 'sniprun'.setup {
+  selected_interpreters = { 'Lua_nvim' },
+  display = { 'VirtualText', },
+  live_mode_toggle = 'enable', inline_messages = true
+}
+K('<leader>..', ':SnipRun<cr>', { mode = { 'n', 'v' } })
+
 local dap = require 'dap'
 require 'mason'.setup {}
 

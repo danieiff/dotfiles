@@ -136,9 +136,6 @@
 [submodule "nvim/pack/my/start/symbol-usage.nvim"]
 	path = nvim/pack/my/start/symbol-usage.nvim
 	url = https://github.com/Wansmer/symbol-usage.nvim
-[submodule "/home/sugiel/dotfiles/nvim/pack/my/start/satellite.nvim"]
-	path = /home/sugiel/dotfiles/nvim/pack/my/start/satellite.nvim
-	url = https://github.com/lewis6991/satellite.nvim
 [submodule "/home/sugiel/dotfiles/nvim/pack/my/start/aoc.nvim"]
 	path = /home/sugiel/dotfiles/nvim/pack/my/start/aoc.nvim
 	url = https://github.com/csessh/aoc.nvim
@@ -175,9 +172,9 @@
 [submodule "nvim/pack/my/start/navigate-note.nvim"]
 	path = nvim/pack/my/start/navigate-note.nvim
 	url = https://github.com/you-n-g/navigate-note.nvim
-[submodule "nvim/pack/my/start/lua-console.nvim"]
-	path = nvim/pack/my/start/lua-console.nvim
-	url = https://github.com/YaroSpace/lua-console.nvim
 [submodule "nvim/pack/my/start/satellite.nvim"]
 	path = nvim/pack/my/start/satellite.nvim
 	url = https://github.com/lewis6991/satellite.nvim
+[submodule "nvim/pack/my/start/sniprun"]
+	path = nvim/pack/my/start/sniprun
+	url = https://github.com/michaelb/sniprun
