@@ -6,6 +6,8 @@ require 'colorizer'.setup { user_default_options = { css_fn = false, tailwind = 
 
 require 'render-markdown'.setup {}
 
+require 'satellite'.setup {}
+
 local mode_hl_tbl = {
   ['n'] = 'StatuslineModeNormal',
   ['v'] = 'StatuslineModeVisual',

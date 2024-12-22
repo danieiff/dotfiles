@@ -305,6 +305,9 @@ require 'git'
 
 require 'ui'
 
+
+require 'navigate-note'.setup {}
+
 require "nvim-tree".setup {
   view = { width = 60, side = 'right' },
   on_attach = function(bufnr)

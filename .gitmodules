@@ -172,3 +172,12 @@
 [submodule "nvim/pack/my/start/render-markdown.nvim"]
 	path = nvim/pack/my/start/render-markdown.nvim
 	url = https://github.com/MeanderingProgrammer/render-markdown.nvim
+[submodule "nvim/pack/my/start/navigate-note.nvim"]
+	path = nvim/pack/my/start/navigate-note.nvim
+	url = https://github.com/you-n-g/navigate-note.nvim
+[submodule "nvim/pack/my/start/lua-console.nvim"]
+	path = nvim/pack/my/start/lua-console.nvim
+	url = https://github.com/YaroSpace/lua-console.nvim
+[submodule "nvim/pack/my/start/satellite.nvim"]
+	path = nvim/pack/my/start/satellite.nvim
+	url = https://github.com/lewis6991/satellite.nvim
