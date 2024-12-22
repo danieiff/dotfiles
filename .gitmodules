@@ -130,18 +130,12 @@
 [submodule "nvim/pack/my/start/neogit"]
 	path = nvim/pack/my/start/neogit
 	url = https://github.com/NeogitOrg/neogit
-[submodule "nvim/pack/my/start/blink.cmp"]
-	path = nvim/pack/my/start/blink.cmp
-	url = https://github.com/saghen/blink.cmp
 [submodule "nvim/pack/my/start/symbol-usage.nvim"]
 	path = nvim/pack/my/start/symbol-usage.nvim
 	url = https://github.com/Wansmer/symbol-usage.nvim
 [submodule "/home/sugiel/dotfiles/nvim/pack/my/start/aoc.nvim"]
 	path = /home/sugiel/dotfiles/nvim/pack/my/start/aoc.nvim
 	url = https://github.com/csessh/aoc.nvim
-[submodule "/home/sugiel/dotfiles/nvim/pack/my/start/blink.cmp"]
-	path = /home/sugiel/dotfiles/nvim/pack/my/start/blink.cmp
-	url = https://github.com/saghen/blink.cmp
 [submodule "/home/sugiel/dotfiles/nvim/pack/my/start/lsp_signature.nvim"]
 	path = /home/sugiel/dotfiles/nvim/pack/my/start/lsp_signature.nvim
 	url = https://github.com/ray-x/lsp_signature.nvim
@@ -151,9 +145,6 @@
 [submodule "/home/sugiel/dotfiles/nvim/pack/my/start/nvim-treesitter-context"]
 	path = /home/sugiel/dotfiles/nvim/pack/my/start/nvim-treesitter-context
 	url = https://github.com/nvim-treesitter/nvim-treesitter-context
-[submodule "/home/sugiel/dotfiles/nvim/pack/my/start/lush.nvim"]
-	path = /home/sugiel/dotfiles/nvim/pack/my/start/lush.nvim
-	url = https://github.com/rktjmp/lush.nvim
 [submodule "/home/sugiel/dotfiles/nvim/pack/my/start/nightfox.nvim"]
 	path = /home/sugiel/dotfiles/nvim/pack/my/start/nightfox.nvim
 	url = https://github.com/EdenEast/nightfox.nvim
@@ -178,3 +169,12 @@
 [submodule "nvim/pack/my/start/sniprun"]
 	path = nvim/pack/my/start/sniprun
 	url = https://github.com/michaelb/sniprun
+[submodule "nvim/pack/my/start/vim-flog"]
+	path = nvim/pack/my/start/vim-flog
+	url = https://github.com/rbong/vim-flog
+[submodule "nvim/pack/my/start/grug-far.nvim"]
+	path = nvim/pack/my/start/grug-far.nvim
+	url = https://github.com/MagicDuck/grug-far.nvim
+[submodule "nvim/pack/my/start/blink.cmp"]
+	path = nvim/pack/my/start/blink.cmp
+	url = https://github.com/saghen/blink.cmp

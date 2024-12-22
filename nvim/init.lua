@@ -350,6 +350,8 @@ K('<leader>?', require 'telescope.builtin'.search_history)
 K('<leader>e', require 'telescope.builtin'.diagnostics)
 K('<leader>ld', require 'telescope.builtin'.lsp_definitions)
 
+require 'grug-far'.setup {}
+
 ---@ TreeSitter
 
 require 'nvim-treesitter.configs'.setup {
