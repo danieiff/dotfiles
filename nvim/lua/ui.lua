@@ -8,6 +8,8 @@ require 'render-markdown'.setup {}
 
 require 'satellite'.setup {}
 
+require 'focus'.setup { ui = { signcolumn = false } }
+
 local mode_hl_tbl = {
   ['n'] = 'StatuslineModeNormal',
   ['v'] = 'StatuslineModeVisual',

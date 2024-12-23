@@ -178,3 +178,6 @@
 [submodule "nvim/pack/my/start/blink.cmp"]
 	path = nvim/pack/my/start/blink.cmp
 	url = https://github.com/saghen/blink.cmp
+[submodule "nvim/pack/my/start/focus.nvim"]
+	path = nvim/pack/my/start/focus.nvim
+	url = https://github.com/nvim-focus/focus.nvim
