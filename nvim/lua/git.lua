@@ -32,13 +32,13 @@ require 'gitsigns'.setup {
   on_attach = function()
     local gs = package.loaded.gitsigns
 
-    K(']h', function()
+    K(']s', function()
       if vim.wo.diff then return ']c' end
       vim.schedule(gs.next_hunk)
       return '<Ignore>'
     end, { expr = true })
 
-    K('[h', function()
+    K('[s', function()
       if vim.wo.diff then return '[c' end
       vim.schedule(gs.prev_hunk)
       return '<Ignore>'
@@ -63,15 +63,26 @@ CMD('GHGet', function()
   local latest_release_data = vim.fn.system('curl -s "https://api.github.com/repos/' .. repo_id .. '/releases/latest"')
 
   local ok, latest_release_feed = pcall(vim.fn.json_decode, latest_release_data)
-  if not ok then return vim.notify('not valid json: ' .. latest_release_data) end
+  assert(ok, 'should fetch latest release info ' .. latest_release_data)
 
   local releases = vim.tbl_map(function(item) return item.browser_download_url end, latest_release_feed.assets)
 
   vim.ui.select(releases, { prompt = 'Select release' }, function(choice)
-    local cmd = 'curl -o %s'
-    if choice:find 'tar%.gz$' then cmd = 'curl -fSL %s | tar xz' end
-    vim.system({ cmd:format(choice) }, { text = true }, function(res)
-      vim.notify('Request for ' .. choice .. ' settled: ' .. res.stdout .. res.stderr)
+    local log_gh = vim.schedule_wrap((function(data)
+      vim.notify(('Fetch %s %s'):format(choice,
+        data.stderr or data.stdout))
+    end))
+
+    vim.system({ 'curl', '-sSLO', choice }, { text = true }, function(curl_data)
+      assert(curl_data.code == 0, 'should curl ' .. choice)
+      local tar_file = choice:match '([^/]+)%.tar%.gz$'
+      if tar_file then
+        vim.system(
+          { 'tar', 'xf', tar_file .. '.tar.gz', '--transform', ('s,^,%s/,'):format(tar_file), '--remove-filies' },
+          {}, log_gh)
+      else
+        log_gh(curl_data)
+      end
     end)
   end)
 end, {})
@@ -81,9 +92,8 @@ CMD('Gistget', function()
   if gist_id == '' then return vim.notify 'no input' end
 
   vim.system({ 'curl', '-s', ("https://api.github.com/gists/%s"):format(gist_id) }, { text = true }, function(res)
-    if res.code ~= 0 then return vim.notify(res.stderr) end
     local ok, gist_json = pcall(vim.json.decode, res.stdout)
-    if not ok then return vim.notify('not valid json: ' .. res.stdout) end
+    assert(ok, 'should decode json ' .. (res.stderr or res.stdout))
     for fname, fdata in pairs(gist_json.files) do
       vim.schedule(function()
         vim.cmd 'tabe'
