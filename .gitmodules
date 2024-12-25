@@ -181,3 +181,6 @@
 [submodule "nvim/pack/my/start/focus.nvim"]
 	path = nvim/pack/my/start/focus.nvim
 	url = https://github.com/nvim-focus/focus.nvim
+[submodule "nvim/pack/my/start/diffview.nvim"]
+	path = nvim/pack/my/start/diffview.nvim
+	url = https://github.com/sindrets/diffview.nvim

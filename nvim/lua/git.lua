@@ -19,6 +19,9 @@ git diff-tree --no-commit-id --name-only -r $1
 
 ]]
 
+require 'diffview'.setup {}
+require "octo".setup {}
+
 K('<leader>gC', require 'telescope.builtin'.git_commits)
 K('<leader>gc', require 'telescope.builtin'.git_bcommits)
 K('<leader>gc', require 'telescope.builtin'.git_bcommits_range, { mode = { 'x' } })
@@ -53,8 +56,6 @@ require 'gitsigns'.setup {
     K('ih', '<cmd>Gitsigns select_hunk<cr>', { mode = { 'o', 'v' } })
   end
 }
-
-require "octo".setup {}
 
 CMD('GHGet', function()
   local repo_id = vim.fn.input 'Enter github {user/repo} to get the latest release from: '
