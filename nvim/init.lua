@@ -116,8 +116,12 @@ K = function(lhs, rhs, opts)
 end
 HL = vim.api.nvim_set_hl
 CMD = vim.api.nvim_create_user_command
-AUC = vim.api.nvim_create_autocmd
-AUG = vim.api.nvim_create_augroup
+
+local default_group = vim.api.nvim_create_augroup('default', {})
+function AUC(ev, opts)
+  if not opts.group then opts.group = default_group end
+  vim.api.nvim_create_autocmd(ev, opts)
+end
 
 local uname = vim.loop.os_uname()
 PLATFORM = {
@@ -126,10 +130,15 @@ PLATFORM = {
   windows = uname.sysname:find 'Windows',
   wsl = uname.sysname == 'Linux' and uname.release:lower():find 'microsoft'
 }
-
----@ Dependencies Management
-
+HOME = vim.loop.os_homedir()
 NVIM_DATA = vim.fn.stdpath 'data'
+if type(NVIM_DATA) == 'table' then NVIM_DATA = NVIM_DATA[1] end
+
+vim.uv.os_setenv('LANG', 'en')
+vim.uv.os_setenv('PATH', vim.env.HOME .. '/.local/share/mise/shims:' .. vim.env.PATH)
+if PLATFORM.windows then
+  vim.uv.os_setenv('PATH', os.getenv 'PATH' .. [[;\Program Files\Git\usr\bin;]])
+end
 
 CMD('GitSubmoduleAddVimPlugin', function(arg)
   vim.system(
@@ -168,39 +177,69 @@ CMD('GetLatestAwsmNvim', function()
     end)
 end, {})
 
+CMD('Dotfyle', function()
+  vim.system({ 'curl', 'https://dotfyle.com/this-week-in-neovim/rss.xml' }, {}, function(data)
+    local rss_items = assert(vim.tbl_get(require 'xml2lua'.parse(data.stdout) or {}, 'rss', 'channel', 'item'),
+      'failed to parse dotfyle rss.xml: ' .. data.stderr)
+    vim.schedule(function()
+      local items = vim.tbl_filter(function(item)
+        return os.difftime(
+          vim.fn.strptime('%d %b %Y %T', ('Tue, 23 Jul 2024 19:51:25 GMT'):match(', (.*) GMT')), -- last time
+          vim.fn.strptime('%d %b %Y %T', item.pubDate:match(', (.*) GMT'))
+        ) > 0
+      end, rss_items)
+
+      local file = assert(io.open('a.css', 'a'), 'should open file to write')
+      file:write(vim.json.encode(items))
+      file:close()
+    end)
+  end)
+end, {})
+
 ---@ Editor Config
+
+function Foldexpr(...)
+  local ok, ret = pcall(vim.lsp.foldexpr, ...)
+  return ok and ret ~= 0 and ret or vim.treesitter.foldexpr(...)
+end
 
 for k, v in pairs {
   autowriteall = true, undofile = true,
-  shellcmdflag = '-c', grepprg = 'rg --vimgrep -S ', grepformat = '%f:%l:%c:m',
-  ignorecase = true, smartcase = true, tabstop = 2, shiftwidth = 0, expandtab = true,
-  pumblend = 30, winblend = 30, termguicolors = true, list = true, laststatus = 3, cmdheight = 0, number = true, signcolumn = 'number',
-  foldenable = false, foldmethod = 'expr', foldexpr = 'v:lua.vim.nreesitter.foldexpr()' }
-do vim.opt[k] = v end
+  shellcmdflag = '-c', grepprg = 'rg --vimgrep',
+  ignorecase = true, smartcase = true,
+  tabstop = 2, shiftwidth = 0, expandtab = true,
+  pumblend = 30, winblend = 30, termguicolors = true,
+  laststatus = 3, cmdheight = 0, number = true, signcolumn = 'number', cursorline = true, cursorlineopt = 'line',
+  list = true, listchars = { tab = "⇥ " }, fixendofline = false, scrolloff = 2,
+  foldenable = false, foldmethod = 'expr', foldexpr = 'v:lua.Foldexpr()', foldtext = ''
+  --, foldlevel = 99, foldenable = true, foldlevelstart = -1
+} do vim.opt[k] = v end -- Reset :set option&
 
+vim.opt.iskeyword:append '-'
 vim.g.mapleader = ' '
 
 K('<C-h>', '<C-w>h')
 K('<C-j>', '<C-w>j')
 K('<C-k>', '<C-w>k')
 K('<C-l>', '<C-w>l')
-K('<C-y>', '3<C-y>')
-K('<C-e>', '3<C-e>')
 K('<C-w>-', '<cmd>resize -10<cr>')
 K('<C-w>+', '<cmd>resize +10<cr>')
 K('<C-w><', '<cmd>vertical resize -10<cr>')
 K('<C-w>>', '<cmd>vertical resize +10<cr>')
-K('<S-Left>', '<cmd>tabprevious<cr>', { silent = true, mode = { 'n', 't' } })
-K('<S-Right>', '<cmd>tabnext<cr>', { silent = true, mode = { 'n', 't' } })
+K('<C-w><C-w>', '<cmd>windo set scrollbind!<cr>')
+K('H', '<cmd>tabprevious<cr>')
+K('L', '<cmd>tabnext<cr>')
 K('<leader>w', vim.cmd.write)
-K('<Leader>z', '<cmd>qa<cr>')
-K('<Leader>Z', '<cmd>noautocmd qa<cr>')
-K('<Leader>,', '<cmd>execute "tabe " . resolve($MYVIMRC)<cr>')
-K('<Leader>.,', function()
-  vim.cmd('set runtimepath^=' .. vim.fn.stdpath 'config' .. ' | runtime! plugin/**/*.{vim,lua}')
+K('<leader>z', '<cmd>qa<cr>')
+K('<leader>,', '<cmd>tabe $MYVIMRC<cr>')
+K('<leader>.,', function()
+  vim.cmd 'set runtimepath& | runtime! plugin/**/*.{vim,lua}'
   vim.cmd 'source $MYVIMRC | helptags ALL'
 end)
-K('<Leader>s', ':%s///g' .. ('<Left>'):rep(3))
+
+K('jk', '<c-\\><c-n>', { mode = { 'i', 'c', 't' } })
+K("<esc>", "<cmd>nohl<cr><cmd>echo<cr>")
+K('<leader>s', ':%s///g' .. ('<Left>'):rep(3))
 K('<Leader>s', ':s///g' .. ('<Left>'):rep(3), { mode = 'v' })
 K('<leader>S', [[:%s/<C-r><C-w>/<C-r><C-w>/gI<Left><Left><Left>]])
 K('Y', 'y$')
@@ -220,6 +259,11 @@ K('<leader>tt', function()
       { [[\C\(\<\u[a-z0-9]\+\|[a-z0-9]\+\)\(\u\)]], [[\l\1_\l\2]] }
   vim.cmd('normal ciw' .. vim.fn.substitute(cword, sub_pair[1], sub_pair[2], 'g'))
 end)
+K('<leader>y', function()
+  local path = vim.fn.expand '%:p'
+  vim.fn.setreg("+", path)
+  vim.notify('Copied "' .. path .. '" to the clipboard!')
+end)
 
 K('[q', '<cmd>cprevious<cr>')
 K(']q', '<cmd>cnext<cr>')
@@ -227,6 +271,8 @@ K('[[q', '<cmd>cfirst<cr>')
 K(']]q', '<cmd>clast<cr>')
 K('[Q', '<cmd>colder<cr>')
 K(']Q', '<cmd>cnewer<cr>')
+K('qq',
+  '<cmd>if empty(filter(range(1, winnr("$")), \'getwinvar(v:val, "&ft") == "qf"\')) | cwindow | else | cclose | endif<cr>')
 K('[l', '<cmd>lprevious<cr>')
 K(']l', '<cmd>lnext<cr>')
 K('[[l', '<cmd>lfirst<cr>')
