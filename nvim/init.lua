@@ -351,6 +351,23 @@ require 'git'
 
 require 'ui'
 
+K('<leader>lcd', function()
+  local root_dir = vim.fs.dirname(vim.fs.find('.git',
+    { path = vim.fs.dirname(vim.api.nvim_buf_get_name(0)), upward = true })[1])
+  if root_dir then vim.cmd.lcd(root_dir) else vim.print 'No Root Dir Found' end
+end)
+
+AUC('BufEnter', {
+  callback = function(ev)
+    if vim.bo[ev.buf].modifiable and vim.bo[ev.buf].ft then
+      local root_dir = vim.fs.dirname(vim.fs.find('.git',
+        { path = vim.fs.dirname(vim.api.nvim_buf_get_name(ev.buf)), upward = true })[1])
+      if root_dir and root_dir ~= vim.fs.normalize(vim.fn.getcwd()) then
+        vim.cmd.lcd(root_dir)
+      end
+    end
+  end
+})
 
 require 'navigate-note'.setup {}
 
@@ -359,17 +376,19 @@ require "nvim-tree".setup {
   on_attach = function(bufnr)
     local api = require 'nvim-tree.api'
     api.config.mappings.default_on_attach(bufnr)
-    K('t', function()
-      local node = api.tree.get_node_under_cursor()
-      vim.cmd 'wincmd h'
-      api.node.open.tab(node)
-    end, { buffer = bufnr })
-  end }
-K("<C-q>", function() require 'nvim-tree.api'.tree.toggle({ find_file = true }) end)
+  end
+}
+
+K("<C-t>",
+  function() require 'nvim-tree.api'.tree.toggle { find_file = true, path = vim.fs.root(0, '.git'), update_root = true } end)
 
 K('<leader>u', '<cmd>UndotreeToggle<cr>')
 
-require 'telescope'.setup {}
+-- telescope yank item, location list instead of quickfix list
+-- https://github.com/nvim-telescope/telescope-fzf-native.nvim -- zig cc -O3 -Wall -Werror -fpic -std=gnu99 -shared src/fzf.c -o build/libfzf.dll
+require 'telescope'.setup {
+  defaults = { file_ignore_patterns = { "test" } }
+}
 K('<leader> ', require 'telescope.builtin'.resume)
 
 K('<leader>f', require 'telescope.builtin'.find_files)
