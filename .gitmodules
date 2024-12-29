@@ -103,8 +103,8 @@
 [submodule "nvim/pack/my/start/fidget.nvim"]
 	path = nvim/pack/my/start/fidget.nvim
 	url = https://github.com/j-hui/fidget.nvim
-[submodule "/home/sugielff/dotfiles/nvim/pack/opt/start/roslyn.nvim"]
-	path = /home/sugielff/dotfiles/nvim/pack/opt/start/roslyn.nvim
+[submodule "nvim/pack/opt/start/roslyn.nvim"]
+	path = nvim/pack/opt/start/roslyn.nvim
 	url = https://github.com/seblj/roslyn.nvim
 [submodule "nvim/pack/my/start/avante.nvim"]
 	path = nvim/pack/my/start/avante.nvim
@@ -133,21 +133,6 @@
 [submodule "nvim/pack/my/start/symbol-usage.nvim"]
 	path = nvim/pack/my/start/symbol-usage.nvim
 	url = https://github.com/Wansmer/symbol-usage.nvim
-[submodule "/home/sugiel/dotfiles/nvim/pack/my/start/aoc.nvim"]
-	path = /home/sugiel/dotfiles/nvim/pack/my/start/aoc.nvim
-	url = https://github.com/csessh/aoc.nvim
-[submodule "/home/sugiel/dotfiles/nvim/pack/my/start/lsp_signature.nvim"]
-	path = /home/sugiel/dotfiles/nvim/pack/my/start/lsp_signature.nvim
-	url = https://github.com/ray-x/lsp_signature.nvim
-[submodule "/home/sugiel/dotfiles/nvim/pack/my/start/nvim-lint"]
-	path = /home/sugiel/dotfiles/nvim/pack/my/start/nvim-lint
-	url = https://github.com/mfussenegger/nvim-lint
-[submodule "/home/sugiel/dotfiles/nvim/pack/my/start/nvim-treesitter-context"]
-	path = /home/sugiel/dotfiles/nvim/pack/my/start/nvim-treesitter-context
-	url = https://github.com/nvim-treesitter/nvim-treesitter-context
-[submodule "/home/sugiel/dotfiles/nvim/pack/my/start/nightfox.nvim"]
-	path = /home/sugiel/dotfiles/nvim/pack/my/start/nightfox.nvim
-	url = https://github.com/EdenEast/nightfox.nvim
 [submodule "nvim/pack/my/start/debugprint.nvim"]
   path = nvim/pack/my/start/debugprint.nvim
   url = https://github.com/andrewferrier/debugprint.nvim
@@ -187,3 +172,18 @@
 [submodule "nvim/pack/my/start/edgy.nvim"]
 	path = nvim/pack/my/start/edgy.nvim
 	url = https://github.com/folke/edgy.nvim
+[submodule "nvim/pack/my/start/aoc.nvim"]
+	path = nvim/pack/my/start/aoc.nvim
+	url = https://github.com/csessh/aoc.nvim
+[submodule "nvim/pack/my/start/lsp_signature.nvim"]
+	path = nvim/pack/my/start/lsp_signature.nvim
+	url = https://github.com/ray-x/lsp_signature.nvim
+[submodule "nvim/pack/my/start/nightfox.nvim"]
+	path = nvim/pack/my/start/nightfox.nvim
+	url = https://github.com/EdenEast/nightfox.nvim
+[submodule "nvim/pack/my/start/nvim-lint"]
+	path = nvim/pack/my/start/nvim-lint
+	url = https://github.com/mfussenegger/nvim-lint
+[submodule "nvim/pack/my/start/nvim-treesitter-context"]
+	path = nvim/pack/my/start/nvim-treesitter-context
+	url = https://github.com/nvim-treesitter/nvim-treesitter-context
