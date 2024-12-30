@@ -227,8 +227,8 @@ K('<C-w>+', '<cmd>resize +10<cr>')
 K('<C-w><', '<cmd>vertical resize -10<cr>')
 K('<C-w>>', '<cmd>vertical resize +10<cr>')
 K('<C-w><C-w>', '<cmd>windo set scrollbind!<cr>')
-K('H', '<cmd>tabprevious<cr>')
-K('L', '<cmd>tabnext<cr>')
+K('<tab>', '<cmd>tabnext<cr>')
+K('<s-tab>', '<cmd>tabprevious<cr>')
 K('<leader>w', vim.cmd.write)
 K('<leader>z', '<cmd>qa<cr>')
 K('<leader>,', '<cmd>tabe $MYVIMRC<cr>')
@@ -244,10 +244,8 @@ K('<Leader>s', ':s///g' .. ('<Left>'):rep(3), { mode = 'v' })
 K('<leader>S', [[:%s/<C-r><C-w>/<C-r><C-w>/gI<Left><Left><Left>]])
 K('Y', 'y$')
 K('vp', '`[v`]')
-K('+', '<C-a>', { mode = { 'n', 'v' } })
-K('-', '<C-x>', { mode = { 'n', 'v' } })
-K('<cr>', '<cmd>call append(expand("."), "")<cr>j')
-K('<bs>', '<cmd>call append(line(".")-1, "")<cr>k')
+K('+', '<cmd>call append(expand("."), "")<cr>j')
+K('-', '<cmd>call append(line(".")-1, "")<cr>k')
 K('<leader>tt', function()
   local cword = vim.fn.expand '<cword>'
   for a, b in pairs { ['true'] = 'false', ['enabled'] = 'disabled' } do
@@ -427,13 +425,64 @@ require 'nvim-treesitter.configs'.setup {
     'c', 'go', 'rust',
     'yaml', 'toml', 'json', 'jsonc', 'markdown', 'markdown_inline',
     'gitcommit', 'git_rebase',
-    'dockerfile', 'sql', 'prisma', 'graphql', 'http'
+    'dockerfile', 'sql', 'prisma', 'graphql', 'http', 'vimdoc'
+  },
+  incremental_selection = {
+    enable = true,
+    keymaps = {
+      init_selection   = '+',
+      node_incremental = '+',
+      node_decremental = '-',
+    },
+  },
+  textobjects = {
+    move = {
+      enable = true,
+      set_jumps = true, -- whether to set jumps in the jumplist
+      goto_next_start = {
+        ["]]"] = "@jsx.element",
+        ["]f"] = "@function.outer",
+        ["]m"] = "@class.outer",
+      },
+      goto_next_end = {
+        ["]F"] = "@function.outer",
+        ["]M"] = "@class.outer",
+      },
+      goto_previous_start = {
+        ["[["] = "@jsx.element",
+        ["[f"] = "@function.outer",
+        ["[m"] = "@class.outer",
+      },
+      goto_previous_end = {
+        ["[F"] = "@function.outer",
+        ["[M"] = "@class.outer",
+      },
+    },
+    select = {
+      enable = true,
+      -- Automatically jump forward to textobj, similar to targets.vim
+      lookahead = true,
+      keymaps = {
+        -- You can use the capture groups defined in textobjects.scm
+        ["af"] = "@function.outer",
+        ["if"] = "@function.inner",
+        ["ac"] = "@class.outer",
+        ["ic"] = "@class.inner",
+      },
+    },
+    swap = {
+      enable = true,
+      swap_next = {
+        ["~"] = "@parameter.inner",
+      },
+    },
   },
   highlight = { enable = true }
 }
 
 require 'ibl'.setup()
 require 'treesitter-context'.setup()
+K('~', function() require 'treesitter-context'.go_to_context(vim.v.count1) end)
 
 local _get_option = vim.filetype.get_option
 vim.filetype.get_option = function(filetype, option)
@@ -472,8 +521,11 @@ require 'nvim-surround'.setup()
 require 'nvim-ts-autotag'.setup { enable_close_on_slash = false, }
 require 'nvim-autopairs'.setup { disable_in_visualblock = true, fast_wrap = { map = '<C-]>' } } -- <C-h> to delete only '('
 
-require 'flash'.setup { label = { uppercase = false }, modes = { search = { enabled = false } } }
-K('s', require 'flash'.jump, { mode = { "n", "x", "o" } })
+require 'flash'.setup { label = { uppercase = true }, modes = { search = { enabled = false } } }
+K('s', function() require 'flash'.jump { search = { forward = true, wrap = false, multi_window = false } } end,
+  { mode = { "n", "x", "o" } })
+K('S', function() require 'flash'.jump { search = { forward = false, wrap = false, multi_window = false } } end,
+  { mode = { "n", "x", "o" } })
 K('r', require 'flash'.remote, { mode = { "o" } })
 K('v,', require 'flash'.treesitter, { mode = { "n", "x", "o" } })
 K('v;', require 'flash'.treesitter_search, { mode = { "n", "x", "o" } })

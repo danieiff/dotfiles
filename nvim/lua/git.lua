@@ -35,24 +35,24 @@ require 'gitsigns'.setup {
   on_attach = function()
     local gs = package.loaded.gitsigns
 
-    K(']s', function()
+    K(']h', function()
       if vim.wo.diff then return ']c' end
       vim.schedule(gs.next_hunk)
       return '<Ignore>'
     end, { expr = true })
 
-    K('[s', function()
+    K('[h', function()
       if vim.wo.diff then return '[c' end
       vim.schedule(gs.prev_hunk)
       return '<Ignore>'
     end, { expr = true })
 
-    K('Ss', ':Gitsigns stage_hunk<cr>', { mode = { 'n', 'v' } })
-    K('Sr', ':Gitsigns reset_hunk<cr>', { mode = { 'n', 'v' } })
-    K('Su', gs.undo_stage_hunk)
-    K('Sp', gs.preview_hunk)
-    K('Sb', function() gs.blame_line { full = true } end)
-    K('Sd', gs.toggle_deleted)
+    K('Hs', ':Gitsigns stage_hunk<cr>', { mode = { 'n', 'v' } })
+    K('Hr', ':Gitsigns reset_hunk<cr>', { mode = { 'n', 'v' } })
+    K('Hu', gs.undo_stage_hunk)
+    K('Hp', gs.preview_hunk)
+    K('Hb', function() gs.blame_line { full = true } end)
+    K('Hd', gs.toggle_deleted)
     K('ih', '<cmd>Gitsigns select_hunk<cr>', { mode = { 'o', 'v' } })
   end
 }
