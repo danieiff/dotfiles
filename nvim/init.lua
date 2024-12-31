@@ -798,42 +798,51 @@ AUC('FileType', {
   end
 })
 
-require 'dap.ext.vscode'.load_launchjs(nil, {
-  ["pwa-node"] = { "javascript", "typescript" },
-  ["node"] = { "javascript", "typescript" },
-  ["pwa-chrome"] = { 'typescript', 'javascript', 'typescriptreact', 'javascriptreact', 'vue', 'svelte' },
-  ["chrome"] = { 'typescript', 'javascript', 'typescriptreact', 'javascriptreact', 'vue', 'svelte' },
-  -- ["python"] = { "python" },
-  -- ["dlv"] = { "go" },
-})
+local base64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
 
-local neotest = require 'neotest'
-neotest.setup {
-  adapters = {
-    require 'neotest-jest' {
-      jestCommand = "jest --watch ",
-      jestConfigFile = function() -- monorepo
-        local file = vim.fn.expand('%:p')
-        if file:find "/packages/" then
-          return file:match "(.-/[^/]+/)src" .. "jest.config.ts"
-        end
-        return vim.fn.getcwd() .. "/jest.config.ts"
-      end, cwd = function() -- monorepo
-      local file = vim.fn.expand '%:p'
-      if file:find "/packages/" then return file:match "(.-/[^/]+/)src" end
-      return vim.fn.getcwd()
-    end,
-      env = { CI = true }
-    },
-    -- require 'neotest-vitest',
-  }
-}
+CMD('Base64Encode', function(arg)
+  local data = arg.args
+  local encoded = (data:gsub('.', function(x)
+    local r, b = '', x:byte()
+    for i = 8, 1, -1 do r = r .. (b % 2 ^ i - b % 2 ^ (i - 1) > 0 and '1' or '0') end
+    return r;
+  end) .. '0000'):gsub('%d%d%d?%d?%d?%d?', function(x)
+    if (#x < 6) then return '' end
+    local c = 0
+    for i = 1, 6 do c = c + (x:sub(i, i) == '1' and 2 ^ (6 - i) or 0) end
+    return base64:sub(c + 1, c + 1)
+  end) .. ({ '', '==', '=' })[#data % 3 + 1]
+  vim.print(encoded)
+end, { nargs = 1 })
 
-K('<leader>tr', neotest.run.run)
-K('<leadler>tf', function() neotest.run.run(vim.fn.expand '%') end)
-K('<leader>td', function() neotest.run.run { strategy = 'dap' } end)
-K('<leader>ts', neotest.run.stop)
-K('<leader>ta', neotest.run.attach)
+CMD('Base64Decode', function(arg)
+  local data = arg.args:gsub('[^' .. base64 .. '=]', '')
+  local decoded = (data:gsub('.', function(x)
+    if (x == '=') then return '' end
+    local r, f = '', (base64:find(x) - 1)
+    for i = 6, 1, -1 do r = r .. (f % 2 ^ i - f % 2 ^ (i - 1) > 0 and '1' or '0') end
+    return r;
+  end):gsub('%d%d%d?%d?%d?%d?%d?%d?', function(x)
+    if (#x ~= 8) then return '' end
+    local c = 0
+    for i = 1, 8 do c = c + (x:sub(i, i) == '1' and 2 ^ (8 - i) or 0) end
+    return string.char(c)
+  end))
 
-require 'languages'
--- require 'typescript'
+  vim.print(decoded)
+end, { nargs = 1 })
+
+CMD('UrlEncode', function(arg)
+  local url = arg.args
+  url = url:gsub("\n", "\r\n")
+  url = url:gsub("([^%w ])", function(c) return ('%%%02X'):format(c:byte()) end)
+  url = url:gsub(" ", "+")
+  vim.print(url)
+end, { nargs = 1 })
+
+CMD('UrlDecode', function(arg)
+  local url = arg.args
+  url = url:gsub("+", " ")
+  url = url:gsub("%%(%x%x)", function(x) return tonumber(x, 16) end)
+  vim.print(url)
+end, { nargs = 1 })
