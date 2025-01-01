@@ -380,10 +380,8 @@ require "nvim-tree".setup {
 K("<C-t>",
   function() require 'nvim-tree.api'.tree.toggle { find_file = true, path = vim.fs.root(0, '.git'), update_root = true } end)
 
-K('<leader>u', '<cmd>UndotreeToggle<cr>')
+require 'leap'.create_default_mappings()
 
--- telescope yank item, location list instead of quickfix list
--- https://github.com/nvim-telescope/telescope-fzf-native.nvim -- zig cc -O3 -Wall -Werror -fpic -std=gnu99 -shared src/fzf.c -o build/libfzf.dll
 require 'telescope'.setup {
   defaults = { file_ignore_patterns = { "test" } }
 }

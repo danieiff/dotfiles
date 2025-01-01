@@ -46,9 +46,6 @@
 [submodule "nvim/pack/my/start/syntax-tree-surfer"]
 	path = nvim/pack/my/start/syntax-tree-surfer
 	url = https://github.com/ziontee113/syntax-tree-surfer
-[submodule "nvim/pack/my/start/flash.nvim"]
-	path = nvim/pack/my/start/flash.nvim
-	url = https://github.com/folke/flash.nvim
 [submodule "nvim/pack/my/start/friendly-snippets"]
 	path = nvim/pack/my/start/friendly-snippets
 	url = https://github.com/danieiff/friendly-snippets
@@ -187,3 +184,9 @@
 [submodule "nvim/pack/my/start/nvim-treesitter-context"]
 	path = nvim/pack/my/start/nvim-treesitter-context
 	url = https://github.com/nvim-treesitter/nvim-treesitter-context
+[submodule "nvim/pack/my/start/telescope-fzf-native.nvim"]
+	path = nvim/pack/my/start/telescope-fzf-native.nvim
+	url = https://github.com/nvim-telescope/telescope-fzf-native.nvim
+[submodule "nvim/pack/my/start/leap.nvim"]
+	path = nvim/pack/my/start/leap.nvim
+	url = https://github.com/ggandor/leap.nvim
