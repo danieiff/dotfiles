@@ -193,15 +193,9 @@
 [submodule "nvim/pack/my/start/auto-session"]
 	path = nvim/pack/my/start/auto-session
 	url = https://github.com/rmagatti/auto-session
-[submodule "nvim/pack/my/start/navigator.lua"]
-	path = nvim/pack/my/start/navigator.lua
-	url = https://github.com/ray-x/navigator.lua
 [submodule "nvim/pack/my/start/trouble.nvim"]
 	path = nvim/pack/my/start/trouble.nvim
 	url = https://github.com/folke/trouble.nvim
-[submodule "nvim/pack/my/start/guihua.lua"]
-	path = nvim/pack/my/start/guihua.lua
-	url = https://github.com/ray-x/guihua.lua
 [submodule "nvim/pack/my/start/nvim-bqf"]
 	path = nvim/pack/my/start/nvim-bqf
 	url = https://github.com/kevinhwang91/nvim-bqf
