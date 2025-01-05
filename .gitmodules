@@ -172,9 +172,6 @@
 [submodule "nvim/pack/my/start/lsp_signature.nvim"]
 	path = nvim/pack/my/start/lsp_signature.nvim
 	url = https://github.com/ray-x/lsp_signature.nvim
-[submodule "nvim/pack/my/start/nightfox.nvim"]
-	path = nvim/pack/my/start/nightfox.nvim
-	url = https://github.com/EdenEast/nightfox.nvim
 [submodule "nvim/pack/my/start/nvim-lint"]
 	path = nvim/pack/my/start/nvim-lint
 	url = https://github.com/mfussenegger/nvim-lint
