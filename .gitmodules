@@ -49,9 +49,6 @@
 [submodule "nvim/pack/my/start/friendly-snippets"]
 	path = nvim/pack/my/start/friendly-snippets
 	url = https://github.com/danieiff/friendly-snippets
-[submodule "nvim/pack/my/start/ChatGPT.nvim"]
-	path = nvim/pack/my/start/ChatGPT.nvim
-	url = https://github.com/jackMort/ChatGPT.nvim
 [submodule "nvim/pack/my/start/neogen"]
 	path = nvim/pack/my/start/neogen
 	url = https://github.com/danymat/neogen
@@ -202,6 +199,3 @@
 [submodule "nvim/pack/my/start/fzf-lua"]
 	path = nvim/pack/my/start/fzf-lua
 	url = https://github.com/ibhagwan/fzf-lua
-[submodule "nvim/pack/my/start/nvim-ide"]
-	path = nvim/pack/my/start/nvim-ide
-	url = https://github.com/ldelossa/nvim-ide
