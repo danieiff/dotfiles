@@ -4,18 +4,12 @@
 [submodule "nvim/pack/my/start/nvim-web-devicons"]
 	path = nvim/pack/my/start/nvim-web-devicons
 	url = https://github.com/nvim-tree/nvim-web-devicons
-[submodule "nvim/pack/my/start/nui.nvim"]
-	path = nvim/pack/my/start/nui.nvim
-	url = https://github.com/MunifTanjim/nui.nvim
 [submodule "nvim/pack/my/start/plenary.nvim"]
 	path = nvim/pack/my/start/plenary.nvim
 	url = https://github.com/nvim-lua/plenary.nvim
 [submodule "nvim/pack/my/start/undotree"]
 	path = nvim/pack/my/start/undotree
 	url = https://github.com/mbbill/undotree
-[submodule "nvim/pack/my/start/telescope.nvim"]
-	path = nvim/pack/my/start/telescope.nvim
-	url = https://github.com/nvim-telescope/telescope.nvim
 [submodule "nvim/pack/my/start/nvim-tree.lua"]
 	path = nvim/pack/my/start/nvim-tree.lua
 	url = https://github.com/nvim-tree/nvim-tree.lua
@@ -61,9 +55,6 @@
 [submodule "nvim/pack/my/start/lsp-lens.nvim"]
 	path = nvim/pack/my/start/lsp-lens.nvim
 	url = https://github.com/danieiff/lsp-lens.nvim
-[submodule "nvim/pack/my/start/symbols-outline.nvim"]
-	path = nvim/pack/my/start/symbols-outline.nvim
-	url = https://github.com/simrat39/symbols-outline.nvim
 [submodule "nvim/pack/my/start/conform.nvim"]
 	path = nvim/pack/my/start/conform.nvim
 	url = https://github.com/stevearc/conform.nvim
@@ -196,3 +187,9 @@
 [submodule "nvim/pack/my/start/fzf-lua"]
 	path = nvim/pack/my/start/fzf-lua
 	url = https://github.com/ibhagwan/fzf-lua
+[submodule "nvim/pack/my/start/aerial.nvim"]
+	path = nvim/pack/my/start/aerial.nvim
+	url = https://github.com/stevearc/aerial.nvim
+[submodule "nvim/pack/my/start/nui.nvim"]
+	path = nvim/pack/my/start/nui.nvim
+	url = https://github.com/MunifTanjim/nui.nvim
