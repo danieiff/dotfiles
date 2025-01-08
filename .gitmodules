@@ -103,9 +103,6 @@
 [submodule "nvim/pack/opt/start/flutter-tools.nvim"]
 	path = nvim/pack/opt/start/flutter-tools.nvim
 	url = https://github.com/nvim-flutter/flutter-tools.nvim
-[submodule "nvim/pack/required/start/newpaper.nvim"]
-	path = nvim/pack/required/start/newpaper.nvim
-	url = https://github.com/yorik1984/newpaper.nvim
 [submodule "nvim/pack/opt/start/nvim-dap-ruby"]
 	path = nvim/pack/opt/start/nvim-dap-ruby
 	url = https://github.com/suketa/nvim-dap-ruby
@@ -193,3 +190,6 @@
 [submodule "nvim/pack/required/start/nui.nvim"]
 	path = nvim/pack/required/start/nui.nvim
 	url = https://github.com/MunifTanjim/nui.nvim
+[submodule "nvim/pack/required/start/nightfox.nvim"]
+	path = nvim/pack/required/start/nightfox.nvim
+	url = https://github.com/EdenEast/nightfox.nvim
