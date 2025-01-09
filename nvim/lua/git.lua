@@ -1,5 +1,4 @@
 --[[[
-
 git diff COMMIT_HASH_1 COMMIT_HASH_2 | grep "your_search_term"
 Gedit git-obj:filepath
 0Gclog
@@ -13,46 +12,41 @@ file filename
 filetype detect
 set buftype=nowrite
 
-G log --graph --abbrev-commit --format=format:'%C(bold blue)%h%C(reset)%C(red)%d%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(auto) %C(bold green)(%ar)%C(reset)' --all
-
 git diff-tree --no-commit-id --name-only -r $1
-
 ]]
 
 require 'diffview'.setup {}
-require "octo".setup {}
+require "octo".setup { picker = 'fzf-lua' }
 
-K('<leader>gC', require 'telescope.builtin'.git_commits)
-K('<leader>gc', require 'telescope.builtin'.git_bcommits)
-K('<leader>gc', require 'telescope.builtin'.git_bcommits_range, { mode = { 'x' } })
-K('<leader>gb', require 'telescope.builtin'.git_branches)
-K('<leader>gs', require 'telescope.builtin'.git_stash)
+K('<leader>gC', require 'fzf-lua'.git_commits)
+K('<leader>gc', require 'fzf-lua'.git_bcommits)
+K('<leader>gb', require 'fzf-lua'.git_branches)
+K('<leader>gs', require 'fzf-lua'.git_stash)
 
 require 'gitsigns'.setup {
   signcolumn = false,
   numhl = true,
   word_diff = true,
   on_attach = function()
-    local gs = package.loaded.gitsigns
-
     K(']h', function()
       if vim.wo.diff then return ']c' end
-      vim.schedule(gs.next_hunk)
+      vim.schedule(require 'gitsigns'.next_hunk)
       return '<Ignore>'
     end, { expr = true })
 
     K('[h', function()
       if vim.wo.diff then return '[c' end
-      vim.schedule(gs.prev_hunk)
+      vim.schedule(require 'gitsigns'.prev_hunk)
       return '<Ignore>'
     end, { expr = true })
 
     K('Hs', ':Gitsigns stage_hunk<cr>', { mode = { 'n', 'v' } })
     K('Hr', ':Gitsigns reset_hunk<cr>', { mode = { 'n', 'v' } })
-    K('Hu', gs.undo_stage_hunk)
-    K('Hp', gs.preview_hunk)
-    K('Hb', function() gs.blame_line { full = true } end)
-    K('Hd', gs.toggle_deleted)
+    K('Hu', require 'gitsigns'.undo_stage_hunk)
+    K('Hp', require 'gitsigns'.preview_hunk)
+    K('Hb', function() require 'gitsigns'.blame_line { full = true } end)
+    K('HB', require 'gitsigns'.blame)
+    K('Hd', require 'gitsigns'.toggle_deleted)
     K('ih', '<cmd>Gitsigns select_hunk<cr>', { mode = { 'o', 'v' } })
   end
 }
@@ -69,6 +63,8 @@ CMD('GHGet', function()
   local releases = vim.tbl_map(function(item) return item.browser_download_url end, latest_release_feed.assets)
 
   vim.ui.select(releases, { prompt = 'Select release' }, function(choice)
+    if not choice then return end
+
     local log_gh = vim.schedule_wrap((function(data)
       vim.notify(('Fetch %s %s'):format(choice,
         data.stderr or data.stdout))
@@ -110,7 +106,7 @@ AUC('FileType', {
   pattern = 'gitcommit',
   callback = function(ev)
     local issuekey = vim.fn['fugitive#statusline']():match '[A-Z]+-%d+'
-    if not issuekey or vim.api.nvim_buf_get_lines(0, 0, 1, {})[1] ~= '' then return end
+    if not issuekey or vim.api.nvim_buf_get_lines(ev.buf, 0, 1, false)[1] ~= '' then return end
     vim.api.nvim_buf_set_text(ev.buf, 0, 0, 0, 0, { issuekey })
 
     local cmd = ([[
