@@ -10,6 +10,54 @@ require 'satellite'.setup {}
 
 require 'ibl'.setup()
 
+-- vim.api.nvim_set_hl(0, 'helpTab', { bg = 'none', fg = '#8cafd2' })
+vim.api.nvim_set_hl(0, 'helpTab', { bg = GET_COLOR('TabLine', 'bg'), fg = '#8cafd2' })
+
+function MyTabLine()
+  local maxwidth, width = vim.o.columns, 0
+  local tabs = {}
+
+  for _, tabnr in ipairs(vim.api.nvim_list_tabpages()) do
+    local buflist = vim.fn.tabpagebuflist(tabnr)
+    local current_winnr = vim.fn.tabpagewinnr(tabnr)
+    local current_bufnr = buflist[current_winnr]
+    local bufnm_label
+    local hl, hl_sel = 'TabLine', 'TabLineSel'
+
+    if CHECK_FILE_MODIFIABLE(current_bufnr) then
+      bufnm_label = vim.fn.fnamemodify(vim.fn.bufname(current_bufnr),
+        ':p:s?' .. vim.fn.getcwd(current_winnr, tabnr) .. '/??')
+    elseif vim.bo[current_bufnr].ft == 'help' then
+      bufnm_label = vim.fn.fnamemodify(vim.fn.bufname(current_bufnr), ':t:r')
+      hl = 'helpTab'
+      hl_sel = 'helpNote'
+    elseif not bufnm_label then
+      for _, bufnr in ipairs(buflist) do
+        if CHECK_FILE_MODIFIABLE(bufnr) then
+          bufnm_label = vim.fn.fnamemodify(vim.fn.bufname(bufnr), ':p:s?' .. vim.fn.getcwd(current_winnr, tabnr) .. '/??')
+          break
+        end
+      end
+      if not bufnm_label then bufnm_label = ' ' end
+    end
+    width = width + bufnm_label:len() + 2
+    table.insert(tabs, { hl = hl, hl_sel = hl_sel, nr = tabnr, label = bufnm_label })
+  end
+
+  local is_shorter = maxwidth < width
+
+  return vim.fn.join(
+    vim.tbl_map(function(tab)
+      if is_shorter then
+        tab.label = vim.fn.pathshorten(tab.label, 1)
+      end
+      return ('%%#%s#%%%sT %s %%*')
+          :format((tab.nr == vim.api.nvim_get_current_tabpage() and tab.hl_sel or tab.hl), tab.nr, tab.label)
+    end, tabs), '') .. '%#TabLineFill#%T'
+end
+
+vim.o.tabline = '%!v:lua.MyTabLine()'
+
 local mode_hl_tbl = {
   ['n'] = 'MiniStatuslineModeNormal',
   ['v'] = 'MiniStatuslineModeVisual',
