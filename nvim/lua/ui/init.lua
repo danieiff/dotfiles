@@ -13,9 +13,8 @@ vim.opt.listchars = { tab = "⇥ " }
 require 'nightfox'.setup {}
 vim.cmd.colorscheme 'nordfox'
 
-require 'nvim-web-devicons'.set_icon {
-  help = { icon = "", color = "#61afef", name = "Help" }
-}
+require 'nvim-web-devicons'.set_icon { help = { icon = "", color = "#61afef", name = "help" } }
+require 'nvim-web-devicons'.set_icon_by_filetype { help = 'help' }
 
 require 'colorizer'.setup { user_default_options = { css_fn = false, tailwind = true } }
 

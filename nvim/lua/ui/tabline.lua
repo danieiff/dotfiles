@@ -1,23 +1,17 @@
-local devicons = require 'nvim-web-devicons'
-
 local hl_tabline = vim.api.nvim_get_hl(0, { name = 'TabLine', link = false })
 local hl_tabline_sel = vim.api.nvim_get_hl(0, { name = 'TabLineSel', link = false })
 
-vim.api.nvim_set_hl(0, 'helpTab', { bg = hl_tabline.bg, fg = '#8cafd2' })
-
-local function make_filelabel(bufnr, tabnr, winnr)
+local function get_icon_hl(bufnr)
   local ft = vim.bo[bufnr].ft
   local hl_icon, hl_icon_sel = ft .. 'Tab', ft .. 'TabSel'
-  local icon, icon_color = devicons.get_icon_color_by_filetype(ft)
+  local icon, icon_color = require 'nvim-web-devicons'.get_icon_color_by_filetype(ft)
   if vim.tbl_isempty(vim.api.nvim_get_hl(0, { name = hl_icon, link = false })) then
     vim.api.nvim_set_hl(0, hl_icon, { fg = icon_color, bg = hl_tabline.bg })
   end
   if vim.tbl_isempty(vim.api.nvim_get_hl(0, { name = hl_icon_sel, link = false })) then
     vim.api.nvim_set_hl(0, hl_icon_sel, { fg = icon_color, bg = hl_tabline_sel.bg })
   end
-  local bufnm_label = vim.fn.fnamemodify(vim.fn.bufname(bufnr), ':p:r:s?' .. vim.fn.getcwd(winnr, tabnr) .. '/??')
-  local bufnm_label_shorter = vim.fn.pathshorten(bufnm_label, 1)
-  return bufnm_label, bufnm_label_shorter, icon, hl_icon, hl_icon_sel
+  return icon, hl_icon, hl_icon_sel
 end
 
 function _G.tabline()
@@ -25,34 +19,21 @@ function _G.tabline()
   local tabs = {}
 
   for _, tabnr in ipairs(vim.api.nvim_list_tabpages()) do
-    local buflist = vim.fn.tabpagebuflist(tabnr)
-    if buflist == 0 then goto continue end
-    local current_win = vim.api.nvim_tabpage_get_win(tabnr)
     local bufnm_label, bufnm_label_shorter, hl, hl_sel = ' ', ' ', 'TabLine', 'TabLineSel'
     local icon, hl_icon, hl_icon_sel = '', '', ''
 
-    for _, bufnr in ipairs { vim.api.nvim_win_get_buf(current_win), unpack(buflist) } do
+    for _, win in ipairs({ vim.api.nvim_tabpage_get_win(tabnr), unpack(vim.api.nvim_tabpage_list_wins(tabnr)) }) do
+      local bufnr = vim.api.nvim_win_get_buf(win)
       if CHECK_FILE_MODIFIABLE(bufnr, true) then
-        bufnm_label, bufnm_label_shorter, icon, hl_icon, hl_icon_sel =
-            make_filelabel(bufnr, unpack(vim.fn.win_id2tabwin(current_win)))
+        local _tabnr, winnr = unpack(vim.fn.win_id2tabwin(win))
+        bufnm_label = vim.fn.fnamemodify(vim.fn.bufname(bufnr), ':p:r:s?' .. vim.fn.getcwd(winnr, _tabnr) .. '/??')
+        bufnm_label_shorter = vim.fn.pathshorten(bufnm_label, 1)
+        icon, hl_icon, hl_icon_sel = get_icon_hl(bufnr)
         break
       elseif vim.bo[bufnr].ft == 'help' then
         bufnm_label = vim.fn.fnamemodify(vim.fn.bufname(bufnr), ':t:r')
         bufnm_label_shorter = bufnm_label
-
-        local ft = vim.bo[bufnr].ft
-        hl_icon, hl_icon_sel = ft .. 'Tab', ft .. 'TabSel'
-        local _icon, icon_color = devicons.get_icon_color_by_filetype(ft)
-        -- vim.print(_icon, icon_color)
-
-        if vim.tbl_isempty(vim.api.nvim_get_hl(0, { name = hl_icon, link = false })) then
-          vim.api.nvim_set_hl(0, hl_icon, { fg = icon_color, bg = hl_tabline.bg })
-        end
-        if vim.tbl_isempty(vim.api.nvim_get_hl(0, { name = hl_icon_sel, link = false })) then
-          vim.api.nvim_set_hl(0, hl_icon_sel, { fg = icon_color, bg = hl_tabline_sel.bg })
-        end
-
-        icon = _icon
+        icon, hl_icon, hl_icon_sel = get_icon_hl(bufnr)
       end
     end
 
@@ -69,7 +50,6 @@ function _G.tabline()
         hl_icon_sel = hl_icon_sel,
         icon = icon
       })
-    ::continue::
   end
 
   local is_shorter, is_shortest = maxwidth < width, maxwidth < shorter_width

@@ -76,12 +76,12 @@ require 'blink.cmp'.setup {
 
 local neocodeium = require 'neocodeium'
 neocodeium.setup()
-K("<A-y>", neocodeium.accept, { mode = { "i" } })
-K("<A-w>", neocodeium.accept_word, { mode = { "i" } })
-K("<A-Y>", neocodeium.accept_line, { mode = { "i" } })
-K("<A-n>", neocodeium.cycle_or_complete, { mode = { "i" } })
-K("<A-p>", function() neocodeium.cycle_or_complete(-1) end, { mode = { "i" } })
-K("<A-c>", neocodeium.clear, { mode = { "i" } })
+K("<c-y>", neocodeium.accept, { mode = { "i" } })
+K("<c-u>", neocodeium.accept_word, { mode = { "i" } })
+K("<c-i>", neocodeium.accept_line, { mode = { "i" } })
+K("<c-j>", neocodeium.cycle_or_complete, { mode = { "i" } })
+K("<c-k>", function() neocodeium.cycle_or_complete(-1) end, { mode = { "i" } })
+K("<c-q>", neocodeium.clear, { mode = { "i" } })
 
 require 'avante_lib'.load()
 require 'avante'.setup {

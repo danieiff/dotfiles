@@ -19,7 +19,7 @@ local config = {                             -- https://github.com/eclipse/eclip
     '-jar', [[\jdtls\plugins\org.eclipse.equinox.launcher_1.6.900.v20240613-2009.jar]],
 
     '-configuration', [[\jdtls\config_win]],
-    '-data', NVIM_DATA .. '/jdtls-data/java_root_dir' -- MUST NOT be in workspace itself
+    '-data', NVIM_DATA .. '/jdtls-data/java_root_dir' -- MUST NOT be in the workspace itself
   },
   root_dir = java_root_dir,
 
