@@ -1,111 +1,36 @@
 --[[
-git diff COMMIT_HASH_1 COMMIT_HASH_2 | grep "your_search_term"
-Gedit git-obj:filepath
-0Gclog
-Gclog --name-only
-git update-index --skip-worktree
-git update-index --no-skip-worktree
+<C-w>T
+:.!ls
+:h complex-change
+:{range}![!]{filter} [!][arg]
+ls is the {filter} program. The filter program accepts the text of the current line at standard input.
+If there is no intention to send anything to the command, it would be better to run this on an empty line.
+!!{filter} is a quick way of entering the same sequence.
 
-new
-r! git show branch:file
-file filename
-filetype detect
-set buftype=nowrite
-
-G log --graph --abbrev-commit --format=format:'%C(bold blue)%h%C(reset)%C(red)%d%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(auto) %C(bold green)(%ar)%C(reset)' --all
-
-git diff-tree --no-commit-id --name-only -r $1
-
-if | | else | | endif
-
-Quit Vim with error code {N}
+:let @a = system("ls -ltr")
 
 ulimit -n 10240
-
-## ReactNative Android
-# mkdir ~/Android && ln -s /mnt/c/Users/Hirohisa/AppData/Local/Android/Sdk ~/Android/sdk
-# ln -s ~/Android/Sdk/platform-tools/adb.exe ~/Android/Sdk/platform-tools/adb
-# ln -s ~/Android/Sdk/platform-tools/emulator/emulator.exe ~/Android/Sdk/emulator/emulator
-ANDROID_HOME=~/Android/sdk
-export PATH=$PATH:$ANDROID_HOME/platform-tools
-alias emu='$ANDROID_HOME/emulator/emulator @Pixel_4_API_30'
-alias emu-list='$ANDROID_HOME/emulator/emulator -list-avds'
-
-# Foreach ( $port in 19000,19001,19002 ) { netsh interface portproxy add v4tov4 listenport=$port connectport=$port connectaddress=$($(wsl hostname -I).Trim()) }
-# Foreach ( $dir in "Inbound","Outbound" ) { New-NetFireWallRule -DisplayName 'WSL Expo ports for LAN development' -Direction $dir -LocalPort 19000-19002 -Action Allow -Protocol TCP }
-alias rn-expo='REACT_NATIVE_PACKAGER_HOSTNAME=$(/mnt/c/Windows/system32/ipconfig.exe | grep -m 1 "IPv4 Address" | sed "s/.*: //") npx expo start'
-
-nvim --server \$NVIM --remote-silent"
-
-dev-docker() {
-  local docker_home=/home/me
-  docker run -it \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  -v ~/.config/gh:$docker_home/.config/gh \
-  -v ~/.cache/nvim/codeium:$docker_home/.cache/nvim/codeium \
-  -v .:$docker_home/workspace \
-  -e LOCAL_UID="$(id -u "$USER")" \
-  -e LOCAL_GID="$(id -g "$USER")" \
-  "$@"
-}
-
-dev-ssh() {
-  ssh -L "${1:-3000}:localhost:${1:-3000} ${3:-user@host}"
-}
-
-# curl https://raw.githubusercontent.com/danieiff/dotfiles/setup | sh
 
 cd ~
 curl https://mise.run | sh
 mise use -g zig@0.10 node zellij neovim yq ripgrep github-cli
 
-[ -d dotfiles ] || git clone --depth 1 https://github.com/danieiff/dotfiles --recurse-submodules --shallow-submodules --jobs 100
+[ -d ~/dotfiles ] || git clone --depth 1 https://github.com/danieiff/dotfiles --recurse-submodules --shallow-submodules --jobs 100
 ln -s ~/dotfiles/nvim ${XDG_CONFIG_HOME:-~/.config}
 
 nvim --headless +'MasonInstall | qa'
 
-# if [ -z "$REMOTE_CONTAINER" ]; then
-# curl -fsSL https://get.docker.com | sh
-# curl https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh | bash
-# curl -Lo devpod "https://github.com/loft-sh/devpod/releases/latest/download/devpod-linux-amd64" && install -c -m 0755 devpod /bin && rm -f devpod
-# fi
+TSInstall lua vimdoc markdown markdown_inline http json jsonc bash sql gitcommit git_rebase python
+javascript typescript tsx html css vue svelte astro
+php ruby
+java c_sharp go rust c
+yaml toml
+dockerfile prisma graphql
 
-if [ "$WSLENV" ]; then
-  WslLocalAppData="$(wslpath "$(powershell.exe \$Env:LocalAppData)" | tr -d "\r")"
-  cp "$DOTFILES_DIR/windows-terminal-settings.json" "$WslLocalAppData/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState/settings.json"
-  ln -fs "$WslLocalAppData/Packages/Microsoft.WindowsTerminal_8wekyb3d8bbwe/LocalState/settings.json" "$DOTFILES_DIR/_windows-terminal-settings.json"
+@("git.git", "zig.zig", "Neovim.Neovim.Nightly", "BurntSushi.ripgrep.MSVC") | ForEach-Object { winget install $_ }
+git clone --depth 1 https://github.com/danieiff/dotfiles -b windows --recurse-submodules --shallow-submodules --jobs 100
+New-Item -Path $ENV:LOCALAPPDATA/nvim -ItemType SymbolicLink -Value dotfiles/nvim
 
-  ## SSH https://futurismo.biz/archives/6862/#-nat-
-  # sudo apt install -y openssh-server
-  ### Run in Powershell as Admin
-  # $wsl_ipaddress1 = (wsl hostname -I).split(" ", 2)[0]
-  # netsh interface portproxy delete v4tov4 listenaddress=0.0.0.0 listenport=22
-  # netsh interface portproxy add v4tov4 listenaddress=0.0.0.0 listenport=22 connectaddress=$wsl_ipaddress1 connectport=22
-  # netsh interface portproxy show v4tov4
-  # Foreach ( $dir in "Inbound","Outbound" ) { New-NetFireWallRule -DisplayName 'WSL 2 Firewall Unlock' -Direction Outbound -LocalPort 22 -Action Allow -Protocol TCP }
-
-  # vi /etc/ssh/sshd_config # Edit yes/no for PubkeyAuthentication, PasswordAuthentication
-  # sudo chmod 600 ~/.ssh/authorized_keys
-
-  # ssh-keygen && ssh-copy-id <user@host>
-  # # Opt) Generate public domain e.g.) https://www.noip.com/
-  # # Config Wifi router to open port or proxy to different port from default of ssh
-  # dev() {
-  #   ssh -L "${1:-3000}:localhost:${1:-3000}" <user@host>
-  # }
-  # sudo systemctl start sshd
-
-  ## Chrome (google-chrome)
-  curl -O https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb
-  set +e
-  sudo dpkg -i google-chrome-stable_current_amd64.deb
-  sudo apt install language-pack-ja fonts-ipafont fonts-ipaexfont
-  set -e
-  sudo apt install --fix-broken -y
-  fc-cache -fv
-fi
-
-https://github.com/stevearc/quicker.nvim
 ]]
 
 K = function(lhs, rhs, opts)
