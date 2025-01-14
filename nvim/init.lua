@@ -257,469 +257,73 @@ local function mksession()
   vim.cmd('silent! tabdo NvimTreeClose | mksession! ' .. vim.fn.fnameescape(normalize_session_path(vim.fn.getcwd())))
 end
 AUC('VimLeave', { callback = mksession })
+CMD('MkSession', mksession, {})
+CMD('DeleteSession', function() os.remove(normalize_session_path(vim.fn.getcwd())) end, {})
 
----@ Terminal
+
+AUC("BufReadPre", {
+  desc = 'Improve performance for larger files',
+  nested = true,
+  callback = function(ev)
+    if vim.fn.getfsize(ev.file) > 1024 * 1024 * 2 then
+      vim.bo[ev.buf].eventignore:append 'FileType'
+      vim.bo[ev.buf].undolevels = -1
+    end
+  end
+})
 
 K('<Leader>t', function()
-  local cmd = vim.fn.input { prompt = 'Start term: ', default = ' ', completion = 'shellcmd', cancelreturn = '' }
-  vim.cmd('tabnew | term ' .. cmd); vim.cmd 'setlocal nonumber | startinsert'
+  local cmd = vim.fn.input { prompt = ':tab term ', completion = 'shellcmd', cancelreturn = 0 }
+  if cmd ~= 0 then
+    vim.cmd('tab term ' .. cmd); vim.cmd 'setlocal nonumber | startinsert'
+  end
 end)
-K('<C-n>', '<C-\\><C-n>', { mode = 't' })
-AUC('TermClose', { callback = function(ev) vim.cmd('silent! bwipe!' .. ev.buf) end })
 
 local overseer = require 'overseer'
 overseer.setup {}
+require 'overseer'.register_template({
+  name = "Git checkout",
+  params = function()
+    local stdout = vim.system({ "git", "branch", "--format=%(refname:short)", "-r" }):wait().stdout
+    local branches = vim.split(stdout, "\n", { trimempty = true })
+    return {
+      branch = {
+        desc = "Branch to checkout",
+        type = "enum",
+        choices = branches,
+      },
+    }
+  end,
+  builder = function(params)
+    return {
+      cmd = { "git", "log", params.branch },
+    }
+  end,
+})
 
-require 'git'
+require 'grug-far'.setup { resultsHighlight = false }
+K('<leader>S', function() require 'grug-far'.toggle_instance { instanceName = 'grug-far' } end)
+K('<leader>s', ':%s///g' .. ('<Left>'):rep(3))
+K('<Leader>s', ':s///g' .. ('<Left>'):rep(3), { mode = 'v' })
 
-require 'ui'
+vim.g.undotree_ShortIndicators = 1
+vim.g.undotree_SetFocusWhenToggle = 1
+K('<leader>u', '<cmd>UndotreeToggle<cr>')
 
-K('<leader>lcd', function()
-  local root_dir = vim.fs.dirname(vim.fs.find('.git',
-    { path = vim.fs.dirname(vim.api.nvim_buf_get_name(0)), upward = true })[1])
-  if root_dir then vim.cmd.lcd(root_dir) else vim.print 'No Root Dir Found' end
+K('<leader>6', ('<cmd>!rm -rf %s/swap %s/shada<cr>'):format(NVIM_DATA, NVIM_DATA))
+K('<leader>7', function()
+  local urlpath, querystring = unpack(vim.split(vim.api.nvim_get_current_line(), '?'))
+  if urlpath and querystring then
+    local lines = { urlpath }
+    local queryparams = vim.fn.sort(vim.split(querystring, '&'))
+    for idx, queryparam in ipairs(queryparams) do
+      table.insert(lines, (idx == 1 and '?' or '&') .. queryparam)
+    end
+    vim.api.nvim_buf_set_lines(0, vim.api.nvim_win_get_cursor(0)[1] - 1, -1, false, lines)
+  else
+    vim.cmd [['{,'}s/\n\@<!//g]]
+  end
 end)
-
-AUC('BufEnter', {
-  callback = function(ev)
-    if vim.bo[ev.buf].modifiable and vim.bo[ev.buf].ft then
-      local root_dir = vim.fs.dirname(vim.fs.find('.git',
-        { path = vim.fs.dirname(vim.api.nvim_buf_get_name(ev.buf)), upward = true })[1])
-      if root_dir and root_dir ~= vim.fs.normalize(vim.fn.getcwd()) then
-        vim.cmd.lcd(root_dir)
-      end
-    end
-  end
-})
-
-require 'navigate-note'.setup {}
-
-require "nvim-tree".setup {
-  view = { width = 60, side = 'right' },
-  on_attach = function(bufnr)
-    local api = require 'nvim-tree.api'
-    api.config.mappings.default_on_attach(bufnr)
-  end
-}
-
-K("<C-t>",
-  function() require 'nvim-tree.api'.tree.toggle { find_file = true, path = vim.fs.root(0, '.git'), update_root = true } end)
-
-require 'leap'.create_default_mappings()
-
-require 'telescope'.setup {
-  defaults = { file_ignore_patterns = { "test" } }
-}
-K('<leader> ', require 'telescope.builtin'.resume)
-
-K('<leader>f', require 'telescope.builtin'.find_files)
-K('<leader>F', require 'telescope.builtin'.oldfiles) -- :oldfiles :browse oldfiles
-K('<leader>b', require 'telescope.builtin'.buffers)
-
-K('<leader>r', require 'telescope.builtin'.registers)
-K('<leader>m', require 'telescope.builtin'.marks)
-K('<leader>j', require 'telescope.builtin'.jumplist)
-K('<leader>c', require 'telescope.builtin'.commands)
-K('<leader>C', require 'telescope.builtin'.command_history)
-K('<leader>k', require 'telescope.builtin'.keymaps)
-K('<Leader>h', require 'telescope.builtin'.help_tags)
-K('<leader>M', require 'telescope.builtin'.man_pages)
-
-K('<leader>q', require 'telescope.builtin'.quickfix)
-K('<leader>Q', require 'telescope.builtin'.quickfixhistory)
-K('<leader>l', require 'telescope.builtin'.loclist)
-
-K('<leader>g', require 'telescope.builtin'.live_grep)
-K('<leader>/', require 'telescope.builtin'.grep_string)
-K('<leader>?', require 'telescope.builtin'.search_history)
-
-K('<leader>e', require 'telescope.builtin'.diagnostics)
-K('<leader>ld', require 'telescope.builtin'.lsp_definitions)
-
-require 'grug-far'.setup {}
-
----@ TreeSitter
-
-require 'nvim-treesitter.configs'.setup {
-  ensure_installed = {
-    'javascript', 'typescript', 'tsx', 'html', 'css', 'vue', 'svelte', 'astro',
-    'python', 'php', 'ruby', 'lua', 'bash',
-    'java', 'c_sharp',
-    'c', 'go', 'rust',
-    'yaml', 'toml', 'json', 'jsonc', 'markdown', 'markdown_inline',
-    'gitcommit', 'git_rebase',
-    'dockerfile', 'sql', 'prisma', 'graphql', 'http', 'vimdoc'
-  },
-  incremental_selection = {
-    enable = true,
-    keymaps = {
-      init_selection   = '+',
-      node_incremental = '+',
-      node_decremental = '-',
-    },
-  },
-  textobjects = {
-    move = {
-      enable = true,
-      set_jumps = true, -- whether to set jumps in the jumplist
-      goto_next_start = {
-        ["]]"] = "@jsx.element",
-        ["]f"] = "@function.outer",
-        ["]m"] = "@class.outer",
-      },
-      goto_next_end = {
-        ["]F"] = "@function.outer",
-        ["]M"] = "@class.outer",
-      },
-      goto_previous_start = {
-        ["[["] = "@jsx.element",
-        ["[f"] = "@function.outer",
-        ["[m"] = "@class.outer",
-      },
-      goto_previous_end = {
-        ["[F"] = "@function.outer",
-        ["[M"] = "@class.outer",
-      },
-    },
-    select = {
-      enable = true,
-      -- Automatically jump forward to textobj, similar to targets.vim
-      lookahead = true,
-      keymaps = {
-        -- You can use the capture groups defined in textobjects.scm
-        ["af"] = "@function.outer",
-        ["if"] = "@function.inner",
-        ["ac"] = "@class.outer",
-        ["ic"] = "@class.inner",
-      },
-    },
-    swap = {
-      enable = true,
-      swap_next = {
-        ["~"] = "@parameter.inner",
-      },
-    },
-  },
-  highlight = { enable = true }
-}
-
-require 'ibl'.setup()
-require 'treesitter-context'.setup()
-K('~', function() require 'treesitter-context'.go_to_context(vim.v.count1) end)
-
-local _get_option = vim.filetype.get_option
-vim.filetype.get_option = function(filetype, option)
-  if option ~= "commentstring" then return _get_option(filetype, option) end
-
-  local comment_config = {
-    javascript = '/* %s */',
-    javascriptreact = '/* %s */',
-    typescript = '/* %s */',
-    typescriptreact = '/* %s */',
-    tsx = {
-      jsx_element = '{/* %s */}',
-      jsx_fragment = '{/* %s */}',
-      jsx_expression = '/* %s */'
-    },
-  }
-
-  local row, col = vim.api.nvim_win_get_cursor(0)[1] - 1, vim.fn.match(vim.fn.getline '.', '\\S')
-  if vim.fn.mode():lower() == 'v' then
-    row, col = vim.fn.getpos("'<")[2] - 1, vim.fn.match(vim.fn.getline '.', '\\S')
-  end
-
-  local language_tree = vim.treesitter.get_parser()
-  local language_commentstring = comment_config[language_tree:lang()]
-  if not language_commentstring then return end
-
-  local function check_node(node)
-    return node and (language_commentstring[node:type()] or check_node(node:parent()))
-  end
-
-  return check_node(language_tree:named_node_for_range { row, col, row, col }) or comment_config[filetype] or
-      _get_option(filetype, option)
-end
-
-require 'nvim-surround'.setup()
-require 'nvim-ts-autotag'.setup { enable_close_on_slash = false, }
-require 'nvim-autopairs'.setup { disable_in_visualblock = true, fast_wrap = { map = '<C-]>' } } -- <C-h> to delete only '('
-
-require 'flash'.setup { label = { uppercase = true }, modes = { search = { enabled = false } } }
-K('s', function() require 'flash'.jump { search = { forward = true, wrap = false, multi_window = false } } end,
-  { mode = { "n", "x", "o" } })
-K('S', function() require 'flash'.jump { search = { forward = false, wrap = false, multi_window = false } } end,
-  { mode = { "n", "x", "o" } })
-K('r', require 'flash'.remote, { mode = { "o" } })
-K('v,', require 'flash'.treesitter, { mode = { "n", "x", "o" } })
-K('v;', require 'flash'.treesitter_search, { mode = { "n", "x", "o" } })
-
----@ Coding Support
-
-require 'chatgpt'.setup {
-  openai_params = { model = 'gpt-4o-mini' }
-}
-
-require 'avante_lib'.load()
-require 'avante'.setup {
-  provider = 'openai', openai = { model = 'gpt-4o-mini' }
-}
-
-local neocodeium = require 'neocodeium'
-neocodeium.setup()
-K("<A-y>", neocodeium.accept, { mode = { "i" } })
-K("<A-w>", neocodeium.accept_word, { mode = { "i" } })
-K("<A-Y>", neocodeium.accept_line, { mode = { "i" } })
-K("<A-n>", neocodeium.cycle_or_complete, { mode = { "i" } })
-K("<A-p>", function() neocodeium.cycle_or_complete(-1) end, { mode = { "i" } })
-K("<A-c>", neocodeium.clear, { mode = { "i" } })
-
--- TODO: AI code doc comment writing
-require 'neogen'.setup { snippet_engine = "luasnip" }
-K('<leader>doc', ':Neogen ', { desc = 'arg: func|class|type' })
-
-local luasnip = require 'luasnip'
-require 'luasnip.loaders.from_vscode'.lazy_load()
-for _, dir in ipairs(vim.fn.split(vim.fn.globpath('.', '*.code-snippets'), '\n')) do
-  require "luasnip.loaders.from_vscode".load_standalone({ path = dir:gsub('^%./', '') })
-end
-for k, v in pairs { ['typescriptreact'] = { 'javascript' }, ['typescript'] = { 'javascript' } } do
-  luasnip.filetype_extend(k, v)
-end
-require 'debugprint'.setup {}
-
-require 'blink.cmp'.setup {
-  keymap = { preset = 'super-tab' }, -- TODO: <Tab> doesn't accept completion on snippet placeholder
-  sources = {
-    providers = {
-      snippets = { opts = { search_paths = { '.vscode/' } } }, -- TODO: recognize .vscode/{language}.code-snippets
-    },
-  },
-  appearance = {
-    -- Sets the fallback highlight groups to nvim-cmp's highlight groups
-    -- Useful for when your theme doesn't support blink.cmp
-    -- will be removed in a future release
-    use_nvim_cmp_as_default = true,
-  },
-  completion = {
-    documentation = { auto_show = true }
-  },
-}
-
-require 'lint'.linters_by_ft = {
-  javascript = { 'eslint' },
-  javascriptreact = { 'eslint' },
-  typescript = { 'eslint' },
-  typescriptreact = { 'eslint' }
-}
-
-AUC({ "BufWritePost" }, {
-  callback = function()
-    require("lint").try_lint()
-  end,
-})
-
----@ LSP
-
--- vim.lsp.set_log_level 'DEBUG' -- :LspLog
-CMD('LspRestart', 'lua vim.lsp.stop_client(vim.lsp.get_active_clients()); vim.cmd.edit()', {})
-
-CMD('LspConfigReference', function()
-  local ft = vim.fn.input { prompt = 'Search lsp config for filetype: ', default = vim.bo.ft }
-  if ft == '' then return vim.notify 'no input' end
-
-  vim.system(
-    { 'curl', '-fsSL', 'https://raw.githubusercontent.com/neovim/nvim-lspconfig/master/doc/configs.txt' },
-    { text = true },
-    function(res)
-      if res.code ~= 0 then return vim.notify(res.stderr) end
-
-      local server_configs_txt = res.stdout:gsub('\n##', '¬')
-      local pattern = ('lua%%s+require\'lspconfig\'%%.([%%a_-]+)%%.setup[^¬]+%%- `filetypes` :%%s+```lua%%s+%%{[%%a", ]*"%s"[%%a", ]*%%}')
-          :format(ft)
-
-      local founds = server_configs_txt:gmatch(pattern)
-      for ls in founds do
-        local fname = ls .. '.lua'
-        vim.system(
-          { 'curl', '-fsSL', ('https://raw.githubusercontent.com/neovim/nvim-lspconfig/master/lua/lspconfig/server_configurations/' .. fname) },
-          {}, function(curl_lsconfig_res)
-            if curl_lsconfig_res.code ~= 0 then return vim.notify(curl_lsconfig_res.stderr) end
-            vim.schedule(function()
-              vim.cmd 'tabe'
-              vim.api.nvim_buf_set_lines(0, 0, 0, false, vim.split(curl_lsconfig_res.stdout, '\n'))
-              vim.api.nvim_buf_set_name(0, fname)
-              vim.bo.ft = 'lua'
-            end)
-          end)
-      end
-    end
-  )
-end, {})
-
-CMD('LspCapa', function()
-  local clients = vim.lsp.get_clients()
-  vim.ui.select(vim.tbl_map(function(item) return item.name end, clients), {},
-    function(_, idx)
-      local bufnr = vim.api.nvim_create_buf(false, true)
-      vim.api.nvim_open_win(bufnr, true, {
-        relative = 'editor',
-        col = 0,
-        row = 0,
-        width = vim.o.columns,
-        height = vim.o.lines,
-      })
-      vim.api.nvim_buf_set_lines(bufnr, 0, 1, false,
-        vim.split(
-          '# config.capabilities: Config passed to vim.lsp.start_client()' ..
-          '\n' .. vim.inspect(clients[idx].config.capabilities) .. '\n\n' ..
-          '# server_capabilities:' .. '\n' .. vim.inspect(clients[idx].server_capabilities),
-          "\n"))
-      K('q', '<cmd>q!<cr>', { buffer = bufnr })
-    end)
-end, {})
-
-require 'lsp_signature'.setup {}
-require 'lsp-lens'.setup {}
-require 'symbols-outline'.setup {}
-K('<C-S>', '<cmd>SymbolsOutline<CR>')
-
-local augroup_lsp = AUG('UserLspAUG', {})
-AUC('LspAttach', {
-  group = AUG('UserLspConfigAUG', {}),
-  callback = function(ev)
-    local client = vim.lsp.get_client_by_id(ev.data.client_id)
-
-    if client and client.server_capabilities.documentFormattingProvider then
-      vim.api.nvim_clear_autocmds { group = augroup_lsp, buffer = ev.buf }
-      AUC('BufWritePre', {
-        group = augroup_lsp,
-        buffer = ev.buf,
-        callback = function()
-          if not PREPARING_LUASNIP_JUMP then vim.lsp.buf.format { bufnr = ev.buf } end
-          PREPARING_LUASNIP_JUMP = false
-        end
-      })
-    end
-
-    --[[
-      Use CTRL-w ] to split the current window and jump to the definition of the symbol under the cursor in the upper window.
-      Use CTRL-w } to open a preview window with the definition of the symbol under the cursor.
-      Use :tselect <name> to list all tags matching the name
-      Use :tjump <name>, like :tselect, but jump to it if there is only one match.
-      gq (format)
-
-      vim.lsp.codelens.refresh()
-
-      vim.lsp.start { cmd = vim.lsp.rpc.connect('127.0.0.1', 6008), ... } -- builtin TCP support with neovim 0.8+
-    ]]
-    K('[d', vim.diagnostic.goto_prev)
-    K(']d', vim.diagnostic.goto_next)
-    K('[D', function() vim.diagnostic.goto_prev { severity = { min = vim.diagnostic.severity.WARN } } end)
-    K(']D', function() vim.diagnostic.goto_next { severity = { min = vim.diagnostic.severity.WARN } } end)
-    K('<leader>d', vim.diagnostic.open_float)
-    K('<leader>D', vim.diagnostic.setloclist)
-    K('<leader>dq', vim.diagnostic.setqflist)
-
-    K('gd', vim.lsp.buf.definition)
-    K('gt', vim.lsp.buf.type_definition)
-    K('gl', vim.lsp.buf.declaration)
-    K('gr', vim.lsp.buf.references)
-    K('gi', vim.lsp.buf.implementation)
-    K('<leader>sh', vim.lsp.buf.signature_help)
-    K('<Leader>ci', vim.lsp.buf.incoming_calls)
-    K('<Leader>co', vim.lsp.buf.outgoing_calls)
-    K('gk', vim.lsp.buf.hover)
-    K('cv', function()
-      vim.lsp.buf.rename(nil, {
-        filter = function(client)
-          local deprioritised = { 'typescript-tools' }
-          return not vim.tbl_contains(deprioritised, client.name) or
-              #vim.lsp.get_clients { method = 'textDocument/rename' } < 1
-        end
-      })
-    end)
-    K('<space>rf', vim.lsp.util.rename)
-    K('<space>ca', vim.lsp.buf.code_action)
-    K('<space>pa', vim.lsp.buf.add_workspace_folder)
-    K('<space>pr', vim.lsp.buf.remove_workspace_folder)
-    K('<space>pl', function() vim.print(vim.lsp.buf.list_workspace_folders()) end)
-  end
-})
-
----@ DAP
-
-local dap, dapui, dap_widgets = require 'dap', require 'dapui', require 'dap.ui.widgets'
--- :help dap-adapter dap-configuration dap.txt dap-mapping dap-api dap-widgets
-K("<Leader>di", dap.toggle_breakpoint)
-K("<Leader>dI", function() dap.set_breakpoint(vim.fn.input "Breakpoint condition: ") end)
-K("<Leader>dp", function() dap.set_breakpoint(nil, nil, vim.fn.input "Log point message: ") end)
-K("<Leader>ds", function()
-    if vim.bo.filetype == "ruby" then
-      vim.fn.setenv("RUBYOPT", "-rdebug/open")
-      if vim.api.nvim_buf_get_name(0):find 'spec' then
-        require("dap").run({
-          type = "ruby",
-          name = "debug rspec file",
-          request = "attach",
-          command = "rspec",
-          script = "${file}",
-          port = 38698,
-          server = "127.0.0.1",
-          localfs = true,      -- required to be able to set breakpoints locally
-          stopOnEntry = false, -- This has no effect
-        })
-        return
-      end
-      vim.fn.setenv("RUBYOPT", "-rdebug/open")
-      require("dap").continue()
-      require("dap").continue()
-    else
-    end
-    require("dap").continue()
-  end,
-  { desc = "Start/Continue" })
-K("<Leader>dl", dap.run_to_cursor)
-K("<Leader>dS", dap.disconnect)
-K("<Leader>dn", dap.step_over)
-K("<Leader>dN", dap.step_into)
-K("<Leader>do", dap.step_out)
-K("<Leader>dww", function() dap.toggle() end)
-K("<Leader>dw[", function() dap.toggle(1) end)
-K("<Leader>dw]", function() dap.toggle(2) end)
-K('<Leader>dr', dap.repl.open)
-K('<Leader>dl', dap.run_last)
-K('<Leader>dh', dap_widgets.hover, { mode = { 'n', 'v' } })
-K('<Leader>dH', dap_widgets.preview, { mode = { 'n', 'v' } })
-K('<Leader>dm', function() dap_widgets.centered_float(dap_widgets.frames) end)
-K('<Leader>dM', function() dap_widgets.centered_float(dap_widgets.scopes) end)
-K('<leader>dk', require 'dap.ui.widgets'.hover, { silent = true })
-
-CMD("DapRunWithArgs", function(t)
-  local args = vim.split(vim.fn.expand(t.args), '\n')
-  if vim.fn.confirm(("Will try to run:\n%s %s %s\n? "):format(vim.bo.filetype, vim.fn.expand '%', t.args)) == 1 then
-    dap.run({
-      type = vim.bo.filetype == 'javascript' and 'pwa-node' or vim.bo.filetype == 'typescript' and 'pwa-node',
-      request = 'launch',
-      name = 'Launch file with custom arguments (adhoc)',
-      program = '${file}',
-      args = args,
-    })
-  end
-end, { nargs = '*' })
-
-dapui.setup()
-dap.listeners.after.event_initialized["dapui_config"] = dapui.open
-dap.listeners.before.event_terminated["dapui_config"] = dapui.close
-dap.listeners.before.event_exited["dapui_config"] = dapui.close
-
-require 'nvim-dap-virtual-text'.setup {}
-
-AUC('FileType', {
-  pattern = 'dap-repl',
-  callback = function()
-    require "dap.ext.autocompl".attach()
-  end
-})
 
 local base64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
 
@@ -769,3 +373,10 @@ CMD('UrlDecode', function(arg)
   url = url:gsub("%%(%x%x)", function(x) return tonumber(x, 16) end)
   vim.print(url)
 end, { nargs = 1 })
+
+
+require 'language'
+require 'git'
+require 'code_assist'
+require 'navigation'
+require 'ui'

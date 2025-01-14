@@ -11,7 +11,7 @@ vim.api.nvim_set_hl(0, 'TabLineFifthModifiedSel',
 
 local function get_icon_hl(bufnr)
   local ft               = vim.bo[bufnr].ft
-  local icon, icon_color = require 'nvim-web-devicons'.get_icon_color_by_filetype(ft)
+  local icon, icon_color = require 'nvim-web-devicons'.get_icon_color_by_filetype(ft or 'text')
   local hl_icon          = ft .. 'Tab'
   if vim.tbl_isempty(vim.api.nvim_get_hl(0, { name = hl_icon, link = false })) then
     vim.api.nvim_set_hl(0, hl_icon, { fg = icon_color, bg = hl_tabline.bg })
