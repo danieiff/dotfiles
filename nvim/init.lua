@@ -236,29 +236,6 @@ AUC('InsertLeave', {
   nested = true
 })
 
-local function normalize_session_path(dir)
-  return vim.fn.stdpath 'data' .. vim.fn.fnamemodify(dir, ':p:h'):gsub('/', '%%')
-end
-local function load_session_if_exists(dir)
-  if vim.loop.fs_stat(normalize_session_path(dir)) then
-    vim.cmd('silent! source ' .. vim.fn.fnameescape(normalize_session_path(dir)))
-    vim.schedule(function() vim.cmd 'silent! tabdo windo edit' end)
-    return true
-  end
-end
-AUC('VimEnter', {
-  callback = function()
-    local vim_argv = vim.fn.argv()
-    if #vim_argv > 0 and vim_argv[1]:find '.git/COMMIT_EDITMSG' then return end
-    if load_session_if_exists(vim.fn.getcwd()) then for _, path in ipairs(vim_argv) do vim.cmd.tabedit(path) end end
-  end
-})
-local function mksession()
-  vim.cmd('silent! tabdo NvimTreeClose | mksession! ' .. vim.fn.fnameescape(normalize_session_path(vim.fn.getcwd())))
-end
-AUC('VimLeave', { callback = mksession })
-CMD('MkSession', mksession, {})
-CMD('DeleteSession', function() os.remove(normalize_session_path(vim.fn.getcwd())) end, {})
 
 
 AUC("BufReadPre", {
@@ -374,9 +351,67 @@ CMD('UrlDecode', function(arg)
   vim.print(url)
 end, { nargs = 1 })
 
+-- git submodule deinit -f .
+-- git submodule update --init
+CMD('GitSubmoduleAddVimPlugin', function(arg)
+  vim.system(
+    { 'git', 'submodule', 'add', arg.args, 'nvim/pack/required/start/' .. vim.fn.fnamemodify(arg.args, ':t') },
+    { cwd = vim.fn.fnamemodify(NVIM_CONF, ':h') },
+    function(data)
+      assert(data.code == 0, 'git submodule add ' .. arg.args .. ' failed: ' .. data.stderr)
+      vim.schedule(function() vim.cmd('set runtimepath& | runtime! plugin/**/*.{vim,lua} | helptags ALL') end)
+    end)
+end, { nargs = 1 })
+
+CMD('GetLatestAwsmNvim', function()
+  local awsm_nvim_diff_file = vim.fs.find(function(name)
+    return name:find '%w+%.%.%w+%.diff' and true or false
+  end, { path = NVIM_DATA, type = 'file' })[1]
+
+  local stat = vim.uv.fs_stat(awsm_nvim_diff_file)
+  local date = vim.fn.strftime('%Y-%m-%d', stat and stat.mtime.sec or os.time())
+
+  vim.system({ 'curl', '-sS', 'https://api.github.com/repos/rockerBOO/awesome-neovim/commits?since=' .. date }, {},
+    function(data)
+      local json_ok, json = pcall(vim.json.decode, data.stdout)
+      assert(data.code == 0 and json_ok, 'get commit id with specific date ' .. (data.stderr or data.stdout))
+      if #json == 0 then vim.schedule(function() vim.notify 'awesome-neovim has no diff' end) end
+
+      local tail_fname = ('%s..%s.diff'):format((awsm_nvim_diff_file):match('%.%.(%w+)%.') or json[#json].sha,
+        json[1].sha)
+
+      vim.system(
+        { 'curl', '-LO', 'http://github.com/rockerBOO/awesome-neovim/compare/' .. tail_fname },
+        { cwd = NVIM_DATA },
+        function(diff_data)
+          assert(diff_data.code == 0, 'awesome-neovim diff failed')
+          vim.schedule(function() vim.cmd.tabe(NVIM_DATA .. tail_fname) end)
+        end)
+    end)
+end, {})
+
+CMD('Dotfyle', function()
+  vim.system({ 'curl', 'https://dotfyle.com/this-week-in-neovim/rss.xml' }, {}, function(data)
+    local rss_items = assert(vim.tbl_get(require 'xml2lua'.parse(data.stdout) or {}, 'rss', 'channel', 'item'),
+      'failed to parse dotfyle rss.xml: ' .. data.stderr)
+    vim.schedule(function()
+      local items = vim.tbl_filter(function(item)
+        return os.difftime(
+          vim.fn.strptime('%d %b %Y %T', ('Tue, 23 Jul 2024 19:51:25 GMT'):match(', (.*) GMT')), -- last time
+          vim.fn.strptime('%d %b %Y %T', item.pubDate:match(', (.*) GMT'))
+        ) > 0
+      end, rss_items)
+
+      local file = assert(io.open('a.css', 'a'), 'should open file to write')
+      file:write(vim.json.encode(items))
+      file:close()
+    end)
+  end)
+end, {})
 
 require 'language'
 require 'git'
 require 'code_assist'
+require 'session'
 require 'navigation'
 require 'ui'

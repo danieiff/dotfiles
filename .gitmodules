@@ -172,9 +172,6 @@
 [submodule "nvim/pack/required/start/leap.nvim"]
 	path = nvim/pack/required/start/leap.nvim
 	url = https://github.com/ggandor/leap.nvim
-[submodule "nvim/pack/required/start/auto-session"]
-	path = nvim/pack/required/start/auto-session
-	url = https://github.com/rmagatti/auto-session
 [submodule "nvim/pack/required/start/trouble.nvim"]
 	path = nvim/pack/required/start/trouble.nvim
 	url = https://github.com/folke/trouble.nvim
