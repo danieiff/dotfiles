@@ -151,9 +151,6 @@
 [submodule "nvim/pack/required/start/aoc.nvim"]
 	path = nvim/pack/required/start/aoc.nvim
 	url = https://github.com/csessh/aoc.nvim
-[submodule "nvim/pack/required/start/lsp_signature.nvim"]
-	path = nvim/pack/required/start/lsp_signature.nvim
-	url = https://github.com/ray-x/lsp_signature.nvim
 [submodule "nvim/pack/required/start/nvim-lint"]
 	path = nvim/pack/required/start/nvim-lint
 	url = https://github.com/mfussenegger/nvim-lint

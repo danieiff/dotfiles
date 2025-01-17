@@ -8,7 +8,7 @@ vim.opt.signcolumn = 'number'
 vim.opt.cursorline = true
 vim.opt.splitkeep = 'screen'
 vim.opt.list = true
-vim.opt.listchars = { tab = "⇥ " }
+vim.opt.listchars = { tab = "⇥ ", trail = '·' }
 
 require 'nightfox'.setup {}
 vim.cmd.colorscheme 'nordfox'
@@ -22,7 +22,7 @@ require 'satellite'.setup {}
 require 'ibl'.setup()
 
 require 'fidget'.setup { notification = { override_vim_notify = true } }
-K('M', '<cmd>Fidget history<cr>')
+K('M', "<cmd>below new<bar>put=execute('messages \\| Fidget history')<cr>")
 
 require 'ui.statusline'
 require 'ui.tabline'

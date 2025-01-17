@@ -252,7 +252,6 @@ CMD('LspCapa', function()
     end)
 end, {})
 
-require 'lsp_signature'.setup {}
 require 'symbol-usage'.setup {}
 
 AUC('LspAttach', {
