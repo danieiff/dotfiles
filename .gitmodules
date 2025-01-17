@@ -1,6 +1,3 @@
-[submodule "nvim/pack/required/start/nvim-colorizer.lua"]
-	path = nvim/pack/required/start/nvim-colorizer.lua
-	url = https://github.com/NvChad/nvim-colorizer.lua
 [submodule "nvim/pack/required/start/nvim-web-devicons"]
 	path = nvim/pack/required/start/nvim-web-devicons
 	url = https://github.com/nvim-tree/nvim-web-devicons
@@ -124,9 +121,6 @@
 [submodule "nvim/pack/required/start/markdown-preview.nvim"]
 	path = nvim/pack/required/start/markdown-preview.nvim
 	url = https://github.com/iamcco/markdown-preview.nvim
-[submodule "nvim/pack/required/start/render-markdown.nvim"]
-	path = nvim/pack/required/start/render-markdown.nvim
-	url = https://github.com/MeanderingProgrammer/render-markdown.nvim
 [submodule "nvim/pack/required/start/navigate-note.nvim"]
 	path = nvim/pack/required/start/navigate-note.nvim
 	url = https://github.com/you-n-g/navigate-note.nvim
