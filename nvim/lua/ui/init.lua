@@ -28,7 +28,7 @@ require 'ui.statusline'
 require 'ui.tabline'
 require 'ui.window-layout'
 
-local win_bufname_ns = vim.api.nvim_create_namespace('win_bufname')
+local win_bufname_ns = vim.api.nvim_create_namespace 'win_bufname'
 AUC({ 'WinEnter', 'WinScrolled', 'WinResized', 'VimResized' }, {
   callback = function()
     local current_winnr = vim.api.nvim_tabpage_get_win(0)

@@ -17,6 +17,7 @@ local edgy_opts = {
     { title = 'Overseer List', ft = 'OverseerList' },
     { title = 'Overseer task', ft = '',                 filter = function(buf) return vim.b[buf].overseer_task ~= nil end },
     { ft = "help",             size = { height = 0.4 }, filter = edgy_help_win_filter 'top' },
+    { ft = "man",              size = { height = 0.4 } },
   },
   bottom = {
     "Trouble",
@@ -24,7 +25,7 @@ local edgy_opts = {
     { title = "Neotest Output", ft = "neotest-output-panel", size = { height = 15 } },
   },
   left = {
-    { title = 'Git Log',         ft = 'git',            size = { width = 0.3 },                                       pinned = true, open = 'G reflog', },
+    -- { title = 'Git Log',         ft = 'git',            size = { width = 0.3 },                                       pinned = true, open = 'G reflog', },
     { title = 'Undo Tree',       ft = 'undotree',       open = 'UndoTreeToggle' },
     { title = 'Undo diff',       ft = 'diff',           filter = function(buf) return vim.b[buf].isUndotreeBuffer end },
     { title = "Neotest Summary", ft = "neotest-summary" },
@@ -46,6 +47,7 @@ local edgy_opts = {
     winfixheight = true
   },
   keys = {
+    ['<F1>'] = false,
     ['<a-l>'] = function(win) win:resize('width', 2) end,
     ['<a-h>'] = function(win) win:resize('width', -2) end,
     ['<a-k>'] = function(win) win:resize('height', 2) end,

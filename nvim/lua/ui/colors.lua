@@ -20,7 +20,7 @@ M.extmark = {}
 function M.update(buf)
   local params = { textDocument = vim.lsp.util.make_text_document_params(buf) }
   vim.lsp.buf_request(buf, 'textDocument/documentColor', params, function(err, colors)
-    if err then return end
+    if err or not colors then return end
 
     for _, c in ipairs(colors) do
       local hex = ('#%02x%02x%02x'):format(

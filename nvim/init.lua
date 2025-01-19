@@ -42,13 +42,13 @@ end
 HL = vim.api.nvim_set_hl
 CMD = vim.api.nvim_create_user_command
 
-local default_group = vim.api.nvim_create_augroup('default', {})
+local default_group = vim.api.nvim_create_augroup('default', { clear = true })
 function AUC(ev, opts)
   if not opts.group then opts.group = default_group end
   vim.api.nvim_create_autocmd(ev, opts)
 end
 
-local uname = vim.loop.os_uname()
+local uname = vim.uv.os_uname()
 PLATFORM = {
   mac = uname.sysname == 'Darwin',
   linux = uname.sysname == 'Linux',

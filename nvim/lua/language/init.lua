@@ -11,6 +11,7 @@ AUC('FileType', { pattern = { 'json', 'jsonc', 'yaml', 'python', 'c', 'cpp', 'ja
 
 require 'mason'.setup {}
 
+require 'language.repl'
 require 'language.web'
 require 'language.typescript'
 require 'language.java'
@@ -282,7 +283,6 @@ AUC('LspAttach', {
     K('gl', vim.lsp.buf.declaration)
     K('gr', vim.lsp.buf.references)
     K('gi', vim.lsp.buf.implementation)
-    K('<leader>sh', vim.lsp.buf.signature_help)
     K('<Leader>ci', vim.lsp.buf.incoming_calls)
     K('<Leader>co', vim.lsp.buf.outgoing_calls)
     K('cv', function()

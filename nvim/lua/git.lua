@@ -15,6 +15,10 @@ set buftype=nowrite
 git diff-tree --no-commit-id --name-only -r $1
 ]]
 
+
+K(',g', '<cmd>G<cr>')
+K(',G', '<cmd>Neogit kind=floating<cr>')
+
 require 'diffview'.setup {}
 require "octo".setup { picker = 'fzf-lua' }
 
@@ -23,31 +27,41 @@ K('<leader>gc', require 'fzf-lua'.git_bcommits)
 K('<leader>gb', require 'fzf-lua'.git_branches)
 K('<leader>gs', require 'fzf-lua'.git_stash)
 
-require 'gitsigns'.setup {
+local gs = require 'gitsigns'
+gs.setup {
   signcolumn = false,
   numhl = true,
   word_diff = true,
-  on_attach = function()
-    K(']h', function()
-      if vim.wo.diff then return ']c' end
-      vim.schedule(require 'gitsigns'.next_hunk)
-      return '<Ignore>'
-    end, { expr = true })
-
-    K('[h', function()
-      if vim.wo.diff then return '[c' end
-      vim.schedule(require 'gitsigns'.prev_hunk)
-      return '<Ignore>'
-    end, { expr = true })
-
-    K('Hs', ':Gitsigns stage_hunk<cr>', { mode = { 'n', 'v' } })
-    K('Hr', ':Gitsigns reset_hunk<cr>', { mode = { 'n', 'v' } })
-    K('Hu', require 'gitsigns'.undo_stage_hunk)
-    K('Hp', require 'gitsigns'.preview_hunk)
-    K('Hb', function() require 'gitsigns'.blame_line { full = true } end)
-    K('HB', require 'gitsigns'.blame)
-    K('Hd', require 'gitsigns'.toggle_deleted)
-    K('ih', '<cmd>Gitsigns select_hunk<cr>', { mode = { 'o', 'v' } })
+  current_line_blame = true,
+  on_attach = function(bufnr)
+    for _, keymap in ipairs {
+      { ']h', function()
+        if vim.wo.diff then
+          vim.cmd.normal { ']c', bang = true }
+        else
+          gs.nav_hunk 'next'
+        end
+      end },
+      { '[h', function()
+        if vim.wo.diff then
+          vim.cmd.normal { '[c', bang = true }
+        else
+          gs.nav_hunk 'prev'
+        end
+      end },
+      { 'Hs', gs.stage_hunk },
+      { 'Hr', gs.reset_hunk },
+      { 'Hu', gs.undo_stage_hunk },
+      { 'Hp', gs.preview_hunk },
+      { 'Hb', function() gs.blame_line { full = true } end },
+      { 'HB', gs.blame },
+      { 'Hd', gs.toggle_deleted },
+      { 'ih', '<cmd>Gitsigns select_hunk<cr>',             { 'o', 'x' } },
+      { 'HS', gs.stage_buffer },
+      { 'HR', gs.reset_buffer },
+    } do
+      K(keymap[1], keymap[2], { mode = keymap[3], buffer = bufnr })
+    end
   end
 }
 
@@ -118,13 +132,8 @@ AUC('FileType', {
       stdout_buffered = true,
       on_stdout = function(_, data)
         local ok, res_tbl = pcall(vim.json.decode, vim.fn.join(data, ''))
-        if ok then
-          vim.api.nvim_buf_set_text(ev.buf, 0, -1, 1, -1, { vim.tbl_get(res_tbl, 'issues', 1, 'fields', 'summary') })
-        else
-          vim.api.nvim_buf_set_text(ev.buf, 0, 0, 0, -1, { '' })
-          vim.api.nvim_buf_delete(ev.buf, { force = true })
-          vim.print('No issue found')
-        end
+        assert(ok, 'should decode json ' .. vim.fn.join(data, ''))
+        vim.api.nvim_buf_set_text(ev.buf, 0, -1, 1, -1, { vim.tbl_get(res_tbl, 'issues', 1, 'fields', 'summary') })
       end
     })
   end
