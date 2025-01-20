@@ -51,7 +51,7 @@ end
 require 'neogen'.setup {}
 K('<leader>doc', ':Neogen ', { desc = 'arg: func|class|type' })
 
-require 'debugprint'.setup {}
+require 'timber'.setup {}
 
 require 'nvim-surround'.setup { keymaps = { visual = '<C-s>' } }
 require 'nvim-ts-autotag'.setup { enable_close_on_slash = false, }

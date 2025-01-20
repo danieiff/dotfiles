@@ -1,14 +1,14 @@
-K('<s-tab>', '<cmd>exe "tabp" .v:count1<cr>')
-K('<tab>', '<cmd>exe "tabn+" . v:count1<cr>')
 K('(', '<cmd>exe "tabp" .v:count1<cr>')
 K(')', '<cmd>exe "tabn+" . v:count1<cr>')
-AUC({ 'VimEnter', 'TabNew', 'TabClosed' }, {
-  callback = function()
-    for i, tab in ipairs(vim.api.nvim_list_tabpages()) do
-      K(i .. '<tab>', function() vim.api.nvim_set_current_tabpage(tab) end)
-    end
+K('<s-tab>', '<cmd>exe "tabp" .v:count1<cr>')
+K('<tab>', function()
+  if vim.v.count == 0 then
+    vim.cmd 'tabn'
+  else
+    local tabpages = vim.api.nvim_list_tabpages()
+    vim.api.nvim_set_current_tabpage(tabpages[(vim.v.count - 1) % #tabpages + 1])
   end
-})
+end)
 K('<leader><tab>', require 'fzf-lua'.tabs)
 
 require 'leap'.create_default_mappings()

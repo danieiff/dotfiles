@@ -26,11 +26,15 @@ function _G.statusline()
   local search = vim.fn.searchcount()
   local searchcount = vim.fn.join({ search.current, search.total, vim.fn.getreg '/' }, '/')
 
+  local reg_recording = vim.fn.reg_recording()
+  reg_recording = reg_recording ~= '' and ('Rec@%s'):format(reg_recording)
+
   return vim.fn.join(vim.tbl_filter(function(item) return item and item ~= '' end, {
     githead_vimmode,
     diffs,
     diagnostics,
     searchcount,
+    reg_recording,
     '%=%<',
     '%{fnamemodify(getcwd(), ":~")}',
     "%{% &modified ? '%#NvimTreeModifiedFileHL#' : '' %}%f%*",
