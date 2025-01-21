@@ -13,16 +13,25 @@ vim.opt.listchars = { tab = "⇥ ", trail = '·' }
 require 'nightfox'.setup {}
 vim.cmd.colorscheme 'nordfox'
 
-local devicons = require 'nvim-web-devicons'
-devicons.set_icon { help = { icon = "", color = "#61afef", name = "help" } }
-devicons.set_icon_by_filetype { help = 'help' }
+require 'nvim-web-devicons'.set_icon { help = { icon = "", color = "#61afef", name = "help" } }
+require 'nvim-web-devicons'.set_icon_by_filetype { help = 'help' }
 
 require 'satellite'.setup {}
 
 require 'ibl'.setup()
 
 require 'fidget'.setup { notification = { override_vim_notify = true } }
-K('M', "<cmd>below new<bar>put=execute('messages \\| Fidget history')<cr>")
+K(',M', function()
+  for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+    if vim.w[win].message_history then
+      return vim.api.nvim_win_close(win, true)
+    end
+  end
+  vim.cmd "below new | put=execute('messages \\| Fidget history')"
+  vim.bo.buftype = 'nofile'
+  vim.bo.ft = 'log'
+  vim.w.message_history = true
+end)
 
 require 'ui.statusline'
 require 'ui.tabline'

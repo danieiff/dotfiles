@@ -65,6 +65,8 @@ gs.setup {
   end
 }
 
+require "octo".setup { picker = 'fzf-lua' }
+
 CMD('GHGet', function()
   local repo_id = vim.fn.input 'Enter github {user/repo} to get the latest release from: '
   if repo_id == '' then return vim.notify 'no input' end
@@ -116,25 +118,25 @@ CMD('Gistget', function()
   end)
 end, {})
 
-AUC('FileType', {
-  pattern = 'gitcommit',
-  callback = function(ev)
-    local issuekey = vim.fn['fugitive#statusline']():match '[A-Z]+-%d+'
-    if not issuekey or vim.api.nvim_buf_get_lines(ev.buf, 0, 1, false)[1] ~= '' then return end
-    vim.api.nvim_buf_set_text(ev.buf, 0, 0, 0, 0, { issuekey })
-
-    local cmd = ([[
-      curl --request GET --url ""
-        --user ""
-        --header 'Accept: application/json'
-    ]]):format(issuekey):gsub('%s+', ' ')
-    vim.fn.jobstart(cmd, {
-      stdout_buffered = true,
-      on_stdout = function(_, data)
-        local ok, res_tbl = pcall(vim.json.decode, vim.fn.join(data, ''))
-        assert(ok, 'should decode json ' .. vim.fn.join(data, ''))
-        vim.api.nvim_buf_set_text(ev.buf, 0, -1, 1, -1, { vim.tbl_get(res_tbl, 'issues', 1, 'fields', 'summary') })
-      end
-    })
-  end
-})
+-- AUC('FileType', {
+--   pattern = 'gitcommit',
+--   callback = function(ev)
+--     local issuekey = vim.fn['fugitive#statusline']():match '[A-Z]+-%d+'
+--     if not issuekey or vim.api.nvim_buf_get_lines(ev.buf, 0, 1, false)[1] ~= '' then return end
+--     vim.api.nvim_buf_set_text(ev.buf, 0, 0, 0, 0, { issuekey })
+--
+--     local cmd = ([[
+--       curl --request GET --url ""
+--         --user ""
+--         --header 'Accept: application/json'
+--     ]]):format(issuekey):gsub('%s+', ' ')
+--     vim.fn.jobstart(cmd, {
+--       stdout_buffered = true,
+--       on_stdout = function(_, data)
+--         local ok, res_tbl = pcall(vim.json.decode, vim.fn.join(data, ''))
+--         assert(ok, 'should decode json ' .. vim.fn.join(data, ''))
+--         vim.api.nvim_buf_set_text(ev.buf, 0, -1, 1, -1, { vim.tbl_get(res_tbl, 'issues', 1, 'fields', 'summary') })
+--       end
+--     })
+--   end
+-- })
