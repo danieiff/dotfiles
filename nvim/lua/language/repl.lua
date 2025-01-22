@@ -1,41 +1,16 @@
-require 'sniprun'.setup {
-  selected_interpreters = { 'Lua_nvim' },
-  display = { 'VirtualText', },
-  live_mode_toggle = 'enable', inline_messages = true
-}
-K('<leader>.,', ':SnipRun<cr>', { mode = { 'n', 'v' } })
-
-local ft_to_exec = {
-  lua = function(fname)
-    return vim.api.nvim_exec2('luafile ' .. fname, { output = true })
-  end,
-  typescript = { '', '' }
-}
-
-local function complete(ft, err, data)
-  if err then
-    os.remove(vim.fn.stdpath 'data' .. '/repl.' .. ft)
-  end
-  vim.notify(err or data)
-end
+require 'iron.core'.setup { config = {} }
 
 K('<leader>..', function()
-  local ft = vim.bo.ft
   local lines = vim.fn.mode() == 'n' and { vim.fn.getline '.' } or
       vim.fn.getregion(vim.fn.getpos 'v', vim.fn.getpos '.', { type = vim.fn.mode() })
 
-  local fname = vim.fn.stdpath 'data' .. '/repl.' .. ft
-  vim.fn.writefile(lines, fname, 'a')
+  vim.g.repl_luafile = os.tmpname()
+  vim.fn.writefile(lines, vim.g.repl_luafile, 'a')
 
-  local exec = ft_to_exec[ft]
-  local exec_type = type(exec)
+  local ok, res = pcall(vim.api.nvim_exec2, 'luafile ' .. vim.g.repl_luafile, { output = true })
 
-  if exec_type == 'function' then
-    complete(ft, pcall(exec, fname))
-  elseif exec_type == 'table' then
-    local cmd = vim.tbl_map(function(component) return component:gsub('<file>', fname) end, exec)
-    vim.system(cmd, { text = true }, function(data)
-      complete(ft, data.stderr, data.stdout)
-    end)
-  end
+  if not ok then os.remove(vim.g.repl_luafile) end
+  vim.notify(res.output, vim.log.levels[ok and 'INFO' or 'ERROR'])
 end, { mode = { 'n', 'v' } })
+
+K('<leader>c', 'delete(g:repl_luafile)')

@@ -124,9 +124,6 @@
 [submodule "nvim/pack/required/start/satellite.nvim"]
 	path = nvim/pack/required/start/satellite.nvim
 	url = https://github.com/lewis6991/satellite.nvim
-[submodule "nvim/pack/required/start/sniprun"]
-	path = nvim/pack/required/start/sniprun
-	url = https://github.com/michaelb/sniprun
 [submodule "nvim/pack/required/start/grug-far.nvim"]
 	path = nvim/pack/required/start/grug-far.nvim
 	url = https://github.com/MagicDuck/grug-far.nvim
@@ -181,3 +178,6 @@
 [submodule "nvim/pack/required/start/refactoring.nvim"]
 	path = nvim/pack/required/start/refactoring.nvim
 	url = https://github.com/ThePrimeagen/refactoring.nvim
+[submodule "nvim/pack/required/start/iron.nvim"]
+	path = nvim/pack/required/start/iron.nvim
+	url = https://github.com/Vigemus/iron.nvim
