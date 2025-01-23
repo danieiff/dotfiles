@@ -81,14 +81,6 @@ for k, v in pairs {
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ','
 
-K('<C-h>', '<C-w>h')
-K('<C-j>', '<C-w>j')
-K('<C-k>', '<C-w>k')
-K('<C-l>', '<C-w>l')
-K('<C-w>-', '<cmd>resize -10<cr>')
-K('<C-w>+', '<cmd>resize +10<cr>')
-K('<C-w><', '<cmd>vertical resize -10<cr>')
-K('<C-w>>', '<cmd>vertical resize +10<cr>')
 K('<C-w><C-w>', '<cmd>windo set scrollbind!<cr>')
 
 K('<leader>w', function() vim.cmd 'silent write' end)
