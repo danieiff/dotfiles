@@ -1,12 +1,5 @@
 LS = {}
 
-require 'sniprun'.setup {
-  selected_interpreters = { 'Lua_nvim' },
-  display = { 'VirtualText', },
-  live_mode_toggle = 'enable', inline_messages = true
-}
-K('<leader>..', ':SnipRun<cr>', { mode = { 'n', 'v' } })
-
 AUC('FileType', { pattern = { 'json', 'jsonc', 'yaml', 'python', 'c', 'cpp', 'java', 'go' }, command = 'set tabstop=4' })
 
 require 'mason'.setup {}
@@ -275,8 +268,6 @@ AUC('LspAttach', {
       vim.lsp.start { cmd = vim.lsp.rpc.connect('127.0.0.1', 6008), ... } -- builtin TCP support
     ]]
     K('<leader>d', vim.diagnostic.open_float)
-    K('<leader>qD', vim.diagnostic.setloclist)
-    K('<leader>qd', vim.diagnostic.setqflist)
 
     K('gd', vim.lsp.buf.definition)
     K('gt', vim.lsp.buf.type_definition)

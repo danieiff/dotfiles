@@ -16,14 +16,19 @@ git diff-tree --no-commit-id --name-only -r $1
 ]]
 
 
-K(',g', '<cmd>G<cr>')
-K(',G', '<cmd>Neogit kind=floating<cr>')
+K('g;', '<cmd>Neogit kind=floating<cr>')
 
-require 'diffview'.setup {}
-require "octo".setup { picker = 'fzf-lua' }
+K('dV', '<cmd>DiffviewFileHistory %<cr>')
+K('dv', function()
+  for _, buf in ipairs(vim.fn.tabpagebuflist()) do
+    if vim.bo[buf].filetype:find 'Diffview' then
+      vim.cmd 'DiffviewClose'
+      return vim.cmd 'tabp'
+    end
+  end
+  vim.cmd 'DiffviewOpen'
+end)
 
-K('<leader>gC', require 'fzf-lua'.git_commits)
-K('<leader>gc', require 'fzf-lua'.git_bcommits)
 K('<leader>gb', require 'fzf-lua'.git_branches)
 K('<leader>gs', require 'fzf-lua'.git_stash)
 

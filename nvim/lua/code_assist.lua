@@ -1,6 +1,3 @@
-K('<cr>', '<cmd>call append(expand("."), "")<cr>j')
-K('<bs>', '<cmd>call append(line(".")-1, "")<cr>k')
-
 K('<leader>tt', function()
   local cword = vim.fn.expand '<cword>'
   for a, b in pairs { ['true'] = 'false', ['enabled'] = 'disabled' } do

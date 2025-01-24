@@ -4,7 +4,7 @@ local function get_session_path()
   local branch = vim.fn.systemlist { 'git', 'branch', '--show-current' }[1]
   return vim.fn.stdpath 'data' .. '/'
       .. vim.fn.fnamemodify(assert(vim.uv.cwd(), 'should get cwd'), ':p:h'):gsub('/', '!')
-      .. (vim.v.shell_error == 0 and '-' .. branch or '')
+      .. (vim.v.shell_error == 0 and branch and ('-' .. branch) or '')
       .. '.vim'
 end
 
