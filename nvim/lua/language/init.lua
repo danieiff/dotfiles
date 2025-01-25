@@ -8,6 +8,7 @@ require 'language.repl'
 require 'language.web'
 require 'language.typescript'
 require 'language.java'
+require 'language.json_yaml'
 
 require 'lint'.linters_by_ft = {
   javascript = { 'eslint' },

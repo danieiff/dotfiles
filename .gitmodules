@@ -73,9 +73,6 @@
 [submodule "nvim/pack/required/start/neotest-jest"]
 	path = nvim/pack/required/start/neotest-jest
 	url = https://github.com/nvim-neotest/neotest-jest
-[submodule "nvim/pack/required/start/SchemaStore.nvim"]
-	path = nvim/pack/required/start/SchemaStore.nvim
-	url = https://github.com/b0o/SchemaStore.nvim
 [submodule "nvim/pack/required/start/rest-nvim"]
 	path = nvim/pack/required/start/rest-nvim
 	url = https://github.com/rest-nvim/rest.nvim
