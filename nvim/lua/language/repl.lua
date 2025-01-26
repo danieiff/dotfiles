@@ -1,4 +1,3 @@
----@TODO: edgy window
 require 'iron.core'.setup {
   config = {},
   keymaps = {
@@ -25,7 +24,9 @@ K('<leader>..', function()
   local lines = vim.fn.mode() == 'n' and { vim.fn.getline '.' } or
       vim.fn.getregion(vim.fn.getpos 'v', vim.fn.getpos '.', { type = vim.fn.mode() })
 
-  vim.g.repl_luafile = os.tmpname()
+  if vim.fn.filereadable(vim.g.repl_luafil) ~= 0 then
+    vim.g.repl_luafile = os.tmpname()
+  end
   vim.fn.writefile(lines, vim.g.repl_luafile, 'a')
 
   local ok, res = pcall(vim.api.nvim_exec2, 'luafile ' .. vim.g.repl_luafile, { output = true })

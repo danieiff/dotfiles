@@ -33,6 +33,10 @@ K(',M', function()
   vim.w.message_history = true
 end)
 
+vim.lsp.handlers["window/showMessage"] = function(_, method, params)
+  vim.notify(method.message, vim.diagnostic.severity[params.params.type])
+end
+
 require 'ui.statusline'
 require 'ui.tabline'
 require 'ui.window-layout'

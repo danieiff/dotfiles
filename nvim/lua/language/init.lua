@@ -1,6 +1,7 @@
 LS = {}
 
-AUC('FileType', { pattern = { 'json', 'jsonc', 'yaml', 'python', 'c', 'cpp', 'java', 'go' }, command = 'set tabstop=4' })
+AUC('FileType',
+  { pattern = { 'json', 'jsonc', 'yaml', 'python', 'c', 'cpp', 'java', 'go' }, command = 'setlocal tabstop=4' })
 
 require 'mason'.setup {}
 
@@ -46,6 +47,7 @@ require 'conform'.setup {
     typescript = fmts.prettier,
     typescriptreact = fmts.prettier,
     yaml = fmts.prettier,
+    php = nil
   },
 }
 
@@ -173,22 +175,6 @@ require 'dap.ext.vscode'.load_launchjs(nil, {
 
 ---@ LSP
 
--- lsp_references`
--- lsp_definitions`
--- lsp_declarations`
--- lsp_typedefs`
--- lsp_implementations`
--- lsp_document_symbols`
--- lsp_workspace_symbols`
--- lsp_live_workspace_symbol
--- lsp_incoming_calls`
--- lsp_outgoing_calls`
--- lsp_code_actions`
--- lsp_finder`
-
-K('<leader>e', require 'fzf-lua'.diagnostics_workspace)
-K('<leader>E', require 'fzf-lua'.diagnostics_document)
-
 -- vim.lsp.set_log_level 'DEBUG' -- :LspLog
 CMD('LspRestart', 'lua vim.lsp.stop_client(vim.lsp.get_active_clients()); vim.cmd.edit()', {})
 
@@ -294,14 +280,23 @@ AUC('LspAttach', {
   end
 })
 
-vim.lsp.handlers["window/showMessage"] = function(_, method, params)
-  vim.notify(method.message, vim.diagnostic.severity[params.params.type])
-end
-
 vim.lsp.config('*', {
   root_markers = { '.git' },
   capabilities = require 'blink.cmp'.get_lsp_capabilities()
 })
+
+-- require 'flutter-tools'.setup {
+--   debugger = {
+--     enabled = true,
+--     register_configurations = function(_)
+--       if vim.loop.fs_stat(vim.fn.getcwd() .. '/.vscode/launch.json') then
+--         require 'dap'.configurations.dart = {}
+--         require 'dap.ext.vscode'.load_launchjs()
+--       end
+--     end,
+--   },
+-- }
+-- require 'fzf-lua'.load_extension 'flutter'
 
 -- https://github.com/fatih/gomodifytags
 -- https://github.com/yoheimuta/protolint
@@ -365,13 +360,7 @@ AUC('FileType', {
   end
 })
 
-require 'lspconfig'.sourcery.setup {
-  init_options = {
-    token = 'user_MpPgD1Sf27NtUyZbBR3zwwc4qJ87f3a7JtWPjYoTZPKDXgAZWbk_m6QkJ6k',
-    extension_version = 'vim.lsp',
-    editor_version = 'vim',
-  },
-}
+require 'lspconfig'.sourcery.setup {}
 
 -- https://github.com/python-lsp/python-lsp-server/blob/develop/CONFIGURATION.md
 -- https://github.com/linux-cultist/venv-selector.nvim/tree/regexp
@@ -398,44 +387,7 @@ require 'lspconfig'.pylsp.setup {
   }
 }
 
-AUC('FileType', {
-  pattern = 'solidity',
-  once = true,
-  callback = function()
-    -- https://github.com/NomicFoundation/hardhat-vscode/blob/development/server/README.md
-    --require 'util'.ensure_npm_deps { '@ignored/solidity-language-server' }
-    require 'lspconfig'.solidity_ls_nomicfoundation.setup {}
-    vim.cmd.edit()
-  end
-})
-
---[[
--- https://github.com/mfussenegger/nvim-dap/wiki/Debug-Adapter-installation
-
--- rust/c/c++
--- https://github.com/mfussenegger/nvim-dap/wiki/C-C---Rust-(gdb-via--vscode-cpptools)
--- https://github.com/Microsoft/vscode-cpptools
--- https://github.com/mfussenegger/nvim-dap/wiki/Debug-symbols-in-various-languages-and-build-systems
-
-
--- Godot GDScript
-
-require 'dap'.adapters.godot = {
-  type = "server",
-  host = '127.0.0.1',
-  port = 6006,
-}
--- The port must match the Godot setting. Go to Editor -> Editor Settings, then find Debug Adapter under Network:
-dap.configurations.gdscript = {
-  {
-    type = "godot",
-    request = "launch",
-    name = "Launch scene",
-    project = "${workspaceFolder}",
-    launch_scene = true,
-  }
-}
-]]
+require 'lspconfig'.solidity_ls_nomicfoundation.setup {}
 
 LS.bashls = {
   cmd = { "bash-language-server", "start" },
@@ -447,7 +399,7 @@ dap.adapters.bashdb = {
   type = 'executable',
   name = 'bashdb',
   command = 'node',
-  args = { db }
+  args = { '(bashdb executable)' }
 }
 dap.configurations.sh = {
   {
@@ -472,26 +424,8 @@ dap.configurations.sh = {
 }
 
 -- https://github.com/rbenv/ruby-build/wiki#suggested-build-environment
---
 require 'lspconfig'.ruby_lsp.setup {}
 require 'dap-ruby'.setup() -- gem install rdbg rspec
-
-
---[[
-https://github.com/akinsho/flutter-tools.nvim
-require 'flutter-tools'.setup {
-  debugger = {
-    enabled = true,
-    register_configurations = function(_)
-      if vim.loop.fs_stat(vim.fn.getcwd() .. '/.vscode/launch.json') then
-        require("dap").configurations.dart = {}
-        require("dap.ext.vscode").load_launchjs()
-      end
-    end,
-  },
-}
-require 'fzf-lua'.load_extension 'flutter'
-]]
 
 LS.lua_ls = {
   cmd = { 'lua-language-server' },
@@ -503,29 +437,6 @@ LS.lua_ls = {
     }
   },
   filetypes = { 'lua' }
-}
-
-
-LS.jsonls = {
-  cmd = { 'json-lsp' },
-  settings = {
-    json = {
-      schemas = require 'schemastore'.json.schemas(),
-      validate = { enable = true },
-    },
-  },
-  filetypes = { 'json', 'jsonc' }
-}
-
-LS.yamlls = {
-  cmd = { 'yaml-language-server' },
-  settings = {
-    yaml = {
-      schemaStore = { enable = false, url = "" },
-      schemas = require 'schemastore'.yaml.schemas(),
-    }
-  },
-  filetypes = { 'yaml' }
 }
 
 dap.adapters.php = {
@@ -543,6 +454,7 @@ dap.configurations.php = {
     -- hostname = '0.0.0.0',
   }
 }
+
 LS.phpls = {
   -- cmd = { 'node', 'bmewburn.vscode-intelephense-client-1.10.4/node_modules/intelephense/lib/intelephense.js', '--stdio' },
   cmd = { 'intelephense', '--stdio' },
