@@ -1,6 +1,3 @@
--- require 'focus'.setup { ui = { signcolumn = false } }
--- AUC('WinEnter', { callback = function(_) vim.w.focus_disable = vim.wo.winfixwidth or vim.wo.winfixheight end })
-
 local function edgy_help_win_filter(pos)
   return function(_)
     -- local is_vimhelp = vim.bo[buf].buftype == 'help' -- don't open help files in edgy that we're editing

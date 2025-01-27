@@ -9,7 +9,7 @@ local mode_hl_tbl = {
 }
 function _G.statusline()
   local hl_vim_mode = mode_hl_tbl[vim.fn.mode()] or 'MiniStatuslineModeOther'
-  local githead_vimmode = vim.g.gitsigns_head and ('%%#%s# %s %%*'):format(hl_vim_mode, vim.g.gitsigns_head)
+  local githead_vimmode = vim.b.gitsigns_head and ('%%#%s# %s %%*'):format(hl_vim_mode, vim.b.gitsigns_head)
 
   local gs_dict = vim.b.gitsigns_status_dict or {}
   local added, changed, removed = gs_dict.added, gs_dict.changed, gs_dict.removed

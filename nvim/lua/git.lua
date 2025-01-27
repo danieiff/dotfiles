@@ -1,8 +1,5 @@
 --[[[
 git diff COMMIT_HASH_1 COMMIT_HASH_2 | grep "your_search_term"
-Gedit git-obj:filepath
-0Gclog
-Gclog --name-only
 git update-index --skip-worktree
 git update-index --no-skip-worktree
 
@@ -18,7 +15,7 @@ git diff-tree --no-commit-id --name-only -r $1
 
 K('g;', '<cmd>Neogit kind=floating<cr>')
 
-K('dV', '<cmd>DiffviewFileHistory %<cr>')
+K('dV', ':DiffviewFileHistory --follow %<cr>', { mode = { 'n', 'v' } })
 K('dv', function()
   for _, buf in ipairs(vim.fn.tabpagebuflist()) do
     if vim.bo[buf].filetype:find 'Diffview' then
@@ -123,25 +120,26 @@ CMD('Gistget', function()
   end)
 end, {})
 
--- AUC('FileType', {
---   pattern = 'gitcommit',
---   callback = function(ev)
---     local issuekey = vim.fn['fugitive#statusline']():match '[A-Z]+-%d+'
---     if not issuekey or vim.api.nvim_buf_get_lines(ev.buf, 0, 1, false)[1] ~= '' then return end
---     vim.api.nvim_buf_set_text(ev.buf, 0, 0, 0, 0, { issuekey })
---
---     local cmd = ([[
---       curl --request GET --url ""
---         --user ""
---         --header 'Accept: application/json'
---     ]]):format(issuekey):gsub('%s+', ' ')
---     vim.fn.jobstart(cmd, {
---       stdout_buffered = true,
---       on_stdout = function(_, data)
---         local ok, res_tbl = pcall(vim.json.decode, vim.fn.join(data, ''))
---         assert(ok, 'should decode json ' .. vim.fn.join(data, ''))
---         vim.api.nvim_buf_set_text(ev.buf, 0, -1, 1, -1, { vim.tbl_get(res_tbl, 'issues', 1, 'fields', 'summary') })
---       end
---     })
---   end
--- })
+AUC('FileType', {
+  pattern = 'gitcommit',
+  callback = function(ev)
+    local issuekey = vim.g.gitsigns_head:match '[A-Z]+-%d+'
+    if not issuekey or vim.api.nvim_buf_get_lines(ev.buf, 0, 1, false)[1] ~= '' then return end
+    vim.api.nvim_buf_set_text(ev.buf, 0, 0, 0, 0, { issuekey })
+
+    local cmd = ([[
+      curl --request GET --url ""
+        --user ""
+        --header 'Accept: application/json'
+    ]]):format(issuekey):gsub('%s+', ' ')
+    vim.fn.jobstart(cmd, {
+      stdout_buffered = true,
+      on_stdout = function(_, data)
+        if data.code ~= 0 then return end
+        local ok, res_tbl = pcall(vim.json.decode, vim.fn.join(data, ''))
+        assert(ok, 'should decode json ' .. vim.fn.join(data, ''))
+        vim.api.nvim_buf_set_text(ev.buf, 0, -1, 1, -1, { vim.tbl_get(res_tbl, 'issues', 1, 'fields', 'summary') })
+      end
+    })
+  end
+})

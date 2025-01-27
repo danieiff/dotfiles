@@ -10,9 +10,6 @@
 [submodule "nvim/pack/required/start/nvim-tree.lua"]
 	path = nvim/pack/required/start/nvim-tree.lua
 	url = https://github.com/nvim-tree/nvim-tree.lua
-[submodule "nvim/pack/required/start/vim-fugitive"]
-	path = nvim/pack/required/start/vim-fugitive
-	url = https://github.com/tpope/vim-fugitive
 [submodule "nvim/pack/required/start/gitsigns.nvim"]
 	path = nvim/pack/required/start/gitsigns.nvim
 	url = https://github.com/lewis6991/gitsigns.nvim
@@ -127,9 +124,6 @@
 [submodule "nvim/pack/required/start/blink.cmp"]
 	path = nvim/pack/required/start/blink.cmp
 	url = https://github.com/saghen/blink.cmp
-[submodule "nvim/pack/required/start/focus.nvim"]
-	path = nvim/pack/required/start/focus.nvim
-	url = https://github.com/nvim-focus/focus.nvim
 [submodule "nvim/pack/required/start/diffview.nvim"]
 	path = nvim/pack/required/start/diffview.nvim
 	url = https://github.com/sindrets/diffview.nvim
