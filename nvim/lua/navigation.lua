@@ -1,7 +1,5 @@
-K('(', '<cmd>exe "tabp" .v:count1<cr>')
-K(')', '<cmd>exe "tabn+" . v:count1<cr>')
-K('<s-tab>', '<cmd>exe "tabp" .v:count1<cr>')
-K('<tab>', function()
+K('(', '<cmd>exe "tabp" . v:count1<cr>')
+K(')', function()
   if vim.v.count == 0 then
     vim.cmd 'tabn'
   else
@@ -18,6 +16,14 @@ K('ga', require 'leap.treesitter'.select, { mode = { 'n', 'x', 'o' } })
 require 'navigate-note'.setup {}
 
 require 'fzf-lua'.setup {}
+
+require 'fzf-lua'.setup {
+  keymap = {
+    builtin = { true,
+      ['<C-h>'] = 'toggle-help',
+    }
+  }
+}
 K('<leader>f', function() require 'fzf-lua'.files { cwd = vim.fs.root(0, '.git') } end)
 K('<leader>F', require 'fzf-lua'.oldfiles)
 K('<leader>b', require 'fzf-lua'.buffers)

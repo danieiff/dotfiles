@@ -24,7 +24,7 @@ K('<leader>..', function()
   local lines = vim.fn.mode() == 'n' and { vim.fn.getline '.' } or
       vim.fn.getregion(vim.fn.getpos 'v', vim.fn.getpos '.', { type = vim.fn.mode() })
 
-  if vim.fn.filereadable(vim.g.repl_luafil) ~= 0 then
+  if vim.g.repl_luafile == nil or vim.fn.filereadable(vim.g.repl_luafil) == 0 then
     vim.g.repl_luafile = os.tmpname()
   end
   vim.fn.writefile(lines, vim.g.repl_luafile, 'a')

@@ -85,22 +85,23 @@ K('<C-w><C-w>', '<cmd>windo set scrollbind!<cr>')
 
 K('<leader>w', function() vim.cmd 'silent write' end)
 K('jk', '<c-\\><c-n>', { mode = { 'i', 'c', 't' } })
-AUC('InsertLeave', {
-  callback = function(ev) if CHECK_FILE_MODIFIABLE(ev.buf) then vim.cmd 'silent write' end end,
-  nested = true
-})
-K("<esc>", "<cmd>nohl<cr>")
-K('<leader>z', '<cmd>qa<cr>')
 
-K('Y', 'y$')
-K('<leader>y', function() vim.fn.setreg("+", vim.fn.expand '%') end)
-K('<leader>r', require 'fzf-lua'.registers)
+K("<esc>", "<cmd>nohl<cr>")
+K('<leader><esc>', '<cmd>qa<cr>')
+
+K('yY', function() vim.fn.setreg("+", vim.fn.expand '%') end)
+K('yR', require 'fzf-lua'.registers)
 
 K('<leader> ', require 'fzf-lua'.resume)
 K('<leader>c', require 'fzf-lua'.commands)
 K('<leader>C', require 'fzf-lua'.command_history)
 K('<leader>?', require 'fzf-lua'.search_history)
 K('<leader>k', require 'fzf-lua'.keymaps)
+
+AUC('InsertLeave', {
+  callback = function(ev) if CHECK_FILE_MODIFIABLE(ev.buf) then vim.cmd 'silent write' end end,
+  nested = true
+})
 
 AUC("BufReadPre", {
   desc = 'Improve performance for larger files',

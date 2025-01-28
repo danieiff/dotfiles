@@ -1,4 +1,4 @@
-K('<leader>tt', function()
+K('<leader>!', function()
   local cword = vim.fn.expand '<cword>'
   for a, b in pairs { ['true'] = 'false', ['enabled'] = 'disabled' } do
     local change = cword == a and b or cword == b and a
@@ -50,6 +50,8 @@ K('<leader>doc', ':Neogen ', { desc = 'arg: func|class|type' })
 
 require 'timber'.setup {}
 
+require 'scissors'.setup {}
+
 require 'nvim-surround'.setup { keymaps = { visual = '<C-s>' } }
 require 'nvim-ts-autotag'.setup { enable_close_on_slash = false, }
 require 'nvim-autopairs'.setup { disable_in_visualblock = true, fast_wrap = { map = '<C-]>' } } -- <C-h> deletes '(' only
@@ -77,8 +79,8 @@ neocodeium.setup()
 K("<c-y>", neocodeium.accept, { mode = { "i" } })
 K("<c-u>", neocodeium.accept_word, { mode = { "i" } })
 K("<c-i>", neocodeium.accept_line, { mode = { "i" } })
-K("<c-j>", neocodeium.cycle_or_complete, { mode = { "i" } })
-K("<c-k>", function() neocodeium.cycle_or_complete(-1) end, { mode = { "i" } })
+K("<c-a>", neocodeium.cycle_or_complete, { mode = { "i" } })
+K("<c-x>", function() neocodeium.cycle_or_complete(-1) end, { mode = { "i" } })
 K("<c-q>", neocodeium.clear, { mode = { "i" } })
 
 require 'avante_lib'.load()

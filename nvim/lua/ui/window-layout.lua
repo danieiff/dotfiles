@@ -1,6 +1,11 @@
 local function edgy_help_win_filter(pos)
-  return function(_)
+  return function(bufnr)
     -- local is_vimhelp = vim.bo[buf].buftype == 'help' -- don't open help files in edgy that we're editing
+
+    if vim.fn.bufname(bufnr) == '_FzfLuaHelp' then
+      return false
+    end
+
     local is_only_win = #vim.tbl_filter(function(win)
       return CHECK_FILE_MODIFIABLE(vim.api.nvim_win_get_buf(win))
     end, vim.api.nvim_tabpage_list_wins(0)) >= 1
@@ -20,21 +25,19 @@ local edgy_opts = {
     "Trouble",
     { title = "QuickFix",       ft = "qf" },
     { title = "Neotest Output", ft = "neotest-output-panel", size = { height = 15 } },
+    'iron'
   },
   left = {
-    -- { title = 'Git Log',         ft = 'git',            size = { width = 0.3 },                                       pinned = true, open = 'G reflog', },
     { title = 'Undo Tree',       ft = 'undotree',       open = 'UndoTreeToggle' },
     { title = 'Undo diff',       ft = 'diff',           filter = function(buf) return vim.b[buf].isUndotreeBuffer end },
     { title = "Neotest Summary", ft = "neotest-summary" },
     { title = 'Avante',          ft = 'Avante',         size = { width = 0.4 } }, 'AvanteInput',
-    { title = "DiffviewFiles", ft = "DiffviewFiles",  size = { width = 0.2 } },
-    { ft = "help",             size = { width = 78 }, filter = edgy_help_win_filter 'right' },
+    { ft = "help", size = { width = 78 }, filter = edgy_help_win_filter 'left' },
   },
   right = {
-    { title = 'Aerial',     ft = 'aerial',   pinned = true,          open = require 'aerial'.toggle },
-    { title = 'NvimTree',   ft = 'NvimTree', pinned = true,          open = require 'nvim-tree.api'.tree.toggle },
-    { title = 'Git Status', ft = 'fugitive', size = { width = 0.3 }, pinned = true,                             open = 'G', wo = { number = false }, },
-    { title = 'Grug Far',   ft = 'grug-far', size = { width = 0.4 } },
+    { title = 'Aerial',   ft = 'aerial',   pinned = true,         open = require 'aerial'.toggle },
+    { title = 'NvimTree', ft = 'NvimTree', pinned = true,         open = require 'nvim-tree.api'.tree.toggle },
+    { title = 'Grug Far', ft = 'grug-far', size = { width = 0.4 } },
   },
   options = {
     left = { size = 20 },
@@ -44,7 +47,6 @@ local edgy_opts = {
     winfixheight = true
   },
   keys = {
-    ['<F1>'] = false,
     ['<a-l>'] = function(win) win:resize('width', 2) end,
     ['<a-h>'] = function(win) win:resize('width', -2) end,
     ['<a-k>'] = function(win) win:resize('height', 2) end,
