@@ -46,7 +46,11 @@ end
 
 -- TODO: AI code doc comment writing
 require 'neogen'.setup {}
-K('<leader>doc', ':Neogen ', { desc = 'arg: func|class|type' })
+K(
+  'dO',
+  '":Neogen" . (v:count == 1 ? "type" : v:count == 2 ? "func" : v:count == 3 ? "class" : v:count == 4 ? "file" : "") . "<cr>"',
+  { expr = true, description = '1:type, 2:func, 3:class, 4:file, default:auto' }
+)
 
 require 'timber'.setup {}
 

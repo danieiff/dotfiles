@@ -47,20 +47,16 @@ function AUC(ev, opts)
   vim.api.nvim_create_autocmd(ev, opts)
 end
 
-local uname = vim.uv.os_uname()
-PLATFORM = {
-  mac = uname.sysname == 'Darwin',
-  linux = uname.sysname == 'Linux',
-  windows = uname.sysname:find 'Windows',
-  wsl = uname.sysname == 'Linux' and uname.release:lower():find 'microsoft'
-}
 NVIM_DATA = vim.fn.stdpath 'data'
 if type(NVIM_DATA) == 'table' then NVIM_DATA = NVIM_DATA[1] end
 NVIM_CONF = vim.fn.stdpath 'config'
 NVIM_CONF = assert(vim.uv.fs_realpath(type(NVIM_CONF) == 'string' and NVIM_CONF or NVIM_CONF[1]),
   'should find nvim config')
 
-if PLATFORM.windows then vim.uv.os_setenv('PATH', os.getenv 'PATH' .. [[;\Program Files\Git\usr\bin;]]) end
+if vim.uv.os_uname().sysname:find 'Windows' then
+  vim.uv.os_setenv('PATH',
+    os.getenv 'PATH' .. [[;\Program Files\Git\usr\bin;]])
+end
 
 CHECK_FILE_MODIFIABLE = function(bufnr, nowait_ft_detect)
   return vim.api.nvim_get_option_value('modifiable', { buf = bufnr })

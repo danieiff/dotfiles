@@ -23,7 +23,6 @@ AUC('VimEnter', {
   end
 })
 
-CMD('MkSession', 'silent mksession! ' .. get_session_path(), {})
+CMD('MkSession', 'mksession! ' .. get_session_path(), {})
 CMD('LoadSession', 'source ' .. get_session_path(), {})
-CMD('SelectSession', '', {})
 CMD('DeleteSession', function() os.remove(get_session_path()) end, {})
