@@ -94,31 +94,22 @@ K('<leader>C', require 'fzf-lua'.command_history)
 K('<leader>?', require 'fzf-lua'.search_history)
 K('<leader>k', require 'fzf-lua'.keymaps)
 
-AUC('InsertLeave', {
-  callback = function(ev) if CHECK_FILE_MODIFIABLE(ev.buf) then vim.cmd 'silent write' end end,
-  nested = true
-})
-
-AUC("BufReadPre", {
-  desc = 'Improve performance for larger files',
-  nested = true,
-  callback = function(ev)
-    if vim.fn.getfsize(ev.file) > 1024 * 1024 * 2 then
-      vim.bo[ev.buf].eventignore:append 'FileType'
-      vim.bo[ev.buf].undolevels = -1
-    end
-  end
-})
-
-K('<Leader>t', function()
-  local cmd = vim.fn.input { prompt = ':tab term ', completion = 'shellcmd', cancelreturn = 0 }
-  if cmd ~= 0 then
-    vim.cmd('tab term ' .. cmd); vim.cmd 'setlocal nonumber | startinsert'
-  end
-end)
-
 local overseer = require 'overseer'
 overseer.setup {}
+
+K('<leader>tt', '":<c-u>OverseerToggle" . (v:count ? "" : "!") . "<cr>"', { expr = true })
+K('<leader>ts', '<cmd>OverseerSaveBundle<cr>')
+K('<leader>tl', '<cmd>OverseerLoadBundle<cr>')
+K('<leader>td', '<cmd>OverseerDeleteBundle<cr>')
+K('<leader>tr', '<cmd>OverseerRun<cr>')
+K('<leader>tC', '<cmd>OverseerRunCmd<cr>')
+K('<Leader>$', '<cmd>OverseerRunCmd ' .. vim.o.shell .. '<cr>')
+K('<leader>ti', '<cmd>OverseerInfo<cr>')
+K('<leader>tb', '<cmd>OverseerBuild<cr>')
+K('<leader>tq', '<cmd>OverseerQuickAction<cr>')
+K('<leader>ta', '<cmd>OverseerTaskAction<cr>')
+K('<leader>tc', '<cmd>OverseerClearCache<cr>')
+
 require 'overseer'.register_template({
   name = "Git checkout",
   params = function()
@@ -162,6 +153,22 @@ K('<leader>7', function()
     vim.cmd [['{,'}s/\n\@<!//g]]
   end
 end)
+
+AUC('InsertLeave', {
+  callback = function(ev) if CHECK_FILE_MODIFIABLE(ev.buf) then vim.cmd 'silent write' end end,
+  nested = true
+})
+
+AUC("BufReadPre", {
+  desc = 'Improve performance for larger files',
+  nested = true,
+  callback = function(ev)
+    if vim.fn.getfsize(ev.file) > 1024 * 1024 * 2 then
+      vim.bo[ev.buf].eventignore:append 'FileType'
+      vim.bo[ev.buf].undolevels = -1
+    end
+  end
+})
 
 local base64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
 

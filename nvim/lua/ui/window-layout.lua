@@ -16,10 +16,10 @@ end
 
 local edgy_opts = {
   top = {
-    { title = 'Overseer List', ft = 'OverseerList' },
+    { title = 'Overseer List', ft = 'OverseerList',     size = { width = 0.2, height = 0.5 } },
     { title = 'Overseer task', ft = '',                 filter = function(buf) return vim.b[buf].overseer_task ~= nil end },
-    { ft = "help",             size = { height = 0.4 }, filter = edgy_help_win_filter 'top' },
-    { ft = "man",              size = { height = 0.4 } },
+    { ft = "help",             size = { height = 0.5 }, filter = edgy_help_win_filter 'top' },
+    { ft = "man",              size = { height = 0.5 } },
   },
   bottom = {
     "Trouble",

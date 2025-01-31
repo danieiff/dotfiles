@@ -15,8 +15,8 @@ git diff-tree --no-commit-id --name-only -r $1
 
 K('g;', '<cmd>Neogit kind=floating<cr>')
 
-K('dV', ':DiffviewFileHistory --follow %<cr>', { mode = { 'n', 'v' } })
-K('dv', function()
+K(';D', ':DiffviewFileHistory --follow %<cr>', { mode = { 'n', 'v' } })
+K(';d', function()
   for _, buf in ipairs(vim.fn.tabpagebuflist()) do
     if vim.bo[buf].filetype:find 'Diffview' then
       vim.cmd 'DiffviewClose'
@@ -68,6 +68,8 @@ gs.setup {
 }
 
 require "octo".setup { picker = 'fzf-lua' }
+K('<leader>os', '<cmd>Octo issue search<cr>')
+K('<leader>ol', '<cmd>Octo issue list<cr>')
 
 CMD('GHGet', function()
   local repo_id = vim.fn.input 'Enter github {user/repo} to get the latest release from: '

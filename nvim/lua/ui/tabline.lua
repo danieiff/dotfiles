@@ -9,10 +9,12 @@ vim.api.nvim_set_hl(0, 'TabLineFifthModified', { fg = hl_tabline.fg, bg = hl_tab
 vim.api.nvim_set_hl(0, 'TabLineFifthModifiedSel',
   { fg = hl_file_modified.fg, bg = hl_tabline_sel.bg, underdotted = true })
 
-local function get_icon_hl(bufnr)
-  local ft               = vim.bo[bufnr].ft
-  local icon, icon_color = require 'nvim-web-devicons'.get_icon_color_by_filetype(ft ~= '' and ft or 'txt')
-  local hl_icon          = ft .. 'Tab'
+local icon_default, icon_color_default = require 'nvim-web-devicons'.get_icon_color_by_filetype 'txt'
+
+local function get_icon_hl(icon_ft)
+  local icon, icon_color = require 'nvim-web-devicons'.get_icon_color_by_filetype(icon_ft)
+  icon, icon_color = icon or icon_default, icon_color or icon_color_default
+  local hl_icon = icon_ft .. 'Tab'
   if vim.tbl_isempty(vim.api.nvim_get_hl(0, { name = hl_icon, link = false })) then
     vim.api.nvim_set_hl(0, hl_icon, { fg = icon_color, bg = hl_tabline.bg })
     vim.api.nvim_set_hl(0, hl_icon .. 'Sel', { fg = icon_color, bg = hl_tabline_sel.bg })
@@ -36,12 +38,16 @@ function _G.tabline()
         local _tabnr, winnr = unpack(vim.fn.win_id2tabwin(win))
         bufnm_label = vim.fn.fnamemodify(vim.fn.bufname(bufnr), ':p:r:s?' .. vim.fn.getcwd(winnr, _tabnr) .. '/??')
         bufnm_label_shorter = vim.fn.pathshorten(bufnm_label, 1)
-        icon, hl_icon = get_icon_hl(bufnr)
+        icon, hl_icon = get_icon_hl(vim.bo[bufnr].ft)
         break
+      elseif vim.bo[bufnr].buftype == 'terminal' then
+        bufnm_label = vim.b[bufnr].term_title:match '^term://(.*)//'
+        bufnm_label_shorter = vim.fn.pathshorten(bufnm_label, 1)
+        icon, hl_icon = get_icon_hl 'terminal'
       elseif vim.bo[bufnr].ft == 'help' then
         bufnm_label = vim.fn.fnamemodify(vim.fn.bufname(bufnr), ':t:r')
         bufnm_label_shorter = bufnm_label
-        icon, hl_icon = get_icon_hl(bufnr)
+        icon, hl_icon = get_icon_hl 'help'
       end
     end
 
