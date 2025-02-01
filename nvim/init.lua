@@ -1,3 +1,4 @@
+vim.loader.enable()
 --[[
 <C-w>T
 :.!ls
@@ -9,28 +10,39 @@ If there is no intention to send anything to the command, it would be better to 
 
 :let @a = system("ls -ltr")
 
-ulimit -n 10240
+!! in normal mode -> :.! -> :.!ls<cr> -> puts cmd result to current line
+
+<C-g> <C-t> in search mode
+
+[<space> ]<space> inserts an empty line below/above the current line
+
+[] + i I <c-i>
+
+diagraphs: hvudrl
+・.6 ┆ 3! ┈ 4- ┊ 4!
+─ hh ━ HH │ vv ┃ VV
+┌ dr ┍ dR ┎ Dr ┏ DR
+┐ dl ┑ dL ┒ Dl ┓ LD
+└ ur ┕ uR ┖ Ur ┗ UR
+┘ ul ┙ uL ┚ Ul ┛ UL
+├ vr ┝ vR ┠ Vr ┣ VR
+┤ vl ┥ vL ┨ Vl ┫ VL
+┬ dh ┯ dH ┰ Dh ┳ DH
+┴ uh ┷ uH ┸ Uh ┻ UH
+┼ vh ┿ vH ╂ Vh ╋ VH
 
 curl https://mise.run | sh
 mise use -g zig@0.10 node zellij neovim yq ripgrep github-cli
-
 [ -d ~/dotfiles ] || git clone --depth 1 https://github.com/danieiff/dotfiles ~ --recurse-submodules --shallow-submodules --jobs 100
 ln -s ~/dotfiles/nvim ${XDG_CONFIG_HOME:-~/.config}
-
-nvim --headless +'MasonInstall | qa'
-
-TSInstall lua vimdoc markdown markdown_inline http json jsonc bash sql gitcommit git_rebase python
-javascript typescript tsx html css vue svelte astro
-php ruby
-java c_sharp go rust c
-yaml toml
-dockerfile prisma graphql
-
-@("git.git", "zig.zig", "Neovim.Neovim.Nightly", "BurntSushi.ripgrep.MSVC") | ForEach-Object { winget install $_ }
-git clone --depth 1 https://github.com/danieiff/dotfiles -b windows --recurse-submodules --shallow-submodules --jobs 100
-New-Item -Path $ENV:LOCALAPPDATA/nvim -ItemType SymbolicLink -Value dotfiles/nvim
-
 ]]
+
+if vim.uv.os_uname().sysname:find 'Windows' then
+  -- winget install git.git zig.zig Neovim.Neovim.Nightly BurntSushi.ripgrep.MSVC
+  -- git clone --depth 1 https://github.com/danieiff/dotfiles --recurse-submodules --shallow-submodules --jobs 100
+  -- New-Item -Path $ENV:LOCALAPPDATA/nvim -ItemType SymbolicLink -Value dotfiles/nvim
+  vim.uv.os_setenv('PATH', os.getenv 'PATH' .. [[;\Program Files\Git\usr\bin;]])
+end
 
 K = function(lhs, rhs, opts)
   opts = opts or {}
@@ -84,9 +96,10 @@ K('jk', '<c-\\><c-n>', { mode = { 'i', 'c', 't' } })
 
 K("<esc>", "<cmd>nohl<cr>")
 K('<leader><esc>', '<cmd>qa<cr>')
+K('0<esc>', ('<cmd>!rm -rf %s/swap %s/shada<cr>'):format(vim.fn.stdpath 'state', vim.fn.stdpath 'state'))
 
-K('yY', function() vim.fn.setreg("+", vim.fn.expand '%') end)
-K('yR', require 'fzf-lua'.registers)
+K('yY', '<cmd>let @+=@%<cr>')
+K('yr', require 'fzf-lua'.registers)
 
 K('<leader> ', require 'fzf-lua'.resume)
 K('<leader>c', require 'fzf-lua'.commands)
@@ -139,7 +152,7 @@ vim.g.undotree_ShortIndicators = 1
 vim.g.undotree_SetFocusWhenToggle = 1
 K('<leader>u', '<cmd>UndotreeToggle<cr>')
 
-K('<leader>6', ('<cmd>!rm -rf %s/swap %s/shada<cr>'):format(NVIM_DATA, NVIM_DATA))
+K('<leader>6', ('<cmd>!rm -rf %s/swap %s/shada<cr>'):format(vim.fn.stdpath 'state', vim.fn.stdpath 'state'))
 K('<leader>7', function()
   local urlpath, querystring = unpack(vim.split(vim.api.nvim_get_current_line(), '?'))
   if urlpath and querystring then
@@ -219,12 +232,26 @@ CMD('UrlDecode', function(arg)
   vim.print(url)
 end, { nargs = 1 })
 
+CMD('UrlSplitJoin', function()
+  local urlpath, querystring = unpack(vim.split(vim.api.nvim_get_current_line(), '?'))
+  if urlpath and querystring then
+    local lines = { urlpath }
+    local queryparams = vim.fn.sort(vim.split(querystring, '&'))
+    for idx, queryparam in ipairs(queryparams) do
+      table.insert(lines, (idx == 1 and '?' or '&') .. queryparam)
+    end
+    vim.api.nvim_buf_set_lines(0, vim.api.nvim_win_get_cursor(0)[1] - 1, -1, false, lines)
+  else
+    vim.cmd [['{,'}s/\n\@<!//g]]
+  end
+end, {})
+
 -- git submodule deinit -f .
 -- git submodule update --init
 CMD('GitSubmoduleAddVimPlugin', function(arg)
   vim.system(
     { 'git', 'submodule', 'add', arg.args, 'nvim/pack/required/start/' .. vim.fn.fnamemodify(arg.args, ':t') },
-    { cwd = vim.fn.fnamemodify(NVIM_CONF, ':h') },
+    { cwd = vim.fn.fnamemodify(vim.fn.stdpath 'config', ':h') },
     function(data)
       assert(data.code == 0, 'git submodule add ' .. arg.args .. ' failed: ' .. data.stderr)
       vim.schedule(function() vim.cmd('set runtimepath& | runtime! plugin/**/*.{vim,lua} | helptags ALL') end)

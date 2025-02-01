@@ -40,14 +40,10 @@ function _G.tabline()
         bufnm_label_shorter = vim.fn.pathshorten(bufnm_label, 1)
         icon, hl_icon = get_icon_hl(vim.bo[bufnr].ft)
         break
-      elseif vim.bo[bufnr].buftype == 'terminal' then
-        bufnm_label = vim.b[bufnr].term_title:match '^term://(.*)//'
-        bufnm_label_shorter = vim.fn.pathshorten(bufnm_label, 1)
-        icon, hl_icon = get_icon_hl 'terminal'
       elseif vim.bo[bufnr].ft == 'help' then
         bufnm_label = vim.fn.fnamemodify(vim.fn.bufname(bufnr), ':t:r')
         bufnm_label_shorter = bufnm_label
-        icon, hl_icon = get_icon_hl 'help'
+        icon, hl_icon = get_icon_hl 'doc'
       end
     end
 

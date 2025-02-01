@@ -13,10 +13,7 @@ vim.opt.listchars = { tab = "⇥ ", trail = '·' }
 require 'nightfox'.setup {}
 vim.cmd.colorscheme 'nordfox'
 
-require 'nvim-web-devicons'.set_icon { help = { icon = "", color = "#61afef", name = "help" } }
-require 'nvim-web-devicons'.set_icon_by_filetype { help = 'help' }
-
-require 'satellite'.setup {}
+require 'satellite'.setup()
 
 require 'ibl'.setup()
 
@@ -34,7 +31,7 @@ K('M', function()
 end)
 
 vim.lsp.handlers["window/showMessage"] = function(_, method, params)
-  vim.notify(method.message, vim.diagnostic.severity[params.params.type])
+  vim.notify(method.message, vim.diagnostic.severity[method.type or params.params.type])
 end
 
 require 'ui.statusline'
