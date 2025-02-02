@@ -1,7 +1,5 @@
 local function edgy_help_win_filter(pos)
   return function(bufnr)
-    -- local is_vimhelp = vim.bo[buf].buftype == 'help' -- don't open help files in edgy that we're editing
-
     if vim.fn.bufname(bufnr) == '_FzfLuaHelp' then
       return false
     end
@@ -43,9 +41,6 @@ local edgy_opts = {
     left = { size = 20 },
     right = { size = 0.2 },
   },
-  wo = {
-    winfixheight = true
-  },
   keys = {
     ['<a-l>'] = function(win) win:resize('width', 2) end,
     ['<a-h>'] = function(win) win:resize('width', -2) end,
@@ -68,4 +63,74 @@ for _, pos in ipairs { 'top', 'bottom', 'left', 'right' } do
   })
 end
 require 'edgy'.setup(edgy_opts)
-K(';', require 'edgy'.toggle)
+K(';;', require 'edgy'.toggle)
+
+AUC('WinEnter', {
+  nested = true,
+  desc = 'auto resize non-edgy windows',
+  callback = function(ev)
+    if vim.b[ev.buf].edgy_keys or vim.api.nvim_win_get_config(0).relative ~= '' then return end
+
+    local editor_width, editor_height = vim.o.columns, vim.o.lines - 2
+
+    local current_win = vim.api.nvim_get_current_win()
+    local current_win_line_start, current_win_col_start = unpack(vim.api.nvim_win_get_position(current_win))
+    local current_win_line_end = current_win_line_start + vim.api.nvim_win_get_height(current_win)
+    local current_win_col_end = current_win_col_start + vim.api.nvim_win_get_width(current_win)
+
+    local edgy_sizes = { top = 0, bottom = 0, left = 0, right = 0 }
+    local horizontal_splits, vertical_splits = {}, {}
+
+    for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
+      local win_cfg = vim.api.nvim_win_get_config(win)
+      if win_cfg.relative == '' then
+        local edgy_win = require 'edgy'.get_win(win)
+
+        if edgy_win and edgy_sizes[edgy_win.view.edgebar.pos] == 0 then
+          edgy_sizes[edgy_win.view.edgebar.pos] =
+              (edgy_win.view.edgebar.vertical and edgy_win.width or edgy_win.height) + 1
+        else
+          local win_line_start, win_col_start = unpack(vim.api.nvim_win_get_position(win))
+          local win_line_end, win_col_end = win_line_start + win_cfg.height, win_col_start + win_cfg.width
+
+          if win_cfg.height < editor_height then
+            if not (win_col_end < current_win_col_start or current_win_col_end < win_col_start) then
+              table.insert(horizontal_splits, win)
+            end
+          end
+          if win_cfg.width < editor_width then
+            if not (win_line_end < current_win_line_start or current_win_line_end < win_line_start) then
+              table.insert(vertical_splits, win)
+            end
+          end
+        end
+      end
+    end
+
+    local other_horizontal_splits_cnt = #horizontal_splits - 1
+    if other_horizontal_splits_cnt > 0 then
+      local non_edgy_height = editor_height - other_horizontal_splits_cnt - edgy_sizes.top - edgy_sizes.bottom
+      local new_current_win_height = math.floor(non_edgy_height * 2 / 3)
+      local rest_distributed_height = math.floor((non_edgy_height - new_current_win_height) / other_horizontal_splits_cnt)
+      local rest_distributed_remainder_height = (non_edgy_height - new_current_win_height) % other_horizontal_splits_cnt
+      new_current_win_height = new_current_win_height + rest_distributed_remainder_height
+
+      for _, win in ipairs(horizontal_splits) do
+        vim.api.nvim_win_set_height(win, win == current_win and new_current_win_height or rest_distributed_height)
+      end
+    end
+
+    local other_vertical_splits_cnt = #vertical_splits - 1
+    if other_vertical_splits_cnt > 0 then
+      local non_edgy_width = editor_width - other_vertical_splits_cnt - edgy_sizes.left - edgy_sizes.right
+      local new_current_win_width = math.floor(non_edgy_width * 2 / 3)
+      local rest_distributed_width = math.floor((non_edgy_width - new_current_win_width) / other_vertical_splits_cnt)
+      local rest_distributed_remainder_width = (non_edgy_width - new_current_win_width) % other_vertical_splits_cnt
+      new_current_win_width = new_current_win_width + rest_distributed_remainder_width
+
+      for _, win in ipairs(vertical_splits) do
+        vim.api.nvim_win_set_width(win, win == current_win and new_current_win_width or rest_distributed_width)
+      end
+    end
+  end
+})
