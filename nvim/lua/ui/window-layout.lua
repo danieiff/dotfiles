@@ -14,38 +14,46 @@ end
 
 local edgy_opts = {
   top = {
-    { title = 'Overseer List', ft = 'OverseerList',     size = { width = 0.2, height = 0.5 } },
-    { title = 'Overseer task', ft = '',                 filter = function(buf) return vim.b[buf].overseer_task ~= nil end },
-    { ft = "help",             size = { height = 0.5 }, filter = edgy_help_win_filter 'top' },
-    { ft = "man",              size = { height = 0.5 } },
+    { ft = "man",          filter = function(_, win) return not vim.w[win].fzf_lua_preview end },
+    { ft = "help",         filter = edgy_help_win_filter 'top' },
+    { ft = 'OverseerList', size = { width = 0.2, height = 0.5 } },
+    { ft = '',             filter = function(buf) return vim.b[buf].overseer_task end },
   },
   bottom = {
-    "Trouble",
-    { title = "QuickFix",       ft = "qf" },
-    { title = "Neotest Output", ft = "neotest-output-panel", size = { height = 15 } },
-    'iron'
+    'iron',
+    'Trouble',
+    'qf',
+    { ft = "neotest-output-panel", size = { height = 15 } }
   },
   left = {
-    { title = 'Undo Tree',       ft = 'undotree',       open = 'UndoTreeToggle' },
-    { title = 'Undo diff',       ft = 'diff',           filter = function(buf) return vim.b[buf].isUndotreeBuffer end },
-    { title = "Neotest Summary", ft = "neotest-summary" },
-    { title = 'Avante',          ft = 'Avante',         size = { width = 0.4 } }, 'AvanteInput',
-    { ft = "help", size = { width = 78 }, filter = edgy_help_win_filter 'left' },
+    'Avante',
+    'AvanteInput',
+    'neotest-summary',
+    'undotree',
+    { ft = 'diff', filter = function(buf) return vim.b[buf].isUndotreeBuffer end },
+    { ft = "help", size = { width = 80 },                                        filter = edgy_help_win_filter 'left' },
   },
   right = {
-    { title = 'Aerial',   ft = 'aerial',   pinned = true,         open = require 'aerial'.toggle },
-    { title = 'NvimTree', ft = 'NvimTree', pinned = true,         open = require 'nvim-tree.api'.tree.toggle },
-    { title = 'Grug Far', ft = 'grug-far', size = { width = 0.4 } },
+    { ft = 'aerial',   pinned = true,         open = require 'aerial'.toggle },
+    { ft = 'NvimTree', pinned = true,         open = require 'nvim-tree.api'.tree.toggle },
+    { ft = 'grug-far', size = { width = 0.4 } },
   },
   options = {
-    left = { size = 20 },
+    left = { size = 0.2 },
     right = { size = 0.2 },
+    top = { size = 0.5 },
+  },
+  animate = {
+    enabled = false,
+  },
+  wo = {
+    winbar = false
   },
   keys = {
-    ['<a-l>'] = function(win) win:resize('width', 2) end,
-    ['<a-h>'] = function(win) win:resize('width', -2) end,
-    ['<a-k>'] = function(win) win:resize('height', 2) end,
-    ['<a-j>'] = function(win) win:resize('height', -2) end,
+    ['<right>'] = function(win) win:resize('width', 2) end,
+    ['<left>'] = function(win) win:resize('width', -2) end,
+    ['<up>'] = function(win) win:resize('height', 2) end,
+    ['<down>'] = function(win) win:resize('height', -2) end,
   },
 }
 
@@ -62,6 +70,7 @@ for _, pos in ipairs { 'top', 'bottom', 'left', 'right' } do
     end,
   })
 end
+
 require 'edgy'.setup(edgy_opts)
 K(';;', require 'edgy'.toggle)
 
