@@ -50,9 +50,15 @@ K('dO',
   '":<c-u>Neogen" . (v:count == 1 ? "type" : v:count == 2 ? "func" : v:count == 3 ? "class" : v:count == 4 ? "file" : "") . "<cr>"',
   { expr = true, desc = '1:type, 2:func, 3:class, 4:file, default:auto' })
 
-require 'timber'.setup {}
+require 'timber'.setup {
+  log_templates = {
+    default = {
+      lua = [[vim.notify("%filename %line_number %log_target: " .. vim.inspect(%log_target))]]
+    }
+  }
+}
 
-require 'scissors'.setup {}
+require 'scissors'.setup()
 
 require 'nvim-surround'.setup { keymaps = { visual = '<C-s>' } }
 require 'nvim-ts-autotag'.setup { enable_close_on_slash = false, }

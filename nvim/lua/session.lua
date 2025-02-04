@@ -1,8 +1,8 @@
-vim.opt.sessionoptions:remove { 'buffer', 'blank', 'options' }
+vim.opt.sessionoptions:remove { 'buffers', 'blank', 'options' }
 
-local function get_session_path(dir)
+local function get_session_path(dir, branch)
   dir = dir or assert(vim.uv.cwd(), 'should get cwd')
-  local branch = vim.fn.systemlist { 'git', 'branch', '--show-current' }[1]
+  branch = branch or vim.fn.systemlist { 'git', 'branch', '--show-current' }[1]
   return vim.fn.stdpath 'data' .. '/'
       .. 'session'
       .. vim.fn.fnamemodify(dir, ':p:h'):gsub('/', '!')

@@ -38,7 +38,6 @@ function _G.statusline()
     '%=%<',
     '%{fnamemodify(getcwd(), ":~")}',
     "%{% &modified ? '%#NvimTreeModifiedFileHL#' : '' %}%f%*",
-    '%P',
     "%{ &fenc!='utf-8' && &fenc!='' ? &fenc : '' }",
   }))
 end

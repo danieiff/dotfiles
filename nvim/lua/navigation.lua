@@ -10,12 +10,12 @@ end)
 K('<leader><tab>', require 'fzf-lua'.tabs)
 
 require 'leap'.create_default_mappings()
+K('s', '<Plug>(leap)')
 K('gS', require 'leap.remote'.action, { mode = { 'n', 'o' } })
-K('ga', require 'leap.treesitter'.select, { mode = { 'n', 'x', 'o' } })
+K('S', require 'leap.treesitter'.select, { mode = { 'n', 'x', 'o' } })
 
 require 'navigate-note'.setup {}
 
-require 'fzf-lua'.setup {}
 
 require 'fzf-lua'.setup {
   keymap = {

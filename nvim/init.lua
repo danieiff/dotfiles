@@ -126,7 +126,8 @@ K('<leader>tc', '<cmd>OverseerClearCache<cr>')
 require 'overseer'.register_template({
   name = "Git checkout",
   params = function()
-    local stdout = vim.system({ "git", "branch", "--format=%(refname:short)", "-r" }):wait().stdout
+    local stdout = assert(vim.system({ "git", "branch", "--format=%(refname:short)", "-r" }):wait().stdout,
+      'should get git branches')
     local branches = vim.split(stdout, "\n", { trimempty = true })
     return {
       branch = {
@@ -151,21 +152,6 @@ K('<Leader>s', ':s///g' .. ('<Left>'):rep(3), { mode = 'v' })
 vim.g.undotree_ShortIndicators = 1
 vim.g.undotree_SetFocusWhenToggle = 1
 K('<leader>u', '<cmd>UndotreeToggle<cr>')
-
-K('<leader>6', ('<cmd>!rm -rf %s/swap %s/shada<cr>'):format(vim.fn.stdpath 'state', vim.fn.stdpath 'state'))
-K('<leader>7', function()
-  local urlpath, querystring = unpack(vim.split(vim.api.nvim_get_current_line(), '?'))
-  if urlpath and querystring then
-    local lines = { urlpath }
-    local queryparams = vim.fn.sort(vim.split(querystring, '&'))
-    for idx, queryparam in ipairs(queryparams) do
-      table.insert(lines, (idx == 1 and '?' or '&') .. queryparam)
-    end
-    vim.api.nvim_buf_set_lines(0, vim.api.nvim_win_get_cursor(0)[1] - 1, -1, false, lines)
-  else
-    vim.cmd [['{,'}s/\n\@<!//g]]
-  end
-end)
 
 AUC('InsertLeave', {
   callback = function(ev) if CHECK_FILE_MODIFIABLE(ev.buf) then vim.cmd 'silent write' end end,
