@@ -59,17 +59,6 @@ function AUC(ev, opts)
   vim.api.nvim_create_autocmd(ev, opts)
 end
 
-NVIM_DATA = vim.fn.stdpath 'data'
-if type(NVIM_DATA) == 'table' then NVIM_DATA = NVIM_DATA[1] end
-NVIM_CONF = vim.fn.stdpath 'config'
-NVIM_CONF = assert(vim.uv.fs_realpath(type(NVIM_CONF) == 'string' and NVIM_CONF or NVIM_CONF[1]),
-  'should find nvim config')
-
-if vim.uv.os_uname().sysname:find 'Windows' then
-  vim.uv.os_setenv('PATH',
-    os.getenv 'PATH' .. [[;\Program Files\Git\usr\bin;]])
-end
-
 CHECK_FILE_MODIFIABLE = function(bufnr, nowait_ft_detect)
   return vim.api.nvim_get_option_value('modifiable', { buf = bufnr })
       and vim.api.nvim_get_option_value('buftype', { buf = bufnr }) == ''
@@ -247,7 +236,7 @@ end, { nargs = 1 })
 CMD('GetLatestAwsmNvim', function()
   local awsm_nvim_diff_file = vim.fs.find(function(name)
     return name:find '%w+%.%.%w+%.diff' and true or false
-  end, { path = NVIM_DATA, type = 'file' })[1]
+  end, { path = vim.fn.stdpath 'data', type = 'file' })[1]
 
   local stat = vim.uv.fs_stat(awsm_nvim_diff_file)
   local date = vim.fn.strftime('%Y-%m-%d', stat and stat.mtime.sec or os.time())
@@ -263,10 +252,10 @@ CMD('GetLatestAwsmNvim', function()
 
       vim.system(
         { 'curl', '-LO', 'http://github.com/rockerBOO/awesome-neovim/compare/' .. tail_fname },
-        { cwd = NVIM_DATA },
+        { cwd = vim.fn.stdpath 'data' },
         function(diff_data)
           assert(diff_data.code == 0, 'awesome-neovim diff failed')
-          vim.schedule(function() vim.cmd.tabe(NVIM_DATA .. tail_fname) end)
+          vim.schedule(function() vim.cmd.tabe(vim.fn.stdpath 'data' .. tail_fname) end)
         end)
     end)
 end, {})

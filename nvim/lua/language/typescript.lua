@@ -233,27 +233,27 @@ require 'typescript-tools'.setup {
   }
 }
 
--- curl -sL "https://github.com/microsoft/vscode-js-debug/releases/download/v1.93.0/js-debug-dap-v1.93.0.tar.gz" | tar xvzf - -C NVIM_DATA
+-- curl -sL "https://github.com/microsoft/vscode-js-debug/releases/download/v1.93.0/js-debug-dap-v1.93.0.tar.gz" | tar xvzf - -C vim.fn.stdpath'data'
 -- for /f "tokens=5" %a in ('netstat -ano ^| findstr "LISTENING" ^| findstr ":8123"') do @taskkill /F /PID %a
 dap.adapters['pwa-node'] = {
   type = "server",
   host = "127.0.0.1",
   port = 8123,
-  executable = { command = "node", args = { NVIM_DATA .. '/js-debug/src/dapDebugServer.js' } }
+  executable = { command = "node", args = { vim.fn.stdpath 'data' .. '/js-debug/src/dapDebugServer.js' } }
   -- port = "${port}",
-  -- executable = { command = "node", args = { NVIM_DATA .. '/js-debug/src/dapDebugServer.js', '${port}' } }
+  -- executable = { command = "node", args = { vim.fn.stdpath'data' .. '/js-debug/src/dapDebugServer.js', '${port}' } }
 }
 
 dap.adapters['pwa-chrome'] = {
   type = 'server',
   port = '${port}',
-  executable = { command = "node", args = { NVIM_DATA .. '/js-debug/src/dapDebugServer.js', '${port}' } }
+  executable = { command = "node", args = { vim.fn.stdpath 'data' .. '/js-debug/src/dapDebugServer.js', '${port}' } }
 }
 -- git clone --depth 1 https://github.com/Microsoft/vscode-chrome-debug && npm i && npm run build
 dap.adapters.chrome = {
   type = "executable",
   command = "node",
-  args = { NVIM_DATA .. "/vscode-chrome-debug/out/src/chromeDebug.js" }
+  args = { vim.fn.stdpath 'data' .. "/vscode-chrome-debug/out/src/chromeDebug.js" }
 }
 
 for _, ext in ipairs(exts_js) do

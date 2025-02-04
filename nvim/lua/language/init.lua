@@ -481,10 +481,5 @@ require 'lspconfig'.pylyzer.setup {}
 
 -- https://github.com/nanotee/sqls.nvim/
 -- https://github.com/sqls-server/sqls
-LS.sqls = {
-  cmd = { NVIM_DATA .. '/sqls' },
-  filetypes = { 'sql' }
-}
-
-for k, v in pairs(LS) do vim.lsp.config[k] = v end
-vim.lsp.enable(vim.fn.keys(LS))
+require 'lspconfig'.sqls.setup {}
+-- https://github.com/hat0uma/csvview.nvim
