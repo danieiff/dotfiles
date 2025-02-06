@@ -389,11 +389,7 @@ require 'lspconfig'.pylsp.setup {
 
 require 'lspconfig'.solidity_ls_nomicfoundation.setup {}
 
-LS.bashls = {
-  cmd = { "bash-language-server", "start" },
-  filetypes = { "sh" },
-  single_file_support = true
-}
+require 'lspconfig'.bashls.setup {}
 
 dap.adapters.bashdb = {
   type = 'executable',
@@ -427,16 +423,13 @@ dap.configurations.sh = {
 require 'lspconfig'.ruby_lsp.setup {}
 require 'dap-ruby'.setup() -- gem install rdbg rspec
 
-LS.lua_ls = {
-  cmd = { 'lua-language-server' },
+require 'lspconfig'.lua_ls.setup {
   settings = {
     Lua = {
-      runtime = { version = 'LuaJIT' },
       workspace = { checkThirdParty = false, library = { vim.env.VIMRUNTIME, "${3rd}/luv/library" }
       }
     }
-  },
-  filetypes = { 'lua' }
+  }
 }
 
 dap.adapters.php = {
@@ -455,9 +448,8 @@ dap.configurations.php = {
   }
 }
 
-LS.phpls = {
+require 'lspconfig'.intelephense.setup {
   -- cmd = { 'node', 'bmewburn.vscode-intelephense-client-1.10.4/node_modules/intelephense/lib/intelephense.js', '--stdio' },
-  cmd = { 'intelephense', '--stdio' },
   settings = {
     intelephense = {
       environment = {
@@ -467,8 +459,7 @@ LS.phpls = {
         }
       }
     }
-  },
-  filetypes = { 'php' }
+  }
 }
 
 -- https://github.com/alexpasmantier/pymple.nvim

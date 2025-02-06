@@ -339,13 +339,13 @@ AUC('FileType', {
       K("<leader>aa", function()
         local command = vim.bo.ft == 'html' and 'angular/getComponentsWithTemplateFile' or
             vim.bo.ft == 'typescript' and 'angular/getTemplateLocationForComponent' or ''
-        client.request(command, vim.lsp.util.make_position_params(0, 'utf-8'),
+        client:request(command, vim.lsp.util.make_position_params(0, 'utf-8'),
           function(_, result) vim.lsp.util.show_document(#result and result[1] or result, 'utf-8') end, 0)
       end)
 
       local buffer, _uri, ns
       K("<leader>aT", function()
-        client.request('angular/getTcb', vim.lsp.util.make_position_params(0, 'utf-8'), function(_, result)
+        client:request('angular/getTcb', vim.lsp.util.make_position_params(0, 'utf-8'), function(_, result)
           local uri, content, ranges = result.uri, result.content, result.selections
 
           if not buffer or not vim.api.nvim_buf_is_loaded(buffer) then

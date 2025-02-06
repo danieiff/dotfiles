@@ -20,6 +20,10 @@ require 'iron.core'.setup {
   },
 }
 
+K('<leader>ii', '<cmd>IronRepl<cr>')
+K('<leader>iw', '<cmd>IronWatch file<cr>')
+K('<leader>ir', '<cmd>IronRestart<cr>')
+
 K('<leader>..', function()
   local lines = vim.fn.mode() == 'n' and { vim.fn.getline '.' } or
       vim.fn.getregion(vim.fn.getpos 'v', vim.fn.getpos '.', { type = vim.fn.mode() })
