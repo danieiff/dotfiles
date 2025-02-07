@@ -1,9 +1,29 @@
-LS = {}
+local builtin_ts_parsers = { 'lua', 'vim', 'vimdoc', 'markdown', 'markdown_inline', 'c' }
+for _, lang in ipairs(builtin_ts_parsers) do
+  vim.treesitter.language.add(lang, { path = vim.fn.getenv 'VIM' .. '/../../lib/nvim/parser/' .. lang .. '.so' })
+end
+require "nvim-treesitter.configs".setup {
+  sync_install = false,
+  auto_install = true,
+  ensure_installed = {},
+  ignore_install = builtin_ts_parsers,
+  modules = {},
+  highlight = { enable = true },
+  incremental_selection = {
+    enable = true,
+    keymaps = {
+      init_selection = "<cr>",
+      node_incremental = "<cr>",
+      scope_incremental = "<leader><cr>",
+      node_decremental = "<bs>"
+    }
+  }
+}
+
+require 'mason'.setup {}
 
 AUC('FileType',
   { pattern = { 'json', 'jsonc', 'yaml', 'python', 'c', 'cpp', 'java', 'go' }, command = 'setlocal tabstop=4' })
-
-require 'mason'.setup {}
 
 require 'language.repl'
 require 'language.web'
