@@ -56,7 +56,7 @@ CMD = vim.api.nvim_create_user_command
 local default_group = vim.api.nvim_create_augroup('default', { clear = true })
 function AUC(ev, opts)
   if not opts.group then opts.group = default_group end
-  vim.api.nvim_create_autocmd(ev, opts)
+  return vim.api.nvim_create_autocmd(ev, opts)
 end
 
 CHECK_FILE_MODIFIABLE = function(bufnr, nowait_ft_detect)

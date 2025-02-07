@@ -14,8 +14,9 @@ AUC('VimEnter', {
   nested = true,
   callback = function()
     local vim_argv = vim.fn.argv()
-    if pcall(vim.api.nvim_exec2, 'silent source ' .. get_session_path(), {}) then
-      AUC('VimLeave', { command = 'silent mksession! ' .. get_session_path() })
+    local auc_id = AUC('VimLeave', { command = 'silent mksession! ' .. get_session_path() })
+    if not pcall(vim.api.nvim_exec2, 'silent source ' .. get_session_path(), {}) then
+      vim.api.nvim_del_autocmd(auc_id)
     end
     for _, path in ipairs(type(vim_argv) == 'table' and vim_argv or { vim_argv }) do
       vim.cmd.tabedit(path)
