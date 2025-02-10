@@ -1,21 +1,6 @@
-local function edgy_help_win_filter(pos)
-  return function(bufnr)
-    if vim.fn.bufname(bufnr) == '_FzfLuaHelp' then
-      return false
-    end
-
-    local is_only_win = #vim.tbl_filter(function(win)
-      return CHECK_FILE_MODIFIABLE(vim.api.nvim_win_get_buf(win))
-    end, vim.api.nvim_tabpage_list_wins(0)) >= 1
-    local has_width = (pos == 'top' and vim.o.columns < 180) or (pos ~= 'top' and vim.o.columns >= 180)
-    return is_only_win and has_width
-  end
-end
-
 local edgy_opts = {
   top = {
     { ft = "man",          filter = function(_, win) return not vim.w[win].fzf_lua_preview end },
-    { ft = "help",         filter = edgy_help_win_filter 'top' },
     { ft = 'OverseerList', size = { width = 0.2, height = 0.5 } },
     { ft = '',             filter = function(buf) return vim.b[buf].overseer_task end },
   },
@@ -31,11 +16,33 @@ local edgy_opts = {
     'neotest-summary',
     'undotree',
     { ft = 'diff', filter = function(buf) return vim.b[buf].isUndotreeBuffer end },
-    { ft = "help", size = { width = 80 },                                        filter = edgy_help_win_filter 'left' },
+    {
+      ft = "help",
+      size = { width = 80 },
+      filter = function(bufnr)
+        if vim.fn.bufname(bufnr) == '_FzfLuaHelp' then return false end
+
+        local is_only_win = #vim.tbl_filter(function(win)
+          return CHECK_FILE_MODIFIABLE(vim.api.nvim_win_get_buf(win))
+        end, vim.api.nvim_tabpage_list_wins(0)) <= 1
+
+        return not is_only_win
+      end
+    },
   },
   right = {
     { ft = 'aerial',   pinned = true,         open = require 'aerial'.toggle },
-    { ft = 'NvimTree', pinned = true,         open = require 'nvim-tree.api'.tree.toggle },
+    {
+      ft = 'NvimTree',
+      pinned = true,
+      open = require 'nvim-tree.api'.tree.toggle,
+      filter = function()
+        local is_only_win = #vim.tbl_filter(function(win)
+          return CHECK_FILE_MODIFIABLE(vim.api.nvim_win_get_buf(win))
+        end, vim.api.nvim_tabpage_list_wins(0)) <= 1
+        return not is_only_win
+      end
+    },
     { ft = 'grug-far', size = { width = 0.4 } },
   },
   options = {

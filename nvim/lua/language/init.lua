@@ -22,8 +22,8 @@ require "nvim-treesitter.configs".setup {
 
 require 'mason'.setup {}
 
-AUC('FileType',
-  { pattern = { 'json', 'jsonc', 'yaml', 'python', 'c', 'cpp', 'java', 'go' }, command = 'setlocal tabstop=4' })
+AUC('FileType', { pattern = { 'json', 'jsonc', 'yaml', 'c', 'cpp', 'java', 'go' }, command = 'setlocal tabstop=4' })
+AUC('FileType', { pattern = 'xml', command = 'setlocal formatexpr=xmlformat#Format()' })
 
 require 'language.repl'
 require 'language.web'
