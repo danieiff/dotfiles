@@ -33,7 +33,9 @@ local ft_layouts = {
     pos = 'left'
   },
   diff = {
-    pos = 'left', filter = function(buf) return vim.b[buf].isUndotreeBuffer end
+    pos = 'left',
+    height = 15,
+    filter = function(buf) return vim.b[buf].isUndotreeBuffer end
   },
   help = {
     pos = 'left',
@@ -43,7 +45,7 @@ local ft_layouts = {
 
       local is_only_win = #vim.tbl_filter(function(win)
         return CHECK_FILE_MODIFIABLE(vim.api.nvim_win_get_buf(win))
-      end, vim.api.nvim_tabpage_list_wins(0)) <= 1
+      end, vim.api.nvim_tabpage_list_wins(0)) < 1
 
       return not is_only_win
     end
@@ -75,75 +77,78 @@ local ft_layouts = {
 
 LAYOUTS = {}
 
-AUC({ 'BufWinEnter', 'WinResized', 'FileType' }, {
+local function get_size(size, is_vertical)
+  return math.floor(size > 1 and size or ((is_vertical and (vim.o.lines - 2) or vim.o.columns) * size))
+end
+
+AUC({ 'BufWinEnter', 'WinResized' }, {
   desc = 'layout side windows',
   group = vim.api.nvim_create_augroup('SideWindowLayout', { clear = true }),
   callback = function(ev)
-    if vim.b[ev.buf].overseer_task then
-      vim.b[ev.buf].filetype = 'overseer_task'
-    end
-    if vim.v.exiting ~= vim.NIL or vim.fn.getcmdwintype() ~= "" or vim.bo[ev.buf].ft == '' then
+    if vim.v.exiting ~= vim.NIL or vim.fn.getcmdwintype() ~= "" or vim.bo[ev.buf].filetype == '' then
       return
     end
 
     local current_tabpage = vim.api.nvim_get_current_tabpage()
     LAYOUTS[current_tabpage] = LAYOUTS[current_tabpage] or { top = {}, bottom = {}, left = {}, right = {} }
 
-    local wins = vim.api.nvim_tabpage_list_wins(current_tabpage)
-
-    for _, win in ipairs(wins) do
+    for _, win in ipairs(vim.api.nvim_tabpage_list_wins(current_tabpage)) do
       local buf = vim.api.nvim_win_get_buf(win)
       local layout = ft_layouts[vim.bo[buf].filetype]
+      if vim.b[buf].overseer_task then
+        layout = ft_layouts['overseer_task']
+      end
       if layout and not vim.w[win].side_layout and (type(layout.filter) ~= 'function' or layout.filter(buf, win)) then
-        local pos = type(layout.pos) == 'function' and layout.pos() or layout.pos
-
-        local layout_success = true
-        local last_side = LAYOUTS[current_tabpage][pos][#LAYOUTS[current_tabpage][pos]]
-        if not last_side then
-          vim.api.nvim_win_call(win,
-            function() vim.cmd('wincmd ' .. ({ left = 'H', right = 'L', top = 'K', bottom = 'J' })[pos]) end)
-        else
-          layout_success = pcall(vim.fn.win_splitmove, win, last_side.win,
-            { vertical = pos == 'top' or pos == 'bottom', rightbelow = true })
-        end
-        if layout_success then
-          table.insert(LAYOUTS[current_tabpage][pos], { win = win, width = layout.width, height = layout.height })
-          vim.w[win].side_layout = pos
-        else
-          vim.notify('Failed to layout ' .. win .. ' next to ' .. last_side.win, vim.log.levels.WARN)
-        end
+        local pos = type(layout.pos) == 'function' and layout.pos(win) or layout.pos
+        table.insert(LAYOUTS[current_tabpage][pos], { win = win, width = layout.width, height = layout.height })
+        vim.w[win].side_layout = pos
       end
     end
 
-    for pos, layouts in pairs(LAYOUTS[current_tabpage]) do
+    for _, pos in ipairs { 'top', 'bottom', 'left', 'right' } do
+      local layouts                 = LAYOUTS[current_tabpage][pos]
       local is_vertical             = pos == 'top' or pos == 'bottom'
-      local main_size               = pos == 'top' and 0.5 or 0.2
-      main_size                     = math.ceil(main_size > 1 and main_size or
-        ((is_vertical and (vim.o.lines - 2) or vim.o.columns) * main_size))
+      local main_size               = get_size(pos == 'top' and 0.5 or 0.2, is_vertical)
       local main_size_key           = is_vertical and 'height' or 'width'
       local cross_size_key          = is_vertical and 'width' or 'height'
       local available_cross_size    =
           (is_vertical and vim.o.columns or (vim.o.lines - 2)) - (#LAYOUTS[current_tabpage][pos] - 1)
       local rest_distribution_cnt   = #LAYOUTS[current_tabpage][pos]
 
+      local last_side
       LAYOUTS[current_tabpage][pos] = vim.tbl_filter(function(w)
         if vim.api.nvim_win_is_valid(w.win) then
-          main_size = math.max(main_size, w[main_size_key] or 0)
-          available_cross_size = available_cross_size - (w[cross_size_key] or 0)
+          local layout_success = true
+          if not last_side then
+            vim.api.nvim_win_call(w.win,
+              function() vim.cmd.wincmd(({ left = 'H', right = 'L', top = 'K', bottom = 'J' })[pos]) end)
+          else
+            layout_success = pcall(vim.fn.win_splitmove, w.win, last_side.win,
+              { vertical = pos == 'top' or pos == 'bottom', rightbelow = true })
+          end
+          if layout_success then
+            last_side = w
+          else
+            vim.notify('Failed to layout ' .. w.win .. ' next to ' .. last_side.win, vim.log.levels.WARN)
+          end
+
+          main_size = math.max(main_size, get_size(w[main_size_key] or 0, is_vertical))
+          available_cross_size = available_cross_size - get_size(w[cross_size_key] or 0, not is_vertical)
           rest_distribution_cnt = rest_distribution_cnt - (w[cross_size_key] and 1 or 0)
+
           return true
         end
         return false
       end, layouts)
 
       local rest_cross_size         = rest_distribution_cnt == 0 and 0 or
-          math.ceil(available_cross_size / rest_distribution_cnt)
+          math.floor(available_cross_size / rest_distribution_cnt)
 
       for i, w in ipairs(LAYOUTS[current_tabpage][pos]) do
         if i == 1 then
           vim.api['nvim_win_set_' .. main_size_key](w.win, main_size)
         end
-        vim.api['nvim_win_set_' .. cross_size_key](w.win, w[cross_size_key] or rest_cross_size)
+        vim.api['nvim_win_set_' .. cross_size_key](w.win, get_size(w[cross_size_key] or rest_cross_size, not is_vertical))
       end
     end
   end
@@ -190,7 +195,6 @@ AUC('WinEnter', {
     local side_size_bottom = vim.tbl_get(vim.t, 'side_sizes', 'bottom') or 0
     local side_size_left = vim.tbl_get(vim.t, 'side_sizes', 'left') or 0
     local side_size_right = vim.tbl_get(vim.t, 'side_sizes', 'right') or 0
-
     local other_horizontal_splits_cnt = #horizontal_splits - 1
     if other_horizontal_splits_cnt > 0 then
       local main_height = editor_height - other_horizontal_splits_cnt - side_size_top - side_size_bottom
