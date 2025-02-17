@@ -81,7 +81,7 @@ local function get_size(size, is_vertical)
   return math.floor(size > 1 and size or ((is_vertical and (vim.o.lines - 2) or vim.o.columns) * size))
 end
 
-AUC({ 'BufWinEnter', 'WinResized' }, {
+AUC('WinResized', {
   desc = 'layout side windows',
   group = vim.api.nvim_create_augroup('SideWindowLayout', { clear = true }),
   callback = function(ev)
