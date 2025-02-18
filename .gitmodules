@@ -169,3 +169,6 @@
 [submodule "nvim/pack/required/start/iron.nvim"]
 	path = nvim/pack/required/start/iron.nvim
 	url = https://github.com/Vigemus/iron.nvim
+[submodule "nvim/pack/opt/start/rainbow_csv"]
+	path = nvim/pack/opt/start/rainbow_csv
+	url = https://github.com/mechatroner/rainbow_csv
