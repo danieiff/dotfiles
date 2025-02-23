@@ -145,9 +145,6 @@
 [submodule "nvim/pack/required/start/trouble.nvim"]
 	path = nvim/pack/required/start/trouble.nvim
 	url = https://github.com/folke/trouble.nvim
-[submodule "nvim/pack/required/start/nvim-bqf"]
-	path = nvim/pack/required/start/nvim-bqf
-	url = https://github.com/kevinhwang91/nvim-bqf
 [submodule "nvim/pack/required/start/fzf-lua"]
 	path = nvim/pack/required/start/fzf-lua
 	url = https://github.com/ibhagwan/fzf-lua

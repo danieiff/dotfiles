@@ -97,8 +97,44 @@ end)
 
 K('g^', function() require 'treesitter-context'.go_to_context(vim.v.count1) end)
 
-require 'trouble'.setup {}
-require 'bqf'.setup {}
+require 'trouble'.setup {
+  modes = {
+    preview_float = {
+      mode = "diagnostics",
+      preview = {
+        type = "float",
+        relative = "editor",
+        border = "rounded",
+        title = "Preview",
+        title_pos = "center",
+        position = { 0, -2 },
+        size = { width = 0.3, height = 0.3 },
+        zindex = 200,
+      },
+    },
+    test = {
+      mode = "diagnostics",
+      preview = {
+        type = "split",
+        relative = "win",
+        position = "right",
+        size = 0.3,
+      },
+    },
+  },
+}
+
+AUC("FileType", {
+  group = vim.api.nvim_create_augroup("TroubleQuickfix", { clear = true }),
+  pattern = { 'qf' },
+  callback = function(ev)
+    -- if vim.bo[ev.buf].buftype == "quickfix" then
+    vim.schedule(function()
+      vim.cmd 'cclose | Trouble qflist open'
+    end)
+  end
+  -- end,
+})
 
 require 'aerial'.setup {
   filter_kind = false,
