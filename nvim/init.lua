@@ -233,52 +233,7 @@ CMD('GitSubmoduleAddVimPlugin', function(arg)
     end)
 end, { nargs = 1 })
 
-CMD('GetLatestAwsmNvim', function()
-  local awsm_nvim_diff_file = vim.fs.find(function(name)
-    return name:find '%w+%.%.%w+%.diff' and true or false
-  end, { path = vim.fn.stdpath 'data', type = 'file' })[1]
-
-  local stat = vim.uv.fs_stat(awsm_nvim_diff_file)
-  local date = vim.fn.strftime('%Y-%m-%d', stat and stat.mtime.sec or os.time())
-
-  vim.system({ 'curl', '-sS', 'https://api.github.com/repos/rockerBOO/awesome-neovim/commits?since=' .. date }, {},
-    function(data)
-      local json_ok, json = pcall(vim.json.decode, data.stdout)
-      assert(data.code == 0 and json_ok, 'get commit id with specific date ' .. (data.stderr or data.stdout))
-      if #json == 0 then vim.schedule(function() vim.notify 'awesome-neovim has no diff' end) end
-
-      local tail_fname = ('%s..%s.diff'):format((awsm_nvim_diff_file):match('%.%.(%w+)%.') or json[#json].sha,
-        json[1].sha)
-
-      vim.system(
-        { 'curl', '-LO', 'http://github.com/rockerBOO/awesome-neovim/compare/' .. tail_fname },
-        { cwd = vim.fn.stdpath 'data' },
-        function(diff_data)
-          assert(diff_data.code == 0, 'awesome-neovim diff failed')
-          vim.schedule(function() vim.cmd.tabe(vim.fn.stdpath 'data' .. tail_fname) end)
-        end)
-    end)
-end, {})
-
-CMD('Dotfyle', function()
-  vim.system({ 'curl', 'https://dotfyle.com/this-week-in-neovim/rss.xml' }, {}, function(data)
-    local rss_items = assert(vim.tbl_get(require 'xml2lua'.parse(data.stdout) or {}, 'rss', 'channel', 'item'),
-      'failed to parse dotfyle rss.xml: ' .. data.stderr)
-    vim.schedule(function()
-      local items = vim.tbl_filter(function(item)
-        return os.difftime(
-          vim.fn.strptime('%d %b %Y %T', ('Tue, 23 Jul 2024 19:51:25 GMT'):match(', (.*) GMT')), -- last time
-          vim.fn.strptime('%d %b %Y %T', item.pubDate:match(', (.*) GMT'))
-        ) > 0
-      end, rss_items)
-
-      local file = assert(io.open('a.css', 'a'), 'should open file to write')
-      file:write(vim.json.encode(items))
-      file:close()
-    end)
-  end)
-end, {})
-
+require 'news'
 require 'language'
 require 'git'
 require 'code_assist'
