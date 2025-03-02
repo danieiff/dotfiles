@@ -41,7 +41,8 @@ if vim.uv.os_uname().sysname:find 'Windows' then
   -- winget install git.git zig.zig Neovim.Neovim.Nightly BurntSushi.ripgrep.MSVC
   -- git clone --depth 1 https://github.com/danieiff/dotfiles --recurse-submodules --shallow-submodules --jobs 100
   -- New-Item -Path $ENV:LOCALAPPDATA/nvim -ItemType SymbolicLink -Value dotfiles/nvim
-  vim.uv.os_setenv('PATH', os.getenv 'PATH' .. [[;\Program Files\Git\usr\bin;]])
+  vim.fn.setenv('LANG', 'en_US.UTF-8')
+  vim.env.PATH = vim.env.PATH .. [[;\Program Files\Git\usr\bin;]]
 end
 
 K = function(lhs, rhs, opts)

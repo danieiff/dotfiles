@@ -79,7 +79,12 @@ require 'blink.cmp'.setup {
   completion = {
     documentation = { auto_show = true }
   },
-  signature = { enabled = true }
+  signature = { enabled = true },
+  fuzzy = {
+    prebuilt_binaries = {
+      force_version = 'v0.8.0'
+    }
+  }
 }
 
 local neocodeium = require 'neocodeium'
