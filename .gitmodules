@@ -169,3 +169,12 @@
 [submodule "nvim/pack/opt/start/rainbow_csv"]
 	path = nvim/pack/opt/start/rainbow_csv
 	url = https://github.com/mechatroner/rainbow_csv
+[submodule "nvim/pack/opt/start/crates.nvim"]
+	path = nvim/pack/opt/start/crates.nvim
+	url = https://github.com/saecki/crates.nvim
+[submodule "nvim/pack/opt/start/rustaceanvim"]
+	path = nvim/pack/opt/start/rustaceanvim
+	url = https://github.com/mrcjkb/rustaceanvim
+[submodule "nvim/pack/opt/start/neotest-rust"]
+	path = nvim/pack/opt/start/neotest-rust
+	url = https://github.com/rouge8/neotest-rust
