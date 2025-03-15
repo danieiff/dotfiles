@@ -1,45 +1,14 @@
 vim.loader.enable()
---[[
-<C-w>T
-:.!ls
-:h complex-change
-:{range}![!]{filter} [!][arg]
-ls is the {filter} program. The filter program accepts the text of the current line at standard input.
-If there is no intention to send anything to the command, it would be better to run this on an empty line.
-!!{filter} is a quick way of entering the same sequence.
 
-:let @a = system("ls -ltr")
+-- git clone --depth 1 https://github.com/danieiff/dotfiles --recurse-submodules --shallow-submodules --jobs 50
 
-!! in normal mode -> :.! -> :.!ls<cr> -> puts cmd result to current line
-
-<C-g> <C-t> in search mode
-
-[<space> ]<space> inserts an empty line below/above the current line
-
-[] + i I <c-i>
-
-diagraphs: hvudrl
-・.6 ┆ 3! ┈ 4- ┊ 4!
-─ hh ━ HH │ vv ┃ VV
-┌ dr ┍ dR ┎ Dr ┏ DR
-┐ dl ┑ dL ┒ Dl ┓ LD
-└ ur ┕ uR ┖ Ur ┗ UR
-┘ ul ┙ uL ┚ Ul ┛ UL
-├ vr ┝ vR ┠ Vr ┣ VR
-┤ vl ┥ vL ┨ Vl ┫ VL
-┬ dh ┯ dH ┰ Dh ┳ DH
-┴ uh ┷ uH ┸ Uh ┻ UH
-┼ vh ┿ vH ╂ Vh ╋ VH
-
-curl https://mise.run | sh
-mise use -g zig@0.10 node zellij neovim yq ripgrep github-cli
-[ -d ~/dotfiles ] || git clone --depth 1 https://github.com/danieiff/dotfiles ~ --recurse-submodules --shallow-submodules --jobs 100
-ln -s ~/dotfiles/nvim ${XDG_CONFIG_HOME:-~/.config}
-]]
+-- curl https://mise.run | sh
+-- mise use -g zig node neovim@nightly yq ripgrep github-cli fzf
+-- ln -s ~/dotfiles/nvim ${XDG_CONFIG_HOME:-~/.config}
 
 if vim.uv.os_uname().sysname:find 'Windows' then
-  -- winget install git.git zig.zig Neovim.Neovim.Nightly BurntSushi.ripgrep.MSVC
-  -- git clone --depth 1 https://github.com/danieiff/dotfiles --recurse-submodules --shallow-submodules --jobs 100
+  -- winget install git.git jdx.mise
+  -- mise use -g zig node neovim@nightly yq ripgrep github-cli fzf
   -- New-Item -Path $ENV:LOCALAPPDATA/nvim -ItemType SymbolicLink -Value dotfiles/nvim
   vim.fn.setenv('LANG', 'en_US.UTF-8')
   vim.env.PATH = vim.env.PATH .. [[;\Program Files\Git\usr\bin;]]
@@ -51,15 +20,12 @@ K = function(lhs, rhs, opts)
   opts.mode = nil
   vim.keymap.set(mode, lhs, rhs, opts)
 end
-HL = vim.api.nvim_set_hl
 CMD = vim.api.nvim_create_user_command
-
 local default_group = vim.api.nvim_create_augroup('default', { clear = true })
-function AUC(ev, opts)
-  if not opts.group then opts.group = default_group end
+AUC = function(ev, opts)
+  opts.group = opts.group or default_group
   return vim.api.nvim_create_autocmd(ev, opts)
 end
-
 CHECK_FILE_MODIFIABLE = function(bufnr, nowait_ft_detect)
   return vim.api.nvim_get_option_value('modifiable', { buf = bufnr })
       and vim.api.nvim_get_option_value('buftype', { buf = bufnr }) == ''
@@ -68,13 +34,19 @@ CHECK_FILE_MODIFIABLE = function(bufnr, nowait_ft_detect)
       and vim.api.nvim_buf_get_name(bufnr) ~= ''
 end
 
-for k, v in pairs {
-  autowriteall = true, undofile = true,
-  grepprg = 'rg --vimgrep', ignorecase = true, smartcase = true,
-  tabstop = 2, shiftwidth = 0, expandtab = true,
-  fixendofline = false, scrolloff = 2,
-  foldenable = false, foldmethod = 'expr', foldexpr = 'v:lua.vim.treesitter.foldexpr()', foldtext = ''
-} do vim.o[k] = v end -- Reset :set option&
+vim.o.autowriteall = true
+vim.o.undofile = true
+vim.o.ignorecase = true
+vim.o.smartcase = true
+vim.o.tabstop = 2
+vim.o.shiftwidth = 0
+vim.o.expandtab = true
+vim.o.fixendofline = false
+vim.o.foldenable = false
+vim.o.foldmethod = 'expr'
+vim.o.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
+vim.o.foldtext = ''
+-- Reset :set option&
 
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ','
@@ -86,10 +58,10 @@ K('jk', '<c-\\><c-n>', { mode = { 'i', 'c', 't' } })
 
 K("<esc>", "<cmd>nohl<cr>")
 K('<leader><esc>', '<cmd>qa<cr>')
-K('0<esc>', ('<cmd>!rm -rf %s/swap %s/shada<cr>'):format(vim.fn.stdpath 'state', vim.fn.stdpath 'state'))
+K('<bs><esc>', ('<cmd>!rm -rf %s/swap %s/shada<cr>'):format(vim.fn.stdpath 'state', vim.fn.stdpath 'state'))
 
-K('yY', '<cmd>let @+=@%<cr>')
-K('yr', require 'fzf-lua'.registers)
+K('y%', '<cmd>let @+=@%<cr>')
+K('yY', require 'fzf-lua'.registers)
 
 K('<leader> ', require 'fzf-lua'.resume)
 K('<leader>c', require 'fzf-lua'.commands)
@@ -230,7 +202,7 @@ CMD('GitSubmoduleAddVimPlugin', function(arg)
     { cwd = vim.fn.fnamemodify(vim.fn.stdpath 'config', ':h') },
     function(data)
       assert(data.code == 0, 'git submodule add ' .. arg.args .. ' failed: ' .. data.stderr)
-      vim.schedule(function() vim.cmd('set runtimepath& | runtime! plugin/**/*.{vim,lua} | helptags ALL') end)
+      vim.schedule(function() vim.cmd('set runtimepath& | runtime! PACK plugin/**/*.{vim,lua} | helptags ALL') end)
     end)
 end, { nargs = 1 })
 

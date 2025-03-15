@@ -25,7 +25,10 @@ local data_list = {
     callback = function(t, d)
       local new_entry = {}
       for _, item in ipairs(t.data.children) do
-        if os.difftime(d, item.data.created) < 0 then
+        if os.difftime(d, item.data.created) < 0
+            and not item.data.link_flair_text:find 'Need Help'
+            and not item.data.link_flair_text:find '101 Questions'
+        then
           vim.list_extend(new_entry,
             { '- ' .. item.data.title, unpack(vim.split(item.data.selftext, '\n')), item.data.url, '' })
         end
@@ -67,37 +70,35 @@ local data_list = {
 
 CMD('News',
   function()
-    local now = os.time()
-    local dt_10_days_ago = os.date(dt_fmt, now - 864000) .. ''
-
     local file = vim.uv.os_homedir() .. '/nav.md'
     vim.cmd.tabe(file)
-
     local buf = vim.api.nvim_get_current_buf()
     local lines = vim.api.nvim_buf_get_lines(buf, 0, -1, false)
 
-    if vim.fn.strptime(dt_fmt, lines[1]) == 0 then
-      vim.api.nvim_buf_set_lines(buf, 0, 0, false, { dt_10_days_ago })
-      table.insert(lines, 1, dt_10_days_ago)
-    end
+    local now = os.time()
+    local dt = vim.fn.strptime(dt_fmt, lines[1]) ~= 0 and lines[1] or os.date(dt_fmt, now - 864000) .. '' -- 10 days ago
+    vim.api.nvim_buf_set_lines(buf, 0, 1, false, { os.date(dt_fmt, now) .. '' })
 
     for _, item in ipairs(data_list) do
-      local url = type(item.url) == 'function' and item.url(lines[1]) or item.url
+      local url = type(item.url) == 'function' and item.url(dt) or item.url
       vim.system({ 'curl', url }, {}, vim.schedule_wrap(function(data)
         local stdout = assert(data.code == 0 and data.stdout or nil, 'curl failed ' .. url .. ' ' .. data.stderr)
-        local _, t = pcall(item.type == 'xml' and require 'xml2lua'.parse or vim.json.decode, stdout)
-        local new_entry = item.callback(t, vim.fn.strptime(dt_fmt, lines[1]))
+        local ok, t = pcall(item.type == 'xml' and require 'xml2lua'.parse or vim.json.decode, stdout)
+        if not ok then return vim.notify(stdout, vim.log.levels.ERROR) end
+        local new_entry = item.callback(t, vim.fn.strptime(dt_fmt, dt))
 
         if #new_entry > 0 then
           local title = '## ' .. item.title
           local insert_index = vim.fn.index(vim.api.nvim_buf_get_lines(buf, 0, -1, false), title)
-          vim.api.nvim_buf_set_lines(buf, insert_index, insert_index, false,
-            { insert_index ~= -1 and nil or unpack { title, '' }, unpack(new_entry) })
+          if insert_index == -1 then
+            new_entry = { title, '', unpack(new_entry) }
+          else
+            insert_index = insert_index + 2
+          end
+          vim.api.nvim_buf_set_lines(buf, insert_index, insert_index, false, new_entry)
           vim.cmd 'write'
         end
       end))
     end
-    vim.api.nvim_buf_set_lines(buf, 0, 1, false, { os.date(dt_fmt, now) .. '' })
-    vim.cmd 'write'
   end
   , {})
