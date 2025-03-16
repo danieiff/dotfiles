@@ -69,52 +69,6 @@ K('<leader>C', require 'fzf-lua'.command_history)
 K('<leader>?', require 'fzf-lua'.search_history)
 K('<leader>k', require 'fzf-lua'.keymaps)
 
-local overseer = require 'overseer'
-overseer.setup {}
-
-K('<leader>tt', '":<c-u>OverseerToggle" . (v:count ? "" : "!") . "<cr>"', { expr = true })
-K('<leader>ts', '<cmd>OverseerSaveBundle<cr>')
-K('<leader>tl', '<cmd>OverseerLoadBundle<cr>')
-K('<leader>td', '<cmd>OverseerDeleteBundle<cr>')
-K('<leader>tr', '<cmd>OverseerRun<cr>')
-K('<leader>tC', '<cmd>OverseerRunCmd<cr>')
-K('<Leader>$', '<cmd>OverseerRunCmd ' .. vim.o.shell .. '<cr>')
-K('<leader>ti', '<cmd>OverseerInfo<cr>')
-K('<leader>tb', '<cmd>OverseerBuild<cr>')
-K('<leader>tq', '<cmd>OverseerQuickAction<cr>')
-K('<leader>ta', '<cmd>OverseerTaskAction<cr>')
-K('<leader>tc', '<cmd>OverseerClearCache<cr>')
-
-require 'overseer'.register_template({
-  name = "Git checkout",
-  params = function()
-    local stdout = assert(vim.system({ "git", "branch", "--format=%(refname:short)", "-r" }):wait().stdout,
-      'should get git branches')
-    local branches = vim.split(stdout, "\n", { trimempty = true })
-    return {
-      branch = {
-        desc = "Branch to checkout",
-        type = "enum",
-        choices = branches,
-      },
-    }
-  end,
-  builder = function(params)
-    return {
-      cmd = { "git", "log", params.branch },
-    }
-  end,
-})
-
-require 'grug-far'.setup { resultsHighlight = false }
-K('<leader>S', function() require 'grug-far'.toggle_instance { instanceName = 'grug-far' } end)
-K('<leader>s', ':%s///g' .. ('<Left>'):rep(3))
-K('<Leader>s', ':s///g' .. ('<Left>'):rep(3), { mode = 'v' })
-
-vim.g.undotree_ShortIndicators = 1
-vim.g.undotree_SetFocusWhenToggle = 1
-K('<leader>u', '<cmd>UndotreeToggle<cr>')
-
 AUC('InsertLeave', {
   callback = function(ev) if CHECK_FILE_MODIFIABLE(ev.buf) then vim.cmd 'silent write' end end,
   nested = true
@@ -131,70 +85,7 @@ AUC("BufReadPre", {
   end
 })
 
-local base64 = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
-
-CMD('Base64Encode', function(arg)
-  local data = arg.args
-  local encoded = (data:gsub('.', function(x)
-    local r, b = '', x:byte()
-    for i = 8, 1, -1 do r = r .. (b % 2 ^ i - b % 2 ^ (i - 1) > 0 and '1' or '0') end
-    return r;
-  end) .. '0000'):gsub('%d%d%d?%d?%d?%d?', function(x)
-    if (#x < 6) then return '' end
-    local c = 0
-    for i = 1, 6 do c = c + (x:sub(i, i) == '1' and 2 ^ (6 - i) or 0) end
-    return base64:sub(c + 1, c + 1)
-  end) .. ({ '', '==', '=' })[#data % 3 + 1]
-  vim.print(encoded)
-end, { nargs = 1 })
-
-CMD('Base64Decode', function(arg)
-  local data = arg.args:gsub('[^' .. base64 .. '=]', '')
-  local decoded = (data:gsub('.', function(x)
-    if (x == '=') then return '' end
-    local r, f = '', (base64:find(x) - 1)
-    for i = 6, 1, -1 do r = r .. (f % 2 ^ i - f % 2 ^ (i - 1) > 0 and '1' or '0') end
-    return r;
-  end):gsub('%d%d%d?%d?%d?%d?%d?%d?', function(x)
-    if (#x ~= 8) then return '' end
-    local c = 0
-    for i = 1, 8 do c = c + (x:sub(i, i) == '1' and 2 ^ (8 - i) or 0) end
-    return string.char(c)
-  end))
-
-  vim.print(decoded)
-end, { nargs = 1 })
-
-CMD('UrlEncode', function(arg)
-  local url = arg.args
-  url = url:gsub("\n", "\r\n")
-  url = url:gsub("([^%w ])", function(c) return ('%%%02X'):format(c:byte()) end)
-  url = url:gsub(" ", "+")
-  vim.print(url)
-end, { nargs = 1 })
-
-CMD('UrlDecode', function(arg)
-  local url = arg.args
-  url = url:gsub("+", " ")
-  url = url:gsub("%%(%x%x)", function(x) return tonumber(x, 16) end)
-  vim.print(url)
-end, { nargs = 1 })
-
-CMD('UrlSplitJoin', function()
-  local urlpath, querystring = unpack(vim.split(vim.api.nvim_get_current_line(), '?'))
-  if urlpath and querystring then
-    local lines = { urlpath }
-    local queryparams = vim.fn.sort(vim.split(querystring, '&'))
-    for idx, queryparam in ipairs(queryparams) do
-      table.insert(lines, (idx == 1 and '?' or '&') .. queryparam)
-    end
-    vim.api.nvim_buf_set_lines(0, vim.api.nvim_win_get_cursor(0)[1] - 1, -1, false, lines)
-  else
-    vim.cmd [['{,'}s/\n\@<!//g]]
-  end
-end, {})
-
--- git submodule deinit -f .
+-- git submodule deinit -f
 -- git submodule update --init
 CMD('GitSubmoduleAddVimPlugin', function(arg)
   vim.system(
@@ -213,3 +104,4 @@ require 'code_assist'
 require 'session'
 require 'navigation'
 require 'ui'
+require 'tasks'
