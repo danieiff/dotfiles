@@ -47,16 +47,8 @@ end
 -- TODO: AI code doc comment writing
 require 'neogen'.setup {}
 K('dO',
-  '":<c-u>Neogen" . (v:count == 1 ? "type" : v:count == 2 ? "func" : v:count == 3 ? "class" : v:count == 4 ? "file" : "") . "<cr>"',
-  { expr = true, desc = '1:type, 2:func, 3:class, 4:file, default:auto' })
-
-require 'timber'.setup {
-  log_templates = {
-    default = {
-      lua = [[vim.notify("%filename %line_number %log_target: " .. vim.inspect(%log_target))]]
-    }
-  }
-}
+  '":<c-u>Neogen" . (v:count == 1 ? "file" : v:count == 2 ? "class" : v:count == 3 ? "type" ? "file" : "") . "<cr>"',
+  { expr = true, desc = '1:file, 2:class, 3:4:func, default:auto' })
 
 require 'scissors'.setup()
 
@@ -100,3 +92,14 @@ require 'avante_lib'.load()
 require 'avante'.setup {
   provider = 'openai', openai = { model = 'gpt-4o-mini' }
 }
+
+K('<leader>r', require 'refactoring'.select_refactor)
+K('<leader>ri', function() require 'refactoring'.refactor 'Inline Variable' end, { mode = { "n", "x" } })
+K('<leader>rI', function() require 'refactoring'.refactor 'Inline Function' end)
+K('<leader>rf', function() require 'refactoring'.refactor 'Extract Function' end, { mode = { 'x' } })
+K('<leader>rF', function() require 'refactoring'.refactor 'Extract Function To File' end, { mode = { 'x' } })
+K('<leader>rb', function() require 'refactoring'.refactor 'Extract Block' end)
+K('<leader>rB', function() require 'refactoring'.refactor 'Extract Block To File' end)
+K('<leader>rv', function() require 'refactoring'.refactor 'Extract Variable' end, { mode = { 'x' } })
+K('<leader>rd', require "refactoring".debug.print_var)
+K('<leader>rD', require "refactoring".debug.printf)

@@ -157,9 +157,6 @@
 [submodule "nvim/pack/required/start/nightfox.nvim"]
 	path = nvim/pack/required/start/nightfox.nvim
 	url = https://github.com/EdenEast/nightfox.nvim
-[submodule "nvim/pack/required/start/timber.nvim"]
-	path = nvim/pack/required/start/timber.nvim
-	url = https://github.com/Goose97/timber.nvim
 [submodule "nvim/pack/required/start/refactoring.nvim"]
 	path = nvim/pack/required/start/refactoring.nvim
 	url = https://github.com/ThePrimeagen/refactoring.nvim
