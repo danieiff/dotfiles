@@ -13,21 +13,24 @@ git diff-tree --no-commit-id --name-only -r $1
 ]]
 
 
-K('g;', '<cmd>Neogit kind=floating<cr>')
+K('<c-g><c-g>', '<cmd>Neogit kind=floating<cr>')
 
-K(';D', ':DiffviewFileHistory --follow %<cr>', { mode = { 'n', 'v' } })
-K(';d', function()
-  for _, buf in ipairs(vim.fn.tabpagebuflist()) do
-    if vim.bo[buf].filetype:find 'Diffview' then
-      vim.cmd 'DiffviewClose'
-      return vim.cmd 'tabp'
-    end
+K('<c-g>f', function()
+  if vim.t.diffview_view_initialized then
+    vim.cmd 'DiffviewClose'
+    vim.cmd 'tabp'
+  else
+    vim.cmd ':DiffviewFileHistory --follow %'
   end
-  vim.cmd 'DiffviewOpen'
+end, { mode = { 'n', 'v' } })
+K('<c-g>d', function()
+  if vim.t.diffview_view_initialized then
+    vim.cmd 'DiffviewClose'
+    vim.cmd 'tabp'
+  else
+    vim.cmd 'DiffviewOpen'
+  end
 end)
-
-K('<leader>gb', require 'fzf-lua'.git_branches)
-K('<leader>gs', require 'fzf-lua'.git_stash)
 
 local gs = require 'gitsigns'
 gs.setup {
@@ -51,16 +54,16 @@ gs.setup {
           gs.nav_hunk 'prev'
         end
       end },
-      { 'Hs', gs.stage_hunk },
-      { 'Hr', gs.reset_hunk },
-      { 'Hu', gs.undo_stage_hunk },
-      { 'Hp', gs.preview_hunk },
-      { 'Hb', function() gs.blame_line { full = true } end },
-      { 'HB', gs.blame },
-      { 'Hd', gs.toggle_deleted },
-      { 'ih', '<cmd>Gitsigns select_hunk<cr>',             { 'o', 'x' } },
-      { 'HS', gs.stage_buffer },
-      { 'HR', gs.reset_buffer },
+      { '<c-g>s', gs.stage_hunk },
+      { '<c-g>r', gs.reset_hunk },
+      { '<c-g>u', gs.undo_stage_hunk },
+      { '<c-g>p', gs.preview_hunk },
+      { '<c-g>b', function() gs.blame_line { full = true } end },
+      { '<c-g>B', gs.blame },
+      { '<c-g>D', gs.toggle_deleted },
+      { 'ih',     '<cmd>Gitsigns select_hunk<cr>',             { 'o', 'x' } },
+      { '<c-g>S', gs.stage_buffer },
+      { '<c-g>R', gs.reset_buffer },
     } do
       K(keymap[1], keymap[2], { mode = keymap[3], buffer = bufnr })
     end
@@ -95,7 +98,7 @@ CMD('GHGet', function()
       local tar_file = choice:match '([^/]+)%.tar%.gz$'
       if tar_file then
         vim.system(
-          { 'tar', 'xf', tar_file .. '.tar.gz', '--transform', ('s,^,%s/,'):format(tar_file), '--remove-filies' },
+          { 'tar', 'xf', tar_file .. '.tar.gz', '--transform', ('s,^,%s/,'):format(tar_file), '--remove-files' },
           {}, log_gh)
       else
         log_gh(curl_data)
