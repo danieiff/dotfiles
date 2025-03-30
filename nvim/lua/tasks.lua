@@ -44,3 +44,25 @@ CMD('UrlSplitJoin', function()
     vim.cmd [['{,'}s/\n\@<!//g]]
   end
 end, {})
+
+CMD('Exercism', function(arg)
+  local language, exercise_id
+  if #arg.fargs == 2 then
+    language, exercise_id = unpack(arg.fargs)
+  else
+    language = assert(vim.fn.getcwd():match 'exercism/([^/]+)', 'change dir')
+    exercise_id = arg.args
+  end
+
+  local exercism_exercise_dir = vim.env.HOME .. '/exercism/' .. language .. '/' .. exercise_id
+
+  vim.system({ 'exercism', 'download', '--track=' .. language, '--exercise=' .. exercise_id }, {},
+    vim.schedule_wrap(function(data)
+      assert(data.code == 0, 'exercism download ' .. arg.args .. ' failed: ' .. data.stderr)
+      vim.cmd.edit(exercism_exercise_dir .. '/README.md')
+      vim.cmd.lcd(exercism_exercise_dir)
+      vim.system({ 'yarn', 'install' }, { cwd = exercism_exercise_dir }, function(data)
+        vim.notify(data.stderr or data.stdout, data.code)
+      end)
+    end))
+end, { nargs = '*' })
