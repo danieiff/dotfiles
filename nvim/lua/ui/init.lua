@@ -9,6 +9,7 @@ vim.opt.cursorline = true
 vim.opt.splitkeep = 'screen'
 vim.opt.list = true
 vim.opt.listchars = { tab = "⇥ ", trail = '·' }
+vim.opt.scrolloff = 2
 
 require 'nightfox'.setup {}
 vim.cmd.colorscheme 'nordfox'

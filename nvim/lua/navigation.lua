@@ -127,17 +127,76 @@ require 'trouble'.setup {
 AUC("FileType", {
   group = vim.api.nvim_create_augroup("TroubleQuickfix", { clear = true }),
   pattern = { 'qf' },
-  callback = function(ev)
-    -- if vim.bo[ev.buf].buftype == "quickfix" then
-    vim.schedule(function()
-      vim.cmd 'cclose | Trouble qflist open'
-    end)
-  end
-  -- end,
+  callback = function()
+    vim.schedule(function() vim.cmd 'cclose | Trouble qflist open' end)
+  end,
 })
 
-require 'aerial'.setup {
-  filter_kind = false,
-  auto_jump = true
-}
+require 'aerial'.setup { filter_kind = false, autojump = true }
 K('<C-s>', require 'aerial'.open)
+
+K('<leader>n', function()
+  local title = '## Nav'
+  local file_line = '+' .. vim.fn.line '.' .. ' ' .. vim.fn.expand '%'
+  vim.cmd.split(vim.uv.os_homedir() .. '/nav.md')
+  local buf_lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
+  local insert_index = vim.fn.index(buf_lines, title)
+  local new_lines
+  if insert_index == -1 then
+    insert_index = #buf_lines + 4
+    new_lines = { '', title, '', file_line }
+  else
+    insert_index = insert_index + 2
+    new_lines = { file_line }
+  end
+  vim.api.nvim_buf_set_lines(0, insert_index, insert_index, false, new_lines)
+  vim.api.nvim_win_set_cursor(0, { insert_index, 0 })
+  vim.cmd 'silent w'
+end)
+
+local nav_preview_win, nav_preview_id
+local nav_mode_group = vim.api.nvim_create_augroup("NavMode", { clear = true })
+AUC('BufEnter', {
+  group = nav_mode_group,
+  pattern = 'nav.md',
+  callback = function(ev)
+    K('<leader>n', function()
+      local file_line = vim.api.nvim_get_current_line():match '^%+%d+ %S+$'
+      if not file_line then return end
+      vim.cmd('edit ' .. file_line)
+    end, { buffer = ev.buf })
+
+    AUC('CursorMoved', {
+      group = nav_mode_group,
+      buffer = ev.buf,
+      callback = function()
+        local line, file = vim.api.nvim_get_current_line():match '^%+(%d+) (%S+)$'
+        if not file then
+          if nav_preview_win then vim.api.nvim_win_close(nav_preview_win, true) end
+          nav_preview_id, nav_preview_win = nil, nil
+          return
+        end
+        local buf = vim.uri_to_bufnr(vim.uri_from_fname(vim.fn.fnamemodify(file, ':p')))
+        local id = buf .. '+' .. line
+        if nav_preview_id == id then
+          return
+        end
+        if nav_preview_win then vim.api.nvim_win_close(nav_preview_win, true) end
+        nav_preview_id, nav_preview_win = id, vim.api.nvim_open_win(buf,
+          false,
+          {
+            win = 0,
+            split = 'right',
+            vertical = true
+          })
+        vim.api.nvim_win_set_cursor(nav_preview_win, { tonumber(line), 0 })
+
+        AUC('WinClosed', {
+          group = nav_mode_group,
+          buffer = buf,
+          callback = function() nav_preview_id, nav_preview_win = nil, nil end
+        })
+      end
+    })
+  end
+})

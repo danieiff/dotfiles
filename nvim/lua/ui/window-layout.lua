@@ -168,7 +168,7 @@ AUC('WinEnter', {
 
     local horizontal_splits, vertical_splits = {}, {}
 
-    if vim.api.nvim_win_get_config(0).relative ~= '' or vim.w[current_win].side_layout or ft_layouts[vim.bo[ev.buf].ft] then
+    if vim.api.nvim_win_get_config(0).relative ~= '' or vim.w[current_win].side_layout or ft_layouts[vim.bo[ev.buf].ft] or vim.t.diffview_view_initialized then
       return
     end
 
