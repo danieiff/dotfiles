@@ -264,8 +264,8 @@ AUC('LspAttach', {
     --   vim.o.foldexpr = 'v:lua.vim.lsp.foldexpr()'
     -- end
 
-    if client.server_capabilities.colorProvider then
-      require 'ui.colors'.buf_attach(ev.buf)
+    if client:supports_method 'textDocument/documentColor' then
+      vim.lsp.document_color.enable(true, ev.buf)
     end
 
     --[[
