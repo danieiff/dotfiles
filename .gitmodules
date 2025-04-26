@@ -175,3 +175,6 @@
 [submodule "nvim/pack/opt/start/neotest-rust"]
 	path = nvim/pack/opt/start/neotest-rust
 	url = https://github.com/rouge8/neotest-rust
+[submodule "nvim/pack/opt/start/go.nvim"]
+	path = nvim/pack/opt/start/go.nvim
+	url = https://github.com/ray-x/go.nvim
