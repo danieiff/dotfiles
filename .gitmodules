@@ -76,9 +76,6 @@
 [submodule "nvim/pack/required/start/nvim-treesitter"]
 	path = nvim/pack/required/start/nvim-treesitter
 	url = https://github.com/nvim-treesitter/nvim-treesitter
-[submodule "nvim/pack/required/start/fidget.nvim"]
-	path = nvim/pack/required/start/fidget.nvim
-	url = https://github.com/j-hui/fidget.nvim
 [submodule "nvim/pack/opt/start/roslyn.nvim"]
 	path = nvim/pack/opt/start/roslyn.nvim
 	url = https://github.com/seblj/roslyn.nvim

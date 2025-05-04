@@ -18,22 +18,7 @@ require 'satellite'.setup()
 
 require 'ibl'.setup()
 
-require 'fidget'.setup { notification = { override_vim_notify = true } }
-K('M', function()
-  for _, win in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
-    if vim.w[win].message_history then
-      return vim.api.nvim_win_close(win, true)
-    end
-  end
-  vim.cmd "below new | put=execute('messages \\| Fidget history')"
-  vim.bo.buftype = 'nofile'
-  vim.bo.ft = 'log'
-  vim.w.message_history = true
-end)
-
-vim.lsp.handlers["window/showMessage"] = function(_, method, params)
-  vim.notify(method.message, vim.diagnostic.severity[method.type or params.params.type])
-end
+require 'vim._extui'.enable {}
 
 require 'ui.statusline'
 require 'ui.tabline'
