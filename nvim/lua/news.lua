@@ -14,7 +14,7 @@ local news_list = {
         if os.difftime(d, os.time({ year = y, month = mo, day = dy, hour = h, min = m, sec = s })) > 0 then
           break
         end
-        new_entry = ('\n%s- %s\n  %s'):format(new_entry, item.title, item.link._attr.href)
+        new_entry = ('%s\n- %s\n  %s'):format(new_entry, item.title, item.link._attr.href)
       end
       return new_entry
     end
@@ -29,7 +29,7 @@ local news_list = {
             and not item.data.link_flair_text:find 'Need Help'
             and not item.data.link_flair_text:find '101 Questions'
         then
-          new_entry = ('\n%s\n- %s\n  %s\n  %s'):format(new_entry, item.data.title, item.data.selftext, item.data.url)
+          new_entry = ('%s\n- %s\n  %s\n  %s\n'):format(new_entry, item.data.title, item.data.selftext, item.data.url)
         end
       end
       return new_entry
@@ -44,7 +44,7 @@ local news_list = {
       local diff_url = ('http://github.com/rockerBOO/awesome-neovim/compare/%s..HEAD.diff'):format(t[#t].sha)
       local data = vim.system({ 'curl', '-sSL', diff_url }, { text = true }):wait()
       for url, desc in data.stdout:gmatch "%+%-? %[[^%]]+%]%((https://[^%)]+)%) %- ([^\n]+)" do
-        new_entry = ('\n%s- %s\n  %s'):format(new_entry, desc, url)
+        new_entry = ('%s\n- %s\n  %s'):format(new_entry, desc, url)
       end
       return new_entry
     end
@@ -60,7 +60,7 @@ local news_list = {
         if os.difftime(d, os.time({ year = y, month = month_tbl[mo], day = dy, hour = h, min = m, sec = s })) > 0 then
           break
         end
-        new_entry = ('\n%s- %s\n  %s'):format(new_entry, item.title, item.link)
+        new_entry = ('%s\n- %s\n  %s'):format(new_entry, item.title, item.link)
       end
       return new_entry
     end
@@ -103,7 +103,9 @@ for _, item in ipairs(news_list) do
         table.insert(news_lines, insert_index, new_entry)
 
         if completions == #news_list then
-          io.open(file, 'w'):write(table.concat(news_lines, '\n')):close()
+          local file = assert(io.open(file, 'w'))
+          file:write(table.concat(news_lines, '\n'))
+          file:close()
         end
       end
     end
