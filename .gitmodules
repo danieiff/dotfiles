@@ -4,9 +4,6 @@
 [submodule "nvim/pack/required/start/plenary.nvim"]
 	path = nvim/pack/required/start/plenary.nvim
 	url = https://github.com/nvim-lua/plenary.nvim
-[submodule "nvim/pack/required/start/undotree"]
-	path = nvim/pack/required/start/undotree
-	url = https://github.com/mbbill/undotree
 [submodule "nvim/pack/required/start/nvim-tree.lua"]
 	path = nvim/pack/required/start/nvim-tree.lua
 	url = https://github.com/nvim-tree/nvim-tree.lua
@@ -106,12 +103,6 @@
 [submodule "nvim/pack/required/start/neotest"]
 	path = nvim/pack/required/start/neotest
 	url = https://github.com/nvim-neotest/neotest
-[submodule "nvim/pack/required/start/markdown-preview.nvim"]
-	path = nvim/pack/required/start/markdown-preview.nvim
-	url = https://github.com/iamcco/markdown-preview.nvim
-[submodule "nvim/pack/required/start/navigate-note.nvim"]
-	path = nvim/pack/required/start/navigate-note.nvim
-	url = https://github.com/you-n-g/navigate-note.nvim
 [submodule "nvim/pack/required/start/satellite.nvim"]
 	path = nvim/pack/required/start/satellite.nvim
 	url = https://github.com/lewis6991/satellite.nvim
@@ -175,3 +166,6 @@
 [submodule "nvim/pack/opt/start/go.nvim"]
 	path = nvim/pack/opt/start/go.nvim
 	url = https://github.com/ray-x/go.nvim
+[submodule "nvim/pack/required/start/time-machine.nvim"]
+	path = nvim/pack/required/start/time-machine.nvim
+	url = https://github.com/y3owk1n/time-machine.nvim
