@@ -67,9 +67,6 @@
 [submodule "nvim/pack/required/start/neotest-jest"]
 	path = nvim/pack/required/start/neotest-jest
 	url = https://github.com/nvim-neotest/neotest-jest
-[submodule "nvim/pack/required/start/rest-nvim"]
-	path = nvim/pack/required/start/rest-nvim
-	url = https://github.com/rest-nvim/rest.nvim
 [submodule "nvim/pack/required/start/nvim-treesitter"]
 	path = nvim/pack/required/start/nvim-treesitter
 	url = https://github.com/nvim-treesitter/nvim-treesitter
@@ -151,9 +148,6 @@
 [submodule "nvim/pack/required/start/iron.nvim"]
 	path = nvim/pack/required/start/iron.nvim
 	url = https://github.com/Vigemus/iron.nvim
-[submodule "nvim/pack/opt/start/rainbow_csv"]
-	path = nvim/pack/opt/start/rainbow_csv
-	url = https://github.com/mechatroner/rainbow_csv
 [submodule "nvim/pack/opt/start/crates.nvim"]
 	path = nvim/pack/opt/start/crates.nvim
 	url = https://github.com/saecki/crates.nvim
@@ -169,3 +163,12 @@
 [submodule "nvim/pack/required/start/time-machine.nvim"]
 	path = nvim/pack/required/start/time-machine.nvim
 	url = https://github.com/y3owk1n/time-machine.nvim
+[submodule "nvim/pack/opt/start/nvim-dbee"]
+	path = nvim/pack/opt/start/nvim-dbee
+	url = https://github.com/kndndrj/nvim-dbee
+[submodule "nvim/pack/opt/start/csvview.nvim"]
+	path = nvim/pack/opt/start/csvview.nvim
+	url = https://github.com/hat0uma/csvview.nvim
+[submodule "nvim/pack/required/start/kulala.nvim"]
+	path = nvim/pack/required/start/kulala.nvim
+	url = https://github.com/mistweaverco/kulala.nvim
