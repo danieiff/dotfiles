@@ -72,7 +72,7 @@
 	url = https://github.com/nvim-treesitter/nvim-treesitter
 [submodule "nvim/pack/opt/start/roslyn.nvim"]
 	path = nvim/pack/opt/start/roslyn.nvim
-	url = https://github.com/seblj/roslyn.nvim
+	url = https://github.com/seblyng/roslyn.nvim
 [submodule "nvim/pack/required/start/avante.nvim"]
 	path = nvim/pack/required/start/avante.nvim
 	url = https://github.com/yetone/avante.nvim
