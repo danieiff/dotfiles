@@ -1,5 +1,3 @@
-require 'vim._extui'.enable {}
-
 vim.opt.winblend = 0
 vim.opt.termguicolors = true
 vim.opt.winfixheight = true
@@ -12,6 +10,10 @@ vim.opt.list = true
 vim.opt.listchars = { tab = "⇥ ", trail = '·' }
 vim.opt.scrolloff = 2
 vim.opt.splitkeep = 'screen'
+
+require 'vim._extui'.enable {}
+
+K('M', '<cmd>if &ft == "msgmore" | q | else | mes | endif<cr>')
 
 require 'nightfox'.setup {}
 vim.cmd.colorscheme 'nordfox'

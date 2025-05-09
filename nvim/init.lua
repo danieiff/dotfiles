@@ -89,13 +89,14 @@ AUC("BufReadPre", {
 -- git submodule update --init
 CMD('GitSubmoduleAddVimPlugin', function(arg)
   vim.system(
-    { 'git', 'submodule', 'add', arg.args, 'nvim/pack/required/start/' .. vim.fn.fnamemodify(arg.args, ':t') },
-    { cwd = vim.fn.fnamemodify(vim.fn.stdpath 'config', ':h') },
+    { 'git', 'submodule', 'add', arg.fargs[1], ('pack/%s/start/%s'):format(arg.fargs[2] or 'required',
+      vim.fn.fnamemodify(arg.fargs[1], ':t')) },
+    { cwd = vim.fn.fnamemodify(vim.fn.stdpath 'config', ':h') .. '/nvim' },
     function(data)
-      assert(data.code == 0, 'git submodule add ' .. arg.args .. ' failed: ' .. data.stderr)
+      assert(data.code == 0, 'Failed: ' .. data.stderr)
       vim.schedule(function() vim.cmd('set runtimepath& | runtime! PACK plugin/**/*.{vim,lua} | helptags ALL') end)
     end)
-end, { nargs = 1 })
+end, { nargs = '*' })
 
 require 'news'
 require 'language'

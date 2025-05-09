@@ -10,8 +10,44 @@ filetype detect
 set buftype=nowrite
 
 git diff-tree --no-commit-id --name-only -r $1
-]]
 
+blame gitsigns
+hunk gitsigns
+view other versions of file gitsigns
+
+git fetch origin 'refs/heads/ft_d*:refs/remotes/origin/ft_d*'
+
+git branch --list 'o*' | xargs -r git branch -d
+
+github octo
+pr octo
+issue octo
+pr review octo
+
+diff diffview
+file history diffview
+
+status
+log
+log filter
+stash
+stage
+commit
+merge
+rebase
+cherry-pick
+reset
+reflog
+revert
+push
+pull
+fetch
+remote
+branch
+checkout
+submodule
+get link in browser
+]]
 
 K('<c-g><c-g>', '<cmd>Neogit kind=floating<cr>')
 

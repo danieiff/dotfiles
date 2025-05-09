@@ -1,7 +1,7 @@
-require 'nvim-treesitter.install'.compilers = { 'zig' }
+local ts_parser_ext = (vim.uv.os_uname().sysname:find 'Windows' and '.dll' or '.so')
 local builtin_ts_parsers = { 'lua', 'vim', 'vimdoc', 'markdown', 'markdown_inline', 'c' }
 for _, lang in ipairs(builtin_ts_parsers) do
-  vim.treesitter.language.add(lang, { path = vim.fn.getenv 'VIM' .. '/../../lib/nvim/parser/' .. lang .. '.dll' })
+  vim.treesitter.language.add(lang, { path = vim.fn.getenv 'VIM' .. '/../../lib/nvim/parser/' .. lang .. ts_parser_ext })
 end
 require "nvim-treesitter.configs".setup {
   sync_install = false,
