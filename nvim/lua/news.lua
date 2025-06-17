@@ -101,13 +101,13 @@ for _, item in ipairs(news_list) do
           insert_index = insert_index + 2
         end
         table.insert(news_lines, insert_index, new_entry)
-
-        if completions == #news_list then
-          local file = assert(io.open(file, 'w'))
-          file:write(table.concat(news_lines, '\n'))
-          file:close()
-        end
       end
+    end
+
+    if completions == #news_list then
+      local file = assert(io.open(file, 'w'))
+      file:write(table.concat(news_lines, '\n'))
+      file:close()
     end
   end))
 end
