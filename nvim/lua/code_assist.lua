@@ -74,7 +74,7 @@ require 'blink.cmp'.setup {
   signature = { enabled = true },
   fuzzy = {
     prebuilt_binaries = {
-      force_version = 'v0.8.0'
+      force_version = 'v1.4.1'
     }
   }
 }

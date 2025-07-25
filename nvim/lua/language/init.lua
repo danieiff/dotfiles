@@ -28,7 +28,6 @@ AUC('FileType', { pattern = 'xml', command = 'setlocal formatexpr=xmlformat#Form
 
 require 'language.repl'
 require 'language.web'
-require 'language.typescript'
 require 'language.java'
 require 'language.json_yaml'
 
@@ -58,6 +57,7 @@ require 'conform'.setup {
     css = fmts.prettier,
     graphql = fmts.prettier,
     html = fmts.prettier,
+    htmlangular = fmts.prettier,
     javascript = fmts.prettier,
     javascriptreact = fmts.prettier,
     json = fmts.prettier,
@@ -381,8 +381,6 @@ AUC('FileType', {
   end
 })
 
-require 'lspconfig'.sourcery.setup {}
-
 -- https://github.com/python-lsp/python-lsp-server/blob/develop/CONFIGURATION.md
 -- https://github.com/linux-cultist/venv-selector.nvim/tree/regexp
 -- pip install python-lsp-server
@@ -407,8 +405,6 @@ require 'lspconfig'.pylsp.setup {
     }
   }
 }
-
-require 'lspconfig'.solidity_ls_nomicfoundation.setup {}
 
 require 'lspconfig'.bashls.setup {}
 

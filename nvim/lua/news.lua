@@ -33,22 +33,23 @@ local news_list = {
         end
       end
       return new_entry
-    end
+    end,
+    enabled = function() return os.getenv 'REDDIT_TOKEN' end
   },
-  {
-    title = 'awesome-neovim',
-    url = function(dt) return { 'https://api.github.com/repos/rockerBOO/awesome-neovim/commits?since=' .. dt } end,
-    callback = function(t, _)
-      local new_entry = ''
-      if #t == 0 then return new_entry end
-      local diff_url = ('http://github.com/rockerBOO/awesome-neovim/compare/%s..HEAD.diff'):format(t[#t].sha)
-      local data = vim.system({ 'curl', '-sSL', diff_url }, { text = true }):wait()
-      for url, desc in data.stdout:gmatch "%+%-? %[[^%]]+%]%((https://[^%)]+)%) %- ([^\n]+)" do
-        new_entry = ('%s\n- %s\n  %s'):format(new_entry, desc, url)
-      end
-      return new_entry
-    end
-  },
+  -- {
+  --   title = 'awesome-neovim',
+  --   url = function(dt) return { 'https://api.github.com/repos/rockerBOO/awesome-neovim/commits?since=' .. dt } end,
+  --   callback = function(t, _)
+  --     local new_entry = ''
+  --     if #t == 0 then return new_entry end
+  --     local diff_url = ('http://github.com/rockerBOO/awesome-neovim/compare/%s..HEAD.diff'):format(t[#t].sha)
+  --     local data = vim.system({ 'curl', '-sSL', diff_url }, { text = true }):wait()
+  --     for url, desc in data.stdout:gmatch "%+%-? %[[^%]]+%]%((https://[^%)]+)%) %- ([^\n]+)" do
+  --       new_entry = ('%s\n- %s\n  %s'):format(new_entry, desc, url)
+  --     end
+  --     return new_entry
+  --   end
+  -- },
   {
     title = 'Dotfyle',
     type = 'xml',
@@ -67,8 +68,8 @@ local news_list = {
   }
 }
 
-local file = vim.uv.os_homedir() .. '/nav.md'
-local news_lines = vim.iter(io.lines(file)):totable()
+local file_name = vim.uv.os_homedir() .. '/nav.md'
+local news_lines = vim.iter(io.lines(file_name)):totable()
 
 local now = os.time()
 local five_days_ago = now - 60 * 60 * 24 * 5
@@ -83,31 +84,33 @@ news_lines[1] = os.date(dt_fmt, now)
 local completions = 0
 
 for _, item in ipairs(news_list) do
-  local url = type(item.url) == 'function' and item.url(prev_dt, news_lines[#news_lines]) or item.url
-  vim.system({ 'curl', unpack(url) }, {}, vim.schedule_wrap(function(data)
-    completions = completions + 1
+  if not item.enabled or item.enabled() then
+    local url = type(item.url) == 'function' and item.url(prev_dt, news_lines[#news_lines]) or item.url
+    vim.system({ 'curl', unpack(url) }, {}, vim.schedule_wrap(function(data)
+      completions = completions + 1
 
-    local ok, t = pcall(item.type == 'xml' and require 'xml2lua'.parse or vim.json.decode, data.stdout)
-    if not ok then
-      vim.notify(('%s\n%s\n%s'):format(item.title, data.stdout, data.stderr))
-    else
-      local new_entry = item.callback(t, prev_t)
-      if new_entry ~= '' then
-        local title = '## ' .. item.title
-        local insert_index = vim.fn.index(news_lines, title)
-        if insert_index == -1 then
-          new_entry = title .. '\n\n' .. new_entry
-        else
-          insert_index = insert_index + 2
+      local ok, t = pcall(item.type == 'xml' and require 'xml2lua'.parse or vim.json.decode, data.stdout)
+      if not ok then
+        vim.notify(('%s\n%s\n%s'):format(item.title, data.stdout, data.stderr))
+      else
+        local new_entry = item.callback(t, prev_t)
+        if new_entry ~= '' then
+          local title = '## ' .. item.title
+          local insert_index = vim.fn.index(news_lines, title)
+          if insert_index == -1 then
+            new_entry = title .. '\n\n' .. new_entry
+          else
+            insert_index = insert_index + 2
+          end
+          table.insert(news_lines, insert_index, new_entry)
         end
-        table.insert(news_lines, insert_index, new_entry)
       end
-    end
 
-    if completions == #news_list then
-      local file = assert(io.open(file, 'w'))
-      file:write(table.concat(news_lines, '\n'))
-      file:close()
-    end
-  end))
+      if completions == #news_list then
+        local file = assert(io.open(file_name, 'w'))
+        file:write(table.concat(news_lines, '\n'))
+        file:close()
+      end
+    end))
+  end
 end

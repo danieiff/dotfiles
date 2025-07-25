@@ -13,10 +13,11 @@ vim.opt.splitkeep = 'screen'
 
 require 'vim._extui'.enable {}
 
-K('M', '<cmd>if &ft == "msgmore" | q | else | mes | endif<cr>')
+K('M', '<cmd>if &ft == "pager" | q | else | mes | endif<cr>')
 
-require 'nightfox'.setup {}
-vim.cmd.colorscheme 'nordfox'
+-- require 'nightfox'.setup {}
+-- vim.cmd.colorscheme 'nordfox'
+vim.cmd.colorscheme 'vscode'
 
 require 'satellite'.setup()
 

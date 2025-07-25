@@ -130,11 +130,11 @@ AUC("FileType", {
 })
 
 require 'aerial'.setup { filter_kind = false, autojump = true }
-K('<C-s>', require 'aerial'.open)
+K('<C-s>', require 'aerial'.toggle)
 
 K('<leader>n', function()
   local title = '## Nav'
-  local file_line = '+' .. vim.fn.line '.' .. ' ' .. vim.fn.expand '%'
+  local file_line = '+' .. vim.fn.line '.' .. ' ' .. vim.fn.expand '%:~'
   vim.cmd.split(vim.uv.os_homedir() .. '/nav.md')
   local buf_lines = vim.api.nvim_buf_get_lines(0, 0, -1, false)
   local insert_index = vim.fn.index(buf_lines, title)

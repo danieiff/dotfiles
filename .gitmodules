@@ -172,3 +172,6 @@
 [submodule "nvim/pack/required/start/kulala.nvim"]
 	path = nvim/pack/required/start/kulala.nvim
 	url = https://github.com/mistweaverco/kulala.nvim
+[submodule "nvim/pack/required/start/vscode.nvim"]
+	path = nvim/pack/required/start/vscode.nvim
+	url = https://github.com/Mofiqul/vscode.nvim
