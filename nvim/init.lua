@@ -48,24 +48,26 @@ vim.o.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
 vim.o.foldtext = ''
 -- Reset :set option&
 
-
-vim.g.clipboard = {
-  name = 'WslClipboard',
-  copy = {
-    ['+'] = 'clip.exe',
-    ['*'] = 'clip.exe',
-  },
-  paste = {
-    ['+'] =
-    'powershell.exe -NoLogo -NoProfile -c [Console]::Out.Write($(Get-Clipboard -Raw).tostring().replace("`r", ""))',
-    ['*'] =
-    'powershell.exe -NoLogo -NoProfile -c [Console]::Out.Write($(Get-Clipboard -Raw).tostring().replace("`r", ""))',
-  },
-  cache_enabled = 0
-}
-
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ','
+
+if vim.uv.os_uname().sysname:find 'Linux' and
+    vim.uv.os_uname().release:find 'WSL' then
+  vim.g.clipboard = {
+    name = 'WslClipboard',
+    copy = {
+      ['+'] = 'iconv -t sjis | clip.exe',
+      ['*'] = 'iconv -t sjis | clip.exe',
+    },
+    paste = {
+      ['+'] =
+      'powershell.exe -NoLogo -NoProfile -c [Console]::Out.Write($(Get-Clipboard -Raw).tostring().replace("`r", ""))',
+      ['*'] =
+      'powershell.exe -NoLogo -NoProfile -c [Console]::Out.Write($(Get-Clipboard -Raw).tostring().replace("`r", ""))',
+    },
+    cache_enabled = 0
+  }
+end
 
 K('<C-w><C-w>', '<cmd>windo set scrollbind!<cr>')
 
