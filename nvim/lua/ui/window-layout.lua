@@ -1,21 +1,12 @@
 local ft_layouts = {
-  man = {
-    pos = 'top', filter = function(_, win) return not vim.w[win].fzf_lua_preview end
-  },
   OverseerList = {
-    pos = 'top', width = 0.2, height = 0.5,
+    pos = 'top', width = 0.2, height = 0.4,
   },
   overseer_task = {
     pos = 'top'
   },
   iron = {
     pos = 'bottom'
-  },
-  Trouble = {
-    pos = 'bottom',
-  },
-  qf = {
-    pos = 'bottom',
   },
   ['neotest-output-panel'] = {
     pos = 'bottom', height = 15
@@ -50,6 +41,9 @@ local ft_layouts = {
       return not is_only_win
     end
   },
+  man = {
+    pos = 'top', filter = function(_, win) return not vim.w[win].fzf_lua_preview end
+  },
   aerial = {
     pos = 'right', open = require 'aerial'.toggle
   },
@@ -72,6 +66,9 @@ local ft_layouts = {
       return vim.w[w].trouble.type == 'split' and vim.w[w].trouble.relative == 'editor' and
           not vim.w[w].trouble_preview
     end
+  },
+  qf = {
+    pos = 'bottom',
   }
 }
 
