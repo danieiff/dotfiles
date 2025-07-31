@@ -8,9 +8,6 @@ local ft_layouts = {
   iron = {
     pos = 'bottom'
   },
-  ['neotest-output-panel'] = {
-    pos = 'bottom', height = 15
-  },
   Avante = {
     pos = 'left'
   },
@@ -20,13 +17,11 @@ local ft_layouts = {
   ['neotest-summary'] = {
     pos = 'left'
   },
-  undotree = {
-    pos = 'left'
+  ['neotest-output-panel'] = {
+    pos = 'bottom', height = 15
   },
-  diff = {
-    pos = 'left',
-    height = 15,
-    filter = function(buf) return vim.b[buf].isUndotreeBuffer end
+  ['time-machine-list'] = {
+    pos = 'left'
   },
   help = {
     pos = 'left',
@@ -45,11 +40,10 @@ local ft_layouts = {
     pos = 'top', filter = function(_, win) return not vim.w[win].fzf_lua_preview end
   },
   aerial = {
-    pos = 'right', open = require 'aerial'.toggle
+    pos = 'right'
   },
   NvimTree = {
     pos = 'right',
-    open = require 'nvim-tree.api'.tree.toggle,
     filter = function()
       local is_only_win = #vim.tbl_filter(function(win)
         return CHECK_FILE_MODIFIABLE(vim.api.nvim_win_get_buf(win))
