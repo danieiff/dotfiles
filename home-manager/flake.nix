@@ -1,5 +1,5 @@
 {
-  description = "Home Manager configuration";
+  description = "Home Manager configuration managing my dotfiles";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
@@ -8,6 +8,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
     neovim-nightly-overlay.url = "github:nix-community/neovim-nightly-overlay";
+    nixneovimplugins.url = github:NixNeovim/NixNeovimPlugins;
+
 
   };
 
@@ -18,9 +20,9 @@
       pkgs = nixpkgs.legacyPackages.${system};
       username = builtins.getEnv "USER";
       homeDirectory  = builtins.getEnv "HOME";
-      overlays = [
-       inputs.neovim-nightly-overlay.overlays.default
-      ];
+      # overlays = [
+      #  inputs.neovim-nightly-overlay.overlays.default
+      # ];
     in
     {
       homeConfigurations.${username} = home-manager.lib.homeManagerConfiguration {
@@ -29,7 +31,10 @@
         modules = [ 
      	  ./home.nix
 	  {
-	    nixpkgs.overlays = overlays;
+	    nixpkgs.overlays = [
+              inputs.neovim-nightly-overlay.overlays.default
+              inputs.nixneovimplugins.overlays.default
+	    ];
 	  }
         ];
 
