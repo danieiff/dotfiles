@@ -18,10 +18,13 @@
     gh
     ripgrep
     fzf
+    viu
+    jq
     zellij
     neovim
     colima
     docker
+    zig
 
     # You can also create simple shell scripts directly inside your
     # configuration. For example, this adds a command 'my-hello' to your environment:
