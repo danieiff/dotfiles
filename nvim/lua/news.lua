@@ -1,4 +1,4 @@
-local month_tbl = { Jan = 1, Feb = 2, Mar = 3, Apr = 4, May = 5, Jun = 6, Jul = 7, Aug = 8, Sep = 9, Oct = 10, Nov = 11, Dec = 12 }
+local month_tbl = { Jan = 0, Feb = 2, Mar = 3, Apr = 4, May = 5, Jun = 6, Jul = 7, Aug = 8, Sep = 9, Oct = 10, Nov = 11, Dec = 12 }
 
 local dt_fmt = '%Y-%m-%dT%H:%M:%SZ'
 
@@ -36,20 +36,20 @@ local news_list = {
     end,
     enabled = function() return os.getenv 'REDDIT_TOKEN' end
   },
-  -- {
-  --   title = 'awesome-neovim',
-  --   url = function(dt) return { 'https://api.github.com/repos/rockerBOO/awesome-neovim/commits?since=' .. dt } end,
-  --   callback = function(t, _)
-  --     local new_entry = ''
-  --     if #t == 0 then return new_entry end
-  --     local diff_url = ('http://github.com/rockerBOO/awesome-neovim/compare/%s..HEAD.diff'):format(t[#t].sha)
-  --     local data = vim.system({ 'curl', '-sSL', diff_url }, { text = true }):wait()
-  --     for url, desc in data.stdout:gmatch "%+%-? %[[^%]]+%]%((https://[^%)]+)%) %- ([^\n]+)" do
-  --       new_entry = ('%s\n- %s\n  %s'):format(new_entry, desc, url)
-  --     end
-  --     return new_entry
-  --   end
-  -- },
+  {
+    title = 'awesome-neovim',
+    url = function(dt) return { 'https://api.github.com/repos/rockerBOO/awesome-neovim/commits?since=' .. dt } end,
+    callback = function(t, _)
+      local new_entry = ''
+      if #t == 0 then return new_entry end
+      local diff_url = ('http://github.com/rockerBOO/awesome-neovim/compare/%s..HEAD.diff'):format(t[#t].sha)
+      local data = vim.system({ 'curl', '-sSL', diff_url }, { text = true }):wait()
+      for url, desc in data.stdout:gmatch "%+%-? %[[^%]]+%]%((https://[^%)]+)%) %- ([^\n]+)" do
+        new_entry = ('%s\n- %s\n  %s'):format(new_entry, desc, url)
+      end
+      return new_entry
+    end
+  },
   {
     title = 'Dotfyle',
     type = 'xml',
@@ -69,6 +69,9 @@ local news_list = {
 }
 
 local file_name = vim.uv.os_homedir() .. '/nav.md'
+if not vim.uv.fs_stat(file_name) then
+  vim.fn.writefile({ '' }, file_name, 'a')
+end
 local news_lines = vim.iter(io.lines(file_name)):totable()
 
 local now = os.time()
@@ -81,36 +84,36 @@ if five_days_ago < prev_t then return end
 local prev_dt = os.date(dt_fmt, prev_t)
 news_lines[1] = os.date(dt_fmt, now)
 
+local enabled_news_list = vim.tbl_filter(function(item) return not item.enabled or item.enabled() end, news_list)
 local completions = 0
 
-for _, item in ipairs(news_list) do
-  if not item.enabled or item.enabled() then
-    local url = type(item.url) == 'function' and item.url(prev_dt, news_lines[#news_lines]) or item.url
-    vim.system({ 'curl', unpack(url) }, {}, vim.schedule_wrap(function(data)
-      completions = completions + 1
+for _, item in ipairs(enabled_news_list) do
+  local url = type(item.url) == 'function' and item.url(prev_dt) or item.url
+  vim.system({ 'curl', unpack(url) }, {}, vim.schedule_wrap(function(data)
+    completions = completions + 1
 
-      local ok, t = pcall(item.type == 'xml' and require 'xml2lua'.parse or vim.json.decode, data.stdout)
-      if not ok then
-        vim.notify(('%s\n%s\n%s'):format(item.title, data.stdout, data.stderr))
-      else
-        local new_entry = item.callback(t, prev_t)
-        if new_entry ~= '' then
-          local title = '## ' .. item.title
-          local insert_index = vim.fn.index(news_lines, title)
-          if insert_index == -1 then
-            new_entry = title .. '\n\n' .. new_entry
-          else
-            insert_index = insert_index + 2
-          end
-          table.insert(news_lines, insert_index, new_entry)
+    local ok, t = pcall(item.type == 'xml' and require 'xml2lua'.parse or vim.json.decode, data.stdout)
+    if not ok then
+      vim.notify(('%s\n%s\n%s'):format(item.title, data.stdout, data.stderr))
+    else
+      local new_entry = item.callback(t, prev_t)
+      if new_entry ~= '' then
+        local title = '\n## ' .. item.title
+        local insert_index = vim.fn.index(news_lines, title)
+        if insert_index == -1 then
+          insert_index = #news_lines + 1
+          new_entry = title .. '\n' .. new_entry
+        else
+          insert_index = insert_index + 2
         end
+        table.insert(news_lines, insert_index, new_entry)
       end
+    end
 
-      if completions == #news_list then
-        local file = assert(io.open(file_name, 'w'))
-        file:write(table.concat(news_lines, '\n'))
-        file:close()
-      end
-    end))
-  end
+    if completions == #enabled_news_list then
+      local file = assert(io.open(file_name, 'w'))
+      file:write(table.concat(news_lines, '\n'))
+      file:close()
+    end
+  end))
 end
