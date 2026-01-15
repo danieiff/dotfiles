@@ -1,18 +1,13 @@
-vim.loader.enable()
-
--- git clone --depth 1 https://github.com/danieiff/dotfiles --recurse-submodules --shallow-submodules --jobs 50
+-- git clone https://github.com/danieiff/dotfiles --filter=blob:none --recurse-submodules=nvim/pack/required --also-filter-submodules=blob:none --jobs 20
 
 -- curl https://mise.run | sh
+-- -- winget install git.git jdx.mise
 -- mise use -g zig node neovim@nightly yq ripgrep github-cli fzf
 -- ln -s ~/dotfiles/nvim ${XDG_CONFIG_HOME:-~/.config}
+-- -- New-Item -Path $ENV:LOCALAPPDATA/nvim -ItemType SymbolicLink -Value dotfiles/nvim
+vim.loader.enable()
 
-if vim.uv.os_uname().sysname:find 'Windows' then
-  -- winget install git.git jdx.mise
-  -- mise use -g zig node neovim@nightly yq ripgrep github-cli fzf
-  -- New-Item -Path $ENV:LOCALAPPDATA/nvim -ItemType SymbolicLink -Value dotfiles/nvim
-  vim.fn.setenv('LANG', 'en_US.UTF-8')
-  vim.env.PATH = vim.env.PATH .. [[;\Program Files\Git\usr\bin;]]
-end
+if vim.uv.os_uname().sysname:find 'Windows' then vim.cmd 'language en' end
 
 K = function(lhs, rhs, opts)
   opts = opts or {}
@@ -34,6 +29,7 @@ CHECK_FILE_MODIFIABLE = function(bufnr, nowait_ft_detect)
       and vim.api.nvim_buf_get_name(bufnr) ~= ''
 end
 
+-- Reset :set option&
 vim.o.autowriteall = true
 vim.o.undofile = true
 vim.o.ignorecase = true
@@ -46,40 +42,21 @@ vim.o.foldenable = false
 vim.o.foldmethod = 'expr'
 vim.o.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
 vim.o.foldtext = ''
--- Reset :set option&
 
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ','
 
-if vim.uv.os_uname().sysname:find 'Linux' and
-    vim.uv.os_uname().release:find 'WSL' then
-  vim.g.clipboard = {
-    name = 'WslClipboard',
-    copy = {
-      ['+'] = 'iconv -t sjis | clip.exe',
-      ['*'] = 'iconv -t sjis | clip.exe',
-    },
-    paste = {
-      ['+'] =
-      'powershell.exe -NoLogo -NoProfile -c [Console]::Out.Write($(Get-Clipboard -Raw).tostring().replace("`r", ""))',
-      ['*'] =
-      'powershell.exe -NoLogo -NoProfile -c [Console]::Out.Write($(Get-Clipboard -Raw).tostring().replace("`r", ""))',
-    },
-    cache_enabled = 0
-  }
-end
-
-K('<C-w><C-w>', '<cmd>windo set scrollbind!<cr>')
-
-K('<leader>w', function() vim.cmd 'silent write' end)
+K('<leader>w', '<cmd>silent write<cr>')
+K('<leader>W', '<cmd>noautocmd silent write<cr>')
 K('jk', '<c-\\><c-n>', { mode = { 'i', 'c', 't' } })
 
+K('<C-w><C-w>', '<cmd>windo set scrollbind!<cr>')
 K("<esc>", "<cmd>nohl<cr>")
 K('<leader><esc>', '<cmd>qa<cr>')
 K('<bs><esc>', ('<cmd>!rm -rf %s/swap %s/shada<cr>'):format(vim.fn.stdpath 'state', vim.fn.stdpath 'state'))
 
 K('y%', '<cmd>let @+=@%<cr>')
-K('yY', require 'fzf-lua'.registers)
+K('<leader>y', require 'fzf-lua'.registers)
 
 K('<leader> ', require 'fzf-lua'.resume)
 K('<leader>c', require 'fzf-lua'.commands)
@@ -88,6 +65,7 @@ K('<leader>?', require 'fzf-lua'.search_history)
 K('<leader>k', require 'fzf-lua'.keymaps)
 
 AUC('InsertLeave', {
+  desc = 'Auto save on Insertleave',
   callback = function(ev) if CHECK_FILE_MODIFIABLE(ev.buf) then vim.cmd 'silent write' end end,
   nested = true
 })
@@ -114,7 +92,10 @@ CMD('GitSubmoduleAddVimPlugin', function(arg)
       assert(data.code == 0, 'Failed: ' .. data.stderr)
       vim.schedule(function() vim.cmd('set runtimepath& | runtime! PACK plugin/**/*.{vim,lua} | helptags ALL') end)
     end)
-end, { nargs = '*' })
+end, {
+  nargs = '*',
+  desc = 'Add nvim plugin using git submodule'
+})
 
 require 'news'
 require 'language'

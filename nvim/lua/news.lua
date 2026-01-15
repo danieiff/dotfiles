@@ -33,6 +33,9 @@ local news_list = {
 
 
 local file_name = vim.uv.os_homedir() .. '/nav.md'
+if not vim.uv.fs_stat(file_name) then
+  vim.fn.writefile({ '' }, file_name, 'a')
+end
 local news_lines = vim.iter(io.lines(file_name)):totable()
 
 local dt_fmt = '%Y-%m-%dT%H:%M:%SZ'

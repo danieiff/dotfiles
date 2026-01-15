@@ -1,26 +1,21 @@
 require 'iron.core'.setup {
-  config = {},
   keymaps = {
-    send_motion = "<space>sc",
-    visual_send = "<space>sc",
-    send_file = "<space>sf",
-    send_line = "<space>sl",
-    send_paragraph = "<space>sp",
-    send_until_cursor = "<space>su",
-    send_mark = "<space>sm",
-    send_code_block = "<space>sb",
-    send_code_block_and_move = "<space>sn",
-    mark_motion = "<space>mc",
-    mark_visual = "<space>mc",
-    remove_mark = "<space>md",
-    cr = "<space>s<cr>",
-    interrupt = "<space>s<space>",
-    exit = "<space>sq",
-    clear = "<space>cl",
-  },
+    toggle_repl = "<leader>ii",
+    send_motion = "<leader>is",
+    visual_send = "<leader>is",
+    send_file = "<leader>i%",
+    send_line = "<leader>iI",
+    send_paragraph = "<leader>ip",
+    send_until_cursor = "<leader>i.",
+    send_mark = "<leader>iM",
+    mark_motion = "<leader>im",
+    mark_visual = "<leader>im",
+    remove_mark = "<leader>id",
+    exit = "<leader>iq",
+    clear = "<leader>ic"
+  }
 }
 
-K('<leader>ii', '<cmd>IronRepl<cr>')
 K('<leader>iw', '<cmd>IronWatch file<cr>')
 K('<leader>ir', '<cmd>IronRestart<cr>')
 
@@ -28,7 +23,7 @@ K('<leader>..', function()
   local lines = vim.fn.mode() == 'n' and { vim.fn.getline '.' } or
       vim.fn.getregion(vim.fn.getpos 'v', vim.fn.getpos '.', { type = vim.fn.mode() })
 
-  if vim.g.repl_luafile == nil or vim.fn.filereadable(vim.g.repl_luafil) == 0 then
+  if vim.g.repl_luafile == nil or vim.fn.filereadable(vim.g.repl_luafile) == 0 then
     vim.g.repl_luafile = os.tmpname()
   end
   vim.fn.writefile(lines, vim.g.repl_luafile, 'a')

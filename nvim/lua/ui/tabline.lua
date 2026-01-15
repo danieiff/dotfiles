@@ -24,7 +24,7 @@ local tabnr_icons = { '¹', '²', '³', '⁴', '⁵', '⁶', '⁷', '⁸', '⁹'
 
 local win_cnt_icons = { '₁', '₂', '₃', '₄', '₅', '₆', '₇', '₈', '₉', over = '₊' }
 
-local dir_colors = { '#88c0d0', '#a3be8c', '#ebcb8b', '#81a1c1', '#b48ead', '#bf616a', '#e7ecf4' }
+local dir_colors = { '#84ff00', '#c5e1f2', '#ffbff5', '#c7fffa', '#fffe00', '#c4b6fd', '#efcfc3' }
 
 local tabline_dir_hl_tbl = {}
 local function get_dir_hl(dir)

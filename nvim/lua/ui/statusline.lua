@@ -8,7 +8,7 @@ local mode_hl_tbl = {
   ['c'] = 'MiniStatuslineModeCommand'
 }
 function _G.statusline()
-  local hl_vim_mode = mode_hl_tbl[vim.fn.mode()] or 'MiniStatuslineModeOther'
+  local hl_vim_mode = vim.o.scrollbind and 'MiniStatuslineModeOther' or mode_hl_tbl[vim.fn.mode()] or ''
   local githead_vimmode = vim.b.gitsigns_head and ('%%#%s# %s %%*'):format(hl_vim_mode, vim.b.gitsigns_head)
 
   local gs_dict = vim.b.gitsigns_status_dict or {}
