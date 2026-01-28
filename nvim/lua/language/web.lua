@@ -329,62 +329,66 @@ for _, ext in ipairs(exts_js) do
 end
 
 AUC('FileType', {
-  pattern = { 'typescript', 'html' },
+  pattern = { 'typescript', 'htmlangular' },
+  desc = 'setup angular language server',
   callback = function(ev)
     local angular_root_dir = vim.fs.root(ev.buf, 'angular.json')
     if angular_root_dir then
-      local cliend_id = assert(vim.lsp.start {
+      local client_id = assert(vim.lsp.start {
         name = 'ng-ls',
         root_dir = angular_root_dir,
-        --cmd = { 'node',  [[angular.ng-template-14.0.0\server\index.js]], "--stdio", "--tsProbeLocations", 'node_modules', '--ngProbeLocations', 'node_modules' },
-        cmd = { 'node', [[\Users\sugimoto-hi\AppData\Roaming\nvm\v16.20.2\node_modules\@angular\language-server\index.js]], '--stdio', '--tsProbeLocations', 'node_modules', '--ngProbeLocations', 'node_modules' },
+        cmd = { 'node', angular_root_dir .. '/node_modules/@angular/language-service/index.js', '--stdio', '--tsProbeLocations', 'node_modules', '--ngProbeLocations', 'node_modules' },
       }, 'Should start angular language server')
 
-      local client = assert(vim.lsp.get_client_by_id(cliend_id), 'Should get angular language server')
+      local client = assert(vim.lsp.get_client_by_id(1), 'Should get angular language server')
 
-      K("<leader>aa", function()
-        local command = vim.bo.ft == 'html' and 'angular/getComponentsWithTemplateFile' or
+      K("<leader>%", function()
+        local command = vim.bo.ft == 'htmlangular' and 'angular/getComponentsWithTemplateFile' or
             vim.bo.ft == 'typescript' and 'angular/getTemplateLocationForComponent' or ''
-        client:request(command, vim.lsp.util.make_position_params(0, 'utf-8'),
-          function(_, result) vim.lsp.util.show_document(#result and result[1] or result, 'utf-8') end, 0)
+        client:request(command, vim.lsp.util.make_position_params(0, client.offset_encoding),
+          function(error, result)
+            assert(vim.lsp.util.show_document(result[1] or result, client.offset_encoding, { reuse_win = true }),
+              'component-template jump failed with: ' .. vim.json.encode(error))
+          end, 0)
       end)
 
       local buffer, _uri, ns
       K("<leader>aT", function()
-        client:request('angular/getTcb', vim.lsp.util.make_position_params(0, 'utf-8'), function(_, result)
-          local uri, content, ranges = result.uri, result.content, result.selections
+        client:request('angular/getTcb', vim.lsp.util.make_position_params(0, client.offset_encoding),
+          function(_, result)
+            local uri, content, ranges = result.uri, result.content, result.selections
 
-          if not buffer or not vim.api.nvim_buf_is_loaded(buffer) then
-            buffer = vim.api.nvim_create_buf(false, true)
-            vim.bo[buffer].buftype = 'nofile'
-            ns = vim.api.nvim_create_namespace 'ng'
-          end
-
-          uri = tostring(uri):gsub('file:///', 'ng:///')
-          if _uri ~= uri then
-            _uri = uri
-            vim.api.nvim_buf_set_name(buffer, _uri)
-            vim.bo[buffer].filetype = 'typescript'
-          end
-
-          vim.api.nvim_buf_set_lines(buffer, 0, -1, false, vim.fn.split(content, '\n'))
-          vim.bo[buffer].modified = false
-
-          vim.cmd.tabnew(_uri)
-          if ranges and #ranges ~= 0 then
-            for _, range in ipairs(ranges) do
-              vim.highlight.range(
-                buffer,
-                ns,
-                'Visual',
-                { range.start.line, range.start.character },
-                { range['end'].line, range['end'].character }
-              )
+            if not buffer or not vim.api.nvim_buf_is_loaded(buffer) then
+              buffer = vim.api.nvim_create_buf(false, true)
+              vim.bo[buffer].buftype = 'nofile'
+              ns = vim.api.nvim_create_namespace 'ng'
             end
 
-            vim.api.nvim_win_set_cursor(0, { ranges[1].start.line + 1, ranges[1].start.character })
-          end
-        end, 0)
+            uri = tostring(uri):gsub('file:///', 'ng:///')
+            if _uri ~= uri then
+              _uri = uri
+              vim.api.nvim_buf_set_name(buffer, _uri)
+              vim.bo[buffer].filetype = 'typescript'
+            end
+
+            vim.api.nvim_buf_set_lines(buffer, 0, -1, false, vim.fn.split(content, '\n'))
+            vim.bo[buffer].modified = false
+
+            vim.cmd.tabnew(_uri)
+            if ranges and #ranges ~= 0 then
+              for _, range in ipairs(ranges) do
+                vim.highlight.range(
+                  buffer,
+                  ns,
+                  'Visual',
+                  { range.start.line, range.start.character },
+                  { range['end'].line, range['end'].character }
+                )
+              end
+
+              vim.api.nvim_win_set_cursor(0, { ranges[1].start.line + 1, ranges[1].start.character })
+            end
+          end, ev.buf)
       end)
     end
   end
