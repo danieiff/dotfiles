@@ -100,7 +100,7 @@ end, {
 require 'news'
 require 'language'
 require 'git'
-require 'code_assist'
+require 'coding_assist'
 require 'session'
 require 'navigation'
 require 'ui'
