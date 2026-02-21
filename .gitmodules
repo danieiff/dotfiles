@@ -88,9 +88,6 @@
 [submodule "nvim/pack/opt/start/nvim-dap-ruby"]
 	path = nvim/pack/opt/start/nvim-dap-ruby
 	url = https://github.com/suketa/nvim-dap-ruby
-[submodule "nvim/pack/required/start/nvim-scissors"]
-	path = nvim/pack/required/start/nvim-scissors
-	url = https://github.com/chrisgrieser/nvim-scissors
 [submodule "nvim/pack/required/start/neogit"]
 	path = nvim/pack/required/start/neogit
 	url = https://github.com/NeogitOrg/neogit

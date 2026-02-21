@@ -80,6 +80,29 @@ require("conform").setup({
 	},
 })
 
+require 'iron.core'.setup {
+  keymaps = {
+    toggle_repl = "<leader>ii",
+    send_motion = "<leader>is",
+    visual_send = "<leader>is",
+    send_file = "<leader>i%",
+    send_line = "<leader>iI",
+    send_paragraph = "<leader>ip",
+    send_until_cursor = "<leader>i.",
+    send_mark = "<leader>iM",
+    mark_motion = "<leader>im",
+    mark_visual = "<leader>im",
+    remove_mark = "<leader>id",
+    exit = "<leader>iq",
+    clear = "<leader>ic"
+  }
+}
+
+K('<leader>iw', '<cmd>IronWatch file<cr>')
+K('<leader>ir', '<cmd>IronRestart<cr>')
+
+K('<leader>..', ':source<cr>', { mode = { 'n', 'v' } })
+
 local neotest = require("neotest")
 neotest.setup({
 	adapters = {
