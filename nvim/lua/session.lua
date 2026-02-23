@@ -1,4 +1,4 @@
-vim.o.sessionoptions = "curdir,folds,help,tabpages,winsize,terminal"
+vim.o.sessionoptions = "curdir,folds,help,tabpages,winsize"
 
 local function get_session_path(dir, id)
 	dir = dir or assert(vim.uv.cwd(), "should get cwd")
@@ -9,36 +9,7 @@ local function get_session_path(dir, id)
 		.. ".vim"
 end
 
-AUC("VimEnter", {
-	nested = true,
-	callback = function()
-		local vim_argv = vim.fn.argv()
-
-		local cwd = vim.uv.cwd()
-		if cwd == vim.fn.expand("~") or cwd == vim.fn.fnamemodify("/", ":p") then
-			return vim.cmd("e . | SelectSession!")
-		end
-
-		AUC("VimLeave", { command = "silent mksession! " .. get_session_path() })
-		pcall(vim.api.nvim_exec2, "silent source " .. get_session_path(), {})
-
-		for _, path in ipairs(type(vim_argv) == "table" and vim_argv or { vim_argv }) do
-			vim.cmd.tabedit(path)
-		end
-	end,
-})
-
-K("<leader>S", function()
-	local branch = vim.fn.systemlist({ "git", "branch", "--show-current" })[1]
-	local key_left_4 = vim.api.nvim_replace_termcodes("<left>", true, false, true):rep(4)
-	vim.api.nvim_feedkeys(
-		":mksession " .. get_session_path(nil, vim.v.shell_error == 0 and branch or "") .. key_left_4,
-		"n",
-		true
-	)
-end)
-
-K("<leader>s", function()
+local function select_session()
 	require("fzf-lua").fzf_exec("rg --files " .. vim.fn.stdpath("data") .. " -g session*.vim", {
 		prompt = "Sessions> ",
 		fn_transform = function(line)
@@ -81,4 +52,31 @@ K("<leader>s", function()
 			},
 		},
 	})
-end)
+end
+
+AUC("VimEnter", {
+	desc = "Enable Session",
+	nested = true,
+	callback = function()
+		local vim_argv = vim.fn.argv()
+
+		local cwd = vim.uv.cwd()
+		if cwd == vim.fn.expand("~") or cwd == vim.fn.fnamemodify("/", ":p") then
+			return select_session()
+		end
+
+		AUC("VimLeave", { command = "silent mksession! " .. get_session_path() })
+		pcall(vim.api.nvim_exec2, "silent source " .. get_session_path(), {})
+
+		for _, path in ipairs(type(vim_argv) == "table" and vim_argv or { vim_argv }) do
+			vim.cmd.tabedit(path)
+		end
+	end,
+})
+
+K("<leader>s", select_session, { desc = "Select Session" })
+
+K("<leader>S", function()
+	local key_left_4 = vim.api.nvim_replace_termcodes("<left>", true, false, true):rep(4)
+	vim.api.nvim_feedkeys(":mksession " .. get_session_path() .. key_left_4, "n", true)
+end, { desc = "Save Session" })
