@@ -7,6 +7,7 @@ local mode_hl_tbl = {
   ['R'] = 'MiniStatuslineModeReplace',
   ['c'] = 'MiniStatuslineModeCommand'
 }
+
 function _G.statusline()
   local hl_vim_mode = vim.o.scrollbind and 'MiniStatuslineModeOther' or mode_hl_tbl[vim.fn.mode()] or ''
   local githead_vimmode = vim.b.gitsigns_head and ('%%#%s# %s %%*'):format(hl_vim_mode, vim.b.gitsigns_head)
@@ -23,8 +24,8 @@ function _G.statusline()
     return count ~= 0 and ('%%#Diagnostic%s#%s%s%%*'):format(level, string.sub(level, 1, 1), count) or ''
   end, { unpack(vim.diagnostic.severity) }), '')
 
-  local search = vim.fn.searchcount()
-  local searchcount = search and vim.fn.join({ search.current, search.total, vim.fn.getreg '/' }, '/') or ''
+  local ok, search = pcall(vim.fn.searchcount, { recompute = true })
+  local searchcount = ok and vim.fn.join({ search.current, search.total, vim.fn.getreg '/' }, '/') or ''
 
   local reg_recording = vim.fn.reg_recording()
   reg_recording = reg_recording ~= '' and ('Rec@%s'):format(reg_recording)
@@ -43,3 +44,4 @@ function _G.statusline()
 end
 
 vim.o.statusline = '%!v:lua.statusline()'
+-- TODO: vim.o.statusline get blowted when using diffview.nvim conflict resolving

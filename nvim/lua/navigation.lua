@@ -8,6 +8,7 @@ K(')', function()
   end
 end)
 K('<leader><tab>', require 'fzf-lua'.tabs)
+K('<bs><tab>', '<cmd>tabc<cr>')
 
 require 'leap'.create_default_mappings()
 K('s', '<Plug>(leap)')

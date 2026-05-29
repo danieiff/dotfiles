@@ -1,3 +1,5 @@
+require 'vim._core.ui2'.enable {}
+
 vim.opt.winblend = 0
 vim.opt.termguicolors = true
 vim.opt.winfixheight = true
@@ -11,12 +13,10 @@ vim.opt.listchars = { tab = "⇥ ", trail = '·' }
 vim.opt.scrolloff = 2
 vim.opt.splitkeep = 'screen'
 
-require 'vim._extui'.enable {}
 K('M', '<cmd>if &ft == "pager" | q | else | mes | endif<cr>')
 
 require 'nightfox'.setup {}
-vim.cmd.colorscheme 'nordfox'
--- vim.cmd.colorscheme 'vscode'
+vim.cmd.colorscheme 'vscode'
 
 require 'satellite'.setup()
 
@@ -27,7 +27,7 @@ require 'ui.tabline'
 require 'ui.window-layout'
 
 AUC({ 'WinEnter', 'WinScrolled', 'WinResized', 'VimResized' }, {
-  desc = 'show bufnames on it own non-current windows',
+  desc = 'show bufnames for not current windows',
   callback = function()
     for _, winnr in ipairs(vim.api.nvim_tabpage_list_wins(0)) do
       local win_scoped_ns = vim.api.nvim_create_namespace('win_bufname' .. winnr)

@@ -1,3 +1,6 @@
+-- lsof -i:8080
+-- kill $(lsof -t -i:8080)
+
 local overseer = require 'overseer'
 overseer.setup {}
 
@@ -7,7 +10,7 @@ K('<leader>tl', '<cmd>OverseerLoadBundle<cr>')
 K('<leader>td', '<cmd>OverseerDeleteBundle<cr>')
 K('<leader>tr', '<cmd>OverseerRun<cr>')
 K('<leader>tC', '<cmd>OverseerRunCmd<cr>')
-K('<Leader>$', '<cmd>OverseerRunCmd ' .. vim.o.shell .. '<cr>')
+K('<Leader>$', '<cmd>OverseerRunCmd ' .. vim.o.shell .. '<cr>' .. '<cmd>OverseerOpen<cr>')
 K('<Leader>%', '<cmd>OverseerRunCmd top<cr>')
 K('<leader>ti', '<cmd>OverseerInfo<cr>')
 K('<leader>tb', '<cmd>OverseerBuild<cr>')
@@ -62,7 +65,7 @@ CMD('Exercism', function(arg)
       vim.cmd.edit(exercism_exercise_dir .. '/README.md')
       vim.cmd.lcd(exercism_exercise_dir)
       vim.system({ 'yarn', 'install' }, { cwd = exercism_exercise_dir }, function(data)
-        vim.notify(data.stderr or data.stdout, data.code)
+        vim.notify(err or data.stdout, data.code)
       end)
     end))
 end, { nargs = '*' })

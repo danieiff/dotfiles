@@ -5,6 +5,7 @@
 -- mise use -g zig node neovim@nightly yq ripgrep github-cli fzf
 -- ln -s ~/dotfiles/nvim ${XDG_CONFIG_HOME:-~/.config}
 -- -- New-Item -Path $ENV:LOCALAPPDATA/nvim -ItemType SymbolicLink -Value dotfiles/nvim
+
 vim.loader.enable()
 
 if vim.uv.os_uname().sysname:find 'Windows' then vim.cmd 'language en' end
@@ -29,7 +30,7 @@ CHECK_FILE_MODIFIABLE = function(bufnr, nowait_ft_detect)
       and vim.api.nvim_buf_get_name(bufnr) ~= ''
 end
 
--- Reset :set option&
+-- reset :set option&
 vim.o.autowriteall = true
 vim.o.undofile = true
 vim.o.ignorecase = true
@@ -42,18 +43,25 @@ vim.o.foldenable = false
 vim.o.foldmethod = 'expr'
 vim.o.foldexpr = 'v:lua.vim.treesitter.foldexpr()'
 vim.o.foldtext = ''
+vim.o.tabclose = 'uselast'
+vim.o.switchbuf = 'usetab,vsplit'
 
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ','
+
+-- toggle file encoding
+-- local file_encodings = { 'cp932', 'latin1', 'utf-8' }
+-- noautocmd e! ++encoding=cp932 %
 
 K('<leader>w', '<cmd>silent write<cr>')
 K('<leader>W', '<cmd>noautocmd silent write<cr>')
 K('jk', '<c-\\><c-n>', { mode = { 'i', 'c', 't' } })
 
-K('<C-w><C-w>', '<cmd>windo set scrollbind!<cr>')
+K('L', ":'<,'>lua<cr>", { mode = { 'n', 'v' }, silent = true })
+K('<C-w>w', '<cmd>windo set scrollbind!<cr>')
 K("<esc>", "<cmd>nohl<cr>")
-K('<leader><esc>', '<cmd>qa<cr>')
-K('<bs><esc>', ('<cmd>!rm -rf %s/swap %s/shada<cr>'):format(vim.fn.stdpath 'state', vim.fn.stdpath 'state'))
+K('<bs><esc>', '<cmd>qa<cr>')
+K('<bs><bs>', ('<cmd>!rm -rf %s/swap %s/shada<cr>'):format(vim.fn.stdpath 'state', vim.fn.stdpath 'state'))
 
 K('y%', '<cmd>let @+=@%<cr>')
 K('<leader>y', require 'fzf-lua'.registers)
@@ -64,9 +72,13 @@ K('<leader>C', require 'fzf-lua'.command_history)
 K('<leader>?', require 'fzf-lua'.search_history)
 K('<leader>k', require 'fzf-lua'.keymaps)
 
-AUC('InsertLeave', {
+AUC({ 'InsertLeave' }, {
   desc = 'Auto save on Insertleave',
-  callback = function(ev) if CHECK_FILE_MODIFIABLE(ev.buf) then vim.cmd 'silent write' end end,
+  callback = function(ev)
+    if CHECK_FILE_MODIFIABLE(ev.buf) then
+      vim.cmd 'silent! write'
+    end
+  end,
   nested = true
 })
 
@@ -81,8 +93,6 @@ AUC("BufReadPre", {
   end
 })
 
--- git submodule deinit -f
--- git submodule update --init
 CMD('GitSubmoduleAddVimPlugin', function(arg)
   vim.system(
     { 'git', 'submodule', 'add', arg.fargs[1], ('pack/%s/start/%s'):format(arg.fargs[2] or 'required',
@@ -90,14 +100,10 @@ CMD('GitSubmoduleAddVimPlugin', function(arg)
     { cwd = vim.fn.fnamemodify(vim.fn.stdpath 'config', ':h') .. '/nvim' },
     function(data)
       assert(data.code == 0, 'Failed: ' .. data.stderr)
-      vim.schedule(function() vim.cmd('set runtimepath& | runtime! PACK plugin/**/*.{vim,lua} | helptags ALL') end)
+      vim.cmd 'restart'
     end)
-end, {
-  nargs = '*',
-  desc = 'Add nvim plugin using git submodule'
-})
+end, { nargs = '*', desc = 'Add nvim plugin using git submodule. Remove: `git rm <path to submodule>`' })
 
-require 'news'
 require 'language'
 require 'git'
 require 'coding_assist'
@@ -105,3 +111,4 @@ require 'session'
 require 'navigation'
 require 'ui'
 require 'tasks'
+require 'news'

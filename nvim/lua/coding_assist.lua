@@ -1,3 +1,6 @@
+vim.cmd.packadd 'nvim.undotree'
+K('U', '<cmd>Undotree<cr>')
+
 K('!!', function()
   local cword = vim.fn.expand '<cword>'
   for a, b in pairs { ['true'] = 'false', ['enabled'] = 'disabled' } do
@@ -101,12 +104,19 @@ require 'refactoring'.setup {
   }
 }
 K('<leader>R', require 'refactoring'.select_refactor)
-K('<leader>iv', function() return require 'refactoring'.refactor 'Inline Variable' end, { mode = { "n", "x" }, expr = true })
-K('<leader>if', function() return require 'refactoring'.refactor 'Inline Function' end {mode = {"n", "x"}, expr= true})
-K('<leader>xv', function() return require 'refactoring'.refactor 'Extract Variable' end, { mode= {"n", "x" }, expr = true })
-K('<leader>xf', function() return require 'refactoring'.refactor 'Extract Function' end, { mode = { "n", "x" }, expr= true })
-K('<leader>xF', function() return require 'refactoring'.refactor 'Extract Function To File' end, { mode = { "n", "x" }, expr= true })
-K('<leader>xb', function() return require 'refactoring'.refactor 'Extract Block' end, { mode = { "n", "x" }, expr = true })
-K('<leader>xB', function() return require 'refactoring'.refactor 'Extract Block To File' end, { mode= { "n", "x"}, expr = true})
+K('<leader>iv', function() return require 'refactoring'.refactor 'Inline Variable' end,
+  { mode = { "n", "x" }, expr = true })
+K('<leader>if', function() return require 'refactoring'.refactor 'Inline Function' end,
+  { mode = { "n", "x" }, expr = true })
+K('<leader>xv', function() return require 'refactoring'.refactor 'Extract Variable' end,
+  { mode = { "n", "x" }, expr = true })
+K('<leader>xf', function() return require 'refactoring'.refactor 'Extract Function' end,
+  { mode = { "n", "x" }, expr = true })
+K('<leader>xF', function() return require 'refactoring'.refactor 'Extract Function To File' end,
+  { mode = { "n", "x" }, expr = true })
+K('<leader>xb', function() return require 'refactoring'.refactor 'Extract Block' end,
+  { mode = { "n", "x" }, expr = true })
+K('<leader>xB', function() return require 'refactoring'.refactor 'Extract Block To File' end,
+  { mode = { "n", "x" }, expr = true })
 K('<leader>p', require "refactoring".debug.print_var)
 K('<leader>P', require "refactoring".debug.printf)
